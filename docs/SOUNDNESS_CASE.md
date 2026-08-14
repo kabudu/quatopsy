@@ -15,7 +15,7 @@ The initial assurance claim is limited: for supported declared inputs and enable
 
 ## Mathematical obligations
 
-For non-zero quaternion `q`, normalisation is `q / ||q||`. Physical distance between unit quaternions `p` and `q` is `2 acos(clamp(abs(dot(p,q)), 0, 1))`. The deterministic lift chooses the sign of each next sample that maximises the dot product with the previously lifted sample. At an exact or tolerance-defined tie, it retains the raw sign and emits near-pi ambiguity rather than claiming a unique lift.
+For non-zero quaternion `q`, normalisation is `q / ||q||`. Physical distance between unit quaternions `p` and `q` is `2 acos(clamp(abs(dot(p,q)), 0, 1))`. The deterministic lift chooses the sign of each next sample that maximises the dot product with the previously lifted sample. At an exact or tolerance-defined tie (`|p · q| <= 1e-12` in `quatopsy.numeric/1`), it retains the raw sign and emits near-pi ambiguity rather than claiming a unique lift. `QAT-SIGN-001` reports raw consecutive unit samples with negative dot product, which is independent of whether the already-lifted predecessor still required a flip.
 
 A sign-only repair must satisfy `R(q_raw) = R(q_repaired)` within the independent matrix oracle tolerance at every repaired sample. Derived angular rate for interval `dt > 0` is quotient angle divided by `dt`. Dynamic interpretation beyond this kinematic quantity requires an explicitly supplied model and is outside V1.
 

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quatopsy.local/schema/manifest/1",
+  "title": "quatopsy.manifest/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "component_order",
+    "rotation_sense",
+    "frame_from",
+    "frame_to",
+    "time_unit",
+    "columns"
+  ],
+  "properties": {
+    "schema": { "const": "quatopsy.manifest/1" },
+    "component_order": { "enum": ["wxyz", "xyzw"] },
+    "rotation_sense": { "enum": ["active", "passive"] },
+    "frame_from": { "type": "string", "minLength": 1 },
+    "frame_to": { "type": "string", "minLength": 1 },
+    "time_unit": { "enum": ["ns", "us", "ms", "s"] },
+    "columns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["time", "quaternion"],
+      "properties": {
+        "time": { "type": "string", "minLength": 1 },
+        "quaternion": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "angular_velocity": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

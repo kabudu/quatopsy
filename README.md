@@ -10,9 +10,21 @@ Quatopsy does not claim to invent quaternions, sign canonicalisation, shortest-p
 
 ## Status
 
-Planning corpus complete as of 2026-08-14. No product implementation, package, release, safety qualification, or production support is claimed. The first unchecked milestone is the executable mathematical conformance kernel and report schema.
+M1 conformance kernel is implemented: Rust workspace, closed V1 rule registry, canonical `quatopsy.report/1` JSON, and `./scripts/ci-local.sh`. No safety qualification, production support, repair application, visual debugger, or independent external validation is claimed.
 
 The learning-laboratory concept is a separate future project and is not part of Quatopsy.
+
+## Local use
+
+```bash
+./scripts/ci-local.sh
+cargo run --bin quatopsy -- analyze \
+  --input fixtures/conformance/clean_slew/input.csv \
+  --manifest fixtures/conformance/clean_slew/manifest.json \
+  --report /tmp/quatopsy-report.json
+```
+
+Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 
 ## Documentation
 

@@ -1,0 +1,15 @@
+{
+  "audit": "Constant-axis +z slew from 0 to pi/2 radians in four equal 1 s steps. Analytic q(theta)=(cos(theta/2),0,0,sin(theta/2)). No representation or timestamp defects.",
+  "result": "pass",
+  "exit_code": 0,
+  "rules": {
+    "QAT-NORM-001": "pass",
+    "QAT-TIME-001": "pass",
+    "QAT-LIFT-001": "pass",
+    "QAT-SIGN-001": "pass",
+    "QAT-RATE-001": "pass",
+    "QAT-PI-001": "pass"
+  },
+  "finding_reasons": [],
+  "rate_interval_count": 4
+}

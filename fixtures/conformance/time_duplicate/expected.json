@@ -1,0 +1,15 @@
+{
+  "audit": "Two identical timestamps. QAT-TIME-001 must refuse. The overall result must never be pass.",
+  "result": "refused",
+  "exit_code": 2,
+  "rules": {
+    "QAT-NORM-001": "pass",
+    "QAT-TIME-001": "refused",
+    "QAT-LIFT-001": "pass",
+    "QAT-SIGN-001": "pass",
+    "QAT-RATE-001": "refused",
+    "QAT-PI-001": "pass"
+  },
+  "finding_reasons": ["duplicate-timestamp"],
+  "finding_rows": [[2, 3]]
+}

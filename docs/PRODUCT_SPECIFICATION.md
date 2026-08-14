@@ -10,9 +10,11 @@ The first user is a spacecraft guidance, navigation, and control engineer analys
 
 ## Input profile V1
 
-A UTF-8 CSV file plus an explicit manifest provides monotonically increasing timestamps, four finite quaternion components, component order, rotation sense, frame relationship, time unit, and optional observed angular velocity. The input byte digest, manifest digest, tool version, rule-set version, and numeric policy form the analysis identity.
+A UTF-8 CSV file plus an explicit `quatopsy.manifest/1` document provides monotonically increasing timestamps, four quaternion components, component order (`wxyz` or `xyzw`), rotation sense, distinct `frame_from`/`frame_to` names, time unit (`ns`, `us`, `ms`, or `s`), and optional angular-velocity columns. Manifest JSON rejects unknown fields. The quaternion column array is in the declared component order and is assembled into internal Hamilton `(w, x, y, z)` storage. The input byte digest, manifest digest, tool version, rule-set version, numeric profile, enabled rules, and limits form the analysis identity.
 
-Unsupported ambiguity is refused. Quatopsy must not guess component order, reference frames, units, or active/passive semantics.
+Unsupported ambiguity is refused. Quatopsy must not guess component order, reference frames, units, or active/passive semantics. Numeric profile `quatopsy.numeric/1` uses absolute unit tolerance `1e-6`, near-zero refusal below `1e-12`, and near-pi lift ties when `|p · q| <= 1e-12` after unit normalisation.
+
+The M1 CLI is `quatopsy analyze --input <csv> --manifest <json> --report <json>`. It writes compact canonical JSON atomically and does not overwrite an existing report unless `--overwrite` is passed. Repair candidates and the visual debugger remain later milestones.
 
 ## Outputs
 

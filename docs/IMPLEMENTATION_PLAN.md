@@ -15,13 +15,13 @@ Exit evidence: planning commit on the private default branch. This milestone doe
 
 ## M1: Conformance kernel and protocol
 
-- [ ] Persist the implementation workflow in `AGENTS.md` and create executable `scripts/ci-local.sh` before other implementation is counted complete.
-- [ ] Create the latest stable Rust workspace with library, schema, and CLI crates.
-- [ ] Implement canonical manifest and streaming CSV validation with bounded inputs.
-- [ ] Implement quaternion primitives, quotient distance, deterministic lift, and near-pi conditioning metadata.
-- [ ] Implement rule registry, fail-closed aggregation, canonical report schema, and exit codes.
-- [ ] Build independently encoded matrix and high-precision conformance oracles.
-- [ ] Verify deterministic reports across macOS and Linux-like clean environments where locally available.
+- [x] Persist the implementation workflow in `AGENTS.md` and create executable `scripts/ci-local.sh` before other implementation is counted complete.
+- [x] Create the latest stable Rust workspace with library, schema, and CLI crates.
+- [x] Implement canonical manifest and streaming CSV validation with bounded inputs.
+- [x] Implement quaternion primitives, quotient distance, deterministic lift, and near-pi conditioning metadata.
+- [x] Implement rule registry, fail-closed aggregation, canonical report schema, and exit codes.
+- [x] Build independently encoded matrix and high-precision conformance oracles.
+- [x] Verify deterministic reports across macOS and Linux-like clean environments where locally available.
 
 Exit: hand-audited fixtures prove `QAT-NORM-001`, `QAT-TIME-001`, `QAT-LIFT-001`, `QAT-SIGN-001`, `QAT-RATE-001`, and `QAT-PI-001`; local CI passes.
 

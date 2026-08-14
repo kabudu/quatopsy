@@ -37,9 +37,9 @@ Novelty remains unestablished; the patent search is preliminary; legal name/mark
 
 ## Documents tailored
 
-`SOUNDNESS_CASE.md` and `REPORT_PROTOCOL.md` were added because the product makes machine-checkable semantic claims. A separate integration-contract document is deferred until the first adapter is designed; its boundary is covered in architecture and adoption documents. Full brand assets are intentionally absent because productisation is not approved. `AGENTS.md` and `scripts/ci-local.sh` are intentionally absent until implementation is explicitly authorised, as required by the bootstrap policy.
+`SOUNDNESS_CASE.md` and `REPORT_PROTOCOL.md` were added because the product makes machine-checkable semantic claims. A separate integration-contract document is deferred until the first adapter is designed; its boundary is covered in architecture and adoption documents. Full brand assets are intentionally absent because productisation is not approved. `AGENTS.md` and `scripts/ci-local.sh` exist as of M1.
 
 ## Completion statement
 
-The decision corpus is planning evidence only. The first implementation milestone is M1: create the implementation workflow and authoritative local CI, then build the Rust conformance kernel and report protocol. No package, viewer, diagnostic behaviour, release, safety result, or external validation is complete.
+M1 implements the conformance kernel, report protocol, closed V1 rules, independent oracles, and local CI. Later milestones still own repairs, the viewer, spacecraft profile freeze, packaging, and product release. No safety result or external validation is complete.
 
