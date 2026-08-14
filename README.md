@@ -10,7 +10,7 @@ Quatopsy does not claim to invent quaternions, sign canonicalisation, shortest-p
 
 ## Status
 
-M2 adds repair candidates and reproducible slices on top of the M1 kernel. No safety qualification, visual debugger, or independent external validation is claimed.
+M3 adds a local static viewer over the canonical report. No safety qualification or independent external validation is claimed.
 
 The learning-laboratory concept is a separate future project and is not part of Quatopsy.
 
@@ -29,6 +29,12 @@ cargo run --bin quatopsy -- repair \
   --manifest fixtures/conformance/sign_alternating/manifest.json \
   --repair-id repair:sign-lift:1 \
   --output /tmp/quatopsy-repaired.csv
+
+cargo run --bin quatopsy -- view \
+  --report /tmp/quatopsy-report.json \
+  --input fixtures/conformance/sign_alternating/input.csv \
+  --manifest fixtures/conformance/sign_alternating/manifest.json \
+  --output /tmp/quatopsy-view
 ```
 
 Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.

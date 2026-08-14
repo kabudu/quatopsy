@@ -16,8 +16,11 @@ use quatopsy_core::limits::{
 };
 use quatopsy_core::repair::{plan_by_id, render_repaired_csv};
 use quatopsy_core::repro::{self, provenance, slice_csv};
+use quatopsy_core::view::{build_view, empty_view};
 use quatopsy_core::{AnalyzeRequest, analyze, report_bytes};
-use quatopsy_schema::{RepairDisposition, Report};
+use quatopsy_schema::{
+    RepairDisposition, Report, VIEW_MAX_POINTS, VIEW_SAFE_MAX_POINTS, report_schema_supported,
+};
 
 const USAGE_EXIT: u8 = 64;
 
@@ -81,6 +84,23 @@ enum Commands {
         repair_id: String,
         #[arg(long)]
         output: PathBuf,
+        #[arg(long, default_value_t = false)]
+        overwrite: bool,
+        #[arg(long, default_value_t = false)]
+        clean: bool,
+    },
+    /// Write a local static viewer bundle for a canonical report.
+    View {
+        #[arg(long)]
+        report: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long)]
+        input: Option<PathBuf>,
+        #[arg(long)]
+        manifest: Option<PathBuf>,
+        #[arg(long, default_value_t = VIEW_MAX_POINTS)]
+        max_points: u64,
         #[arg(long, default_value_t = false)]
         overwrite: bool,
         #[arg(long, default_value_t = false)]
@@ -157,6 +177,22 @@ fn main() -> ExitCode {
         } => {
             if let Err(code) = run_repair(
                 report, input, manifest, repair_id, output, overwrite, clean, &cancelled,
+            ) {
+                return code;
+            }
+            ExitCode::SUCCESS
+        }
+        Commands::View {
+            report,
+            output,
+            input,
+            manifest,
+            max_points,
+            overwrite,
+            clean,
+        } => {
+            if let Err(code) = run_view(
+                report, output, input, manifest, max_points, overwrite, clean, &cancelled,
             ) {
                 return code;
             }
@@ -345,6 +381,189 @@ fn run_repair(
     );
     temps.disarm();
     Ok(())
+}
+
+const VIEWER_HTML: &str = include_str!("../../../viewer/index.html");
+const VIEWER_JS: &str = include_str!("../../../viewer/viewer.js");
+const VIEWER_CSS: &str = include_str!("../../../viewer/viewer.css");
+
+#[allow(clippy::too_many_arguments)]
+fn run_view(
+    report_path: PathBuf,
+    output: PathBuf,
+    input: Option<PathBuf>,
+    manifest: Option<PathBuf>,
+    max_points: u64,
+    overwrite: bool,
+    clean: bool,
+    cancelled: &AtomicBool,
+) -> Result<(), ExitCode> {
+    let mut temps = TempGuard::default();
+    let index = output.join("index.html");
+    let js_path = output.join("viewer.js");
+    let css_path = output.join("viewer.css");
+    refuse_if_exists(&index, overwrite)?;
+    refuse_if_exists(&js_path, overwrite)?;
+    refuse_if_exists(&css_path, overwrite)?;
+    guard_path(&report_path, false)?;
+    guard_output_path(&index)?;
+    guard_output_path(&js_path)?;
+    guard_output_path(&css_path)?;
+    if output.exists() && output.is_file() {
+        eprintln!("error: view output must be a directory");
+        return Err(ExitCode::from(USAGE_EXIT));
+    }
+    if clean {
+        remove_sibling_tmp(&index);
+    }
+    let max_points = max_points.clamp(8, VIEW_SAFE_MAX_POINTS);
+    let report_bytes = read_bounded(&report_path, SAFE_MAX_INPUT_BYTES)?;
+    let value: serde_json::Value = serde_json::from_slice(&report_bytes).map_err(|err| {
+        eprintln!("error: report could not be parsed: {err}");
+        ExitCode::from(USAGE_EXIT)
+    })?;
+    let schema = value
+        .get("schema")
+        .and_then(|item| item.as_str())
+        .unwrap_or("");
+    let report_json = embed_json(&String::from_utf8_lossy(&report_bytes));
+    if !report_schema_supported(schema) {
+        let view_json = embed_json(
+            &serde_json::to_string(&empty_view("unsupported-schema")).map_err(|err| {
+                eprintln!("error: {err}");
+                ExitCode::from(3)
+            })?,
+        );
+        write_bundle(
+            &output,
+            &index,
+            &js_path,
+            &css_path,
+            &report_json,
+            &view_json,
+            &mut temps,
+        )?;
+        println!("viewer: {}", index.display());
+        println!("protocol: refused-unsupported-schema");
+        temps.disarm();
+        return Ok(());
+    }
+    let report: Report = serde_json::from_value(value).map_err(|err| {
+        eprintln!("error: report could not be parsed: {err}");
+        ExitCode::from(USAGE_EXIT)
+    })?;
+    let mut view = empty_view(&report.analysis_id);
+    match (input, manifest) {
+        (None, None) => {}
+        (Some(input), Some(manifest)) => {
+            guard_path(&input, false)?;
+            guard_path(&manifest, false)?;
+            let csv_bytes = read_bounded(&input, SAFE_MAX_INPUT_BYTES)?;
+            let manifest_bytes = read_bounded(&manifest, SAFE_MAX_INPUT_BYTES)?;
+            if sha256_hex(&csv_bytes) != report.input.csv_sha256
+                || sha256_hex(&manifest_bytes) != report.input.manifest_sha256
+            {
+                eprintln!("error: input digest does not match the report analysis identity");
+                return Err(ExitCode::from(2));
+            }
+            let limits = Limits::from_report(&report.limits);
+            if analysis_id(&csv_bytes, &manifest_bytes, &report.tool.version, limits)
+                != report.analysis_id
+            {
+                eprintln!("error: report analysis identity does not match these inputs and limits");
+                return Err(ExitCode::from(2));
+            }
+            if cancelled.load(Ordering::Relaxed) {
+                return cancelled_exit(&mut temps);
+            }
+            let parsed = ingest_bytes(
+                &csv_bytes,
+                &manifest_bytes,
+                limits,
+                Cancel {
+                    deadline: Instant::now() + Duration::from_millis(limits.timeout_ms.max(1)),
+                    flag: Some(cancelled),
+                },
+            )
+            .map_err(|err| {
+                eprintln!("error: {err}");
+                ExitCode::from(3)
+            })?;
+            let proposed = report.repairs.iter().find_map(|item| {
+                if item.disposition == RepairDisposition::Proposed {
+                    plan_by_id(&parsed.samples, &report.analysis_id, &item.id)
+                        .map(|plan| plan.quaternions)
+                } else {
+                    None
+                }
+            });
+            view = build_view(
+                &parsed.samples,
+                &report.findings,
+                &report.analysis_id,
+                proposed.as_deref(),
+                max_points,
+            );
+        }
+        _ => {
+            eprintln!("error: --input and --manifest must be supplied together");
+            return Err(ExitCode::from(USAGE_EXIT));
+        }
+    }
+    let view_json = embed_json(&serde_json::to_string(&view).map_err(|err| {
+        eprintln!("error: {err}");
+        ExitCode::from(3)
+    })?);
+    write_bundle(
+        &output,
+        &index,
+        &js_path,
+        &css_path,
+        &report_json,
+        &view_json,
+        &mut temps,
+    )?;
+    println!("viewer: {}", index.display());
+    println!("result: {}", report.result.as_str());
+    temps.disarm();
+    Ok(())
+}
+
+fn write_bundle(
+    output: &Path,
+    index: &Path,
+    js_path: &Path,
+    css_path: &Path,
+    report_json: &str,
+    view_json: &str,
+    temps: &mut TempGuard,
+) -> Result<(), ExitCode> {
+    fs::create_dir_all(output).map_err(|err| {
+        eprintln!("error: cannot create {}: {err}", output.display());
+        ExitCode::from(3)
+    })?;
+    let html = VIEWER_HTML
+        .replace("%%QUATOPSY_REPORT%%", report_json)
+        .replace("%%QUATOPSY_VIEW%%", view_json);
+    write_atomic(index, html.as_bytes(), temps).map_err(|err| {
+        eprintln!("error: could not write {}: {err}", index.display());
+        ExitCode::from(3)
+    })?;
+    write_atomic(js_path, VIEWER_JS.as_bytes(), temps).map_err(|err| {
+        eprintln!("error: could not write {}: {err}", js_path.display());
+        ExitCode::from(3)
+    })?;
+    write_atomic(css_path, VIEWER_CSS.as_bytes(), temps).map_err(|err| {
+        eprintln!("error: could not write {}: {err}", css_path.display());
+        ExitCode::from(3)
+    })?;
+    Ok(())
+}
+
+fn embed_json(raw: &str) -> String {
+    raw.replace('<', "\\u003c")
+        .replace('>', "\\u003e")
+        .replace('&', "\\u0026")
 }
 
 #[allow(clippy::too_many_arguments)]

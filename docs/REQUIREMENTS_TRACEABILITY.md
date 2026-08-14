@@ -10,7 +10,7 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 | SEM-4 | Fail closed across pass, findings, refused, and error | Aggregator | Fault injection | E2E result matrix | verified |
 | SEM-5 | Version rules, report protocol, and numeric policy | Schema | Compatibility fixtures | Protocol manifest | verified |
 | SEC-1 | Bound bytes, rows, fields, memory, time, and findings | Ingest/CLI | Hostile-input tests | Limit test report | verified |
-| SEC-2 | Prevent input execution, unsafe path writes, and remote viewer loads | CLI/viewer | Security E2E and CSP scan | Security evidence | planned |
+| SEC-2 | Prevent input execution, unsafe path writes, and remote viewer loads | CLI/viewer | Security E2E and CSP scan | Security evidence | verified |
 | SEC-3 | Bind report and repairs to immutable digests | Model/report | Tamper tests | Provenance fixture | verified |
 | OPS-1 | Use atomic no-clobber output and cancellation cleanup | CLI | Filesystem lifecycle E2E | Operations test report | verified |
 | OPS-2 | Provide clean, cache-bypassable deterministic analysis | CLI | Repeated clean runs | Digest comparison | verified |
@@ -22,9 +22,9 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 | REL-2 | Require explicit user approval before hosted CI activation | Owner | Repository audit | Release checklist | planned |
 | REL-3 | Use curated release notes and rendered desktop/narrow preview | Release owner | Preview and live inspection | Release URL/screenshots | planned |
 | REL-4 | Reject Unicode U+2014 across tracked text and release metadata | Local CI | Repository scan | CI log | implemented |
-| UX-1 | Synchronise all views by sample identity | Viewer | Browser E2E | Visual workflow evidence | planned |
-| UX-2 | Distinguish raw, derived, repaired, representation, and physical states | Viewer | Accessibility/comprehension review | UI evidence | planned |
-| UX-3 | Never use colour as the sole result signal | Viewer | Automated accessibility checks | Accessibility report | planned |
+| UX-1 | Synchronise all views by sample identity | Viewer | Public-workflow viewer bundle E2E | Visual workflow evidence | verified |
+| UX-2 | Distinguish raw, derived, repaired, representation, and physical states | Viewer | Viewer layer and caption tests | UI evidence | verified |
+| UX-3 | Never use colour as the sole result signal | Viewer | Text state plus contrast checks | Accessibility report | verified |
 | NOV-1 | Test the closed diagnostic-contract differentiation hypothesis | Research | Systematic comparison | Updated prior-art matrix | planned |
 | NOV-2 | Test the combined evidence/visual/repair workflow hypothesis | Research | Matched prototype comparison | Validation report | planned |
 | NOV-3 | Keep independent validation optional and claims conditional | Product/research | Gate and copy audit | Release checklist | planned |

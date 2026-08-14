@@ -4,6 +4,18 @@
 
 ### Added
 
+- Static local viewer bundle via `quatopsy view`, with CSP, no remote loads, and report-bound derived geometry.
+- Linked physical `SO(3)`, stereographic `S^3`, timeline, evidence, and repair views keyed by `source_row`.
+- Evidence-preserving downsampling that retains finding endpoints and angle/rate extrema.
+
+### Claims
+
+M3 proves the viewer displays canonical report verdicts and labelled geometry on the fixture corpus. It does not claim flight safety, novelty, independent external validation, or product release.
+
+## M2
+
+### Added
+
 - `QAT-REPAIR-001` with `sign-lift` and `normalise` repair candidates, explicit `quatopsy repair`, and no source overwrite.
 - Minimal reproducible slices via `--repro-dir`, with path redaction by default.
 - Cancellation cleanup, `--clean` leftover-tmp removal, symlink/special-file output guards, and hostile-input tests.

@@ -2,7 +2,7 @@
 
 ## Public workflow
 
-Tests invoke the released CLI against files, inspect exit status and canonical report, optionally apply a repair into a new file, reopen it through the CLI, then load the generated report in the packaged static viewer through its normal browser entry point. Direct library calls supplement but do not replace this lifecycle.
+Tests invoke the released CLI against files, inspect exit status and canonical report, optionally apply a repair into a new file, reopen it through the CLI, then write a static viewer bundle with `quatopsy view` and inspect that packaged HTML entry. Direct library calls supplement but do not replace this lifecycle.
 
 ## Scenario inventory
 

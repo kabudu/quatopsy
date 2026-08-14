@@ -1,0 +1,143 @@
+:root {
+  --bg: #f4f1ea;
+  --fg: #161616;
+  --muted: #3d3d3d;
+  --pass: #0b4d32;
+  --findings: #8a1212;
+  --refused: #7a4b00;
+  --error: #6b0f2a;
+  --derived: #163f73;
+  --proposed: #5b2d8a;
+  --artefact: #5a4630;
+  --focus: #000000;
+}
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.45 system-ui, sans-serif;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 72rem;
+  padding: 1rem;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+}
+
+.skip:focus {
+  left: 1rem;
+  top: 1rem;
+  background: var(--bg);
+  color: var(--fg);
+  padding: 0.25rem 0.5rem;
+}
+
+h1, h2 {
+  line-height: 1.2;
+}
+
+.claim,
+.layer-note,
+.warning {
+  color: var(--muted);
+}
+
+.warning {
+  font-weight: 600;
+  color: var(--artefact);
+}
+
+#result-banner {
+  border: 0.15rem solid var(--fg);
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+}
+
+#result-banner.pass { color: var(--pass); }
+#result-banner.findings { color: var(--findings); }
+#result-banner.refused { color: var(--refused); }
+#result-banner.error { color: var(--error); }
+
+.panel,
+.legend {
+  margin: 1.5rem 0;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  max-width: 60rem;
+  background: #fffdf8;
+  border: 0.1rem solid var(--fg);
+}
+
+label {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+button,
+a,
+input,
+li[tabindex] {
+  outline-offset: 0.15rem;
+}
+
+button:focus,
+a:focus,
+input:focus,
+li[tabindex]:focus {
+  outline: 0.2rem solid var(--focus);
+}
+
+.findings-item,
+.repair-item {
+  margin: 0.5rem 0;
+  padding: 0.4rem 0.5rem;
+  border: 0.1rem solid var(--fg);
+  background: #fffdf8;
+  cursor: pointer;
+}
+
+.swatch {
+  display: inline-block;
+  width: 1.1rem;
+  height: 0.45rem;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+  border: 0.1rem solid var(--fg);
+}
+
+.swatch.raw { background: var(--fg); }
+.swatch.derived { background: var(--derived); }
+.swatch.proposed {
+  background: repeating-linear-gradient(90deg, var(--proposed), var(--proposed) 0.25rem, transparent 0.25rem, transparent 0.45rem);
+}
+.swatch.artefact { background: var(--artefact); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  #result-banner,
+  canvas,
+  .findings-item,
+  .repair-item {
+    border: 0.2rem solid ButtonText;
+  }
+}

@@ -7,7 +7,10 @@ use serde::{
 };
 
 pub const REPORT_SCHEMA: &str = "quatopsy.report/1";
+pub const VIEW_SCHEMA: &str = "quatopsy.view/1";
 pub const MANIFEST_SCHEMA: &str = "quatopsy.manifest/1";
+pub const VIEW_MAX_POINTS: u64 = 4096;
+pub const VIEW_SAFE_MAX_POINTS: u64 = 16_384;
 pub const RULE_SET_VERSION: &str = "quatopsy.rules/1";
 pub const NUMERIC_PROFILE_ID: &str = "quatopsy.numeric/1";
 pub const ENGINE_NAME: &str = "quatopsy";
@@ -382,6 +385,10 @@ pub struct Report {
     pub diagnostics: Diagnostics,
 }
 
+pub fn report_schema_supported(schema: &str) -> bool {
+    schema == REPORT_SCHEMA
+}
+
 pub fn canonical_json(report: &Report) -> Result<Vec<u8>, serde_json::Error> {
     serde_json::to_vec(report)
 }
@@ -414,5 +421,7 @@ mod tests {
             canonical,
             "QAT-LIFT-001\nQAT-NORM-001\nQAT-PI-001\nQAT-RATE-001\nQAT-REPAIR-001\nQAT-SIGN-001\nQAT-TIME-001"
         );
+        assert!(report_schema_supported(REPORT_SCHEMA));
+        assert!(!report_schema_supported("quatopsy.report/99"));
     }
 }

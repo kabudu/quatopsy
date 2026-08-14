@@ -16,6 +16,10 @@ Each finding includes a stable identifier, rule identifier and version, class, s
 
 Each repair has an algorithm identifier, source analysis ID, disposition (`proposed`, `inapplicable`, `unsafe`, or `none`), preconditions, exact affected rows, semantic declaration, numeric tolerance, optional output digest after generation, and whether physical rotations are expected to remain equivalent. Repair application is a separate explicit CLI action (`quatopsy repair`) and never overwrites the source CSV.
 
+## Viewer
+
+`quatopsy view` writes a static HTML/CSS/JS bundle. Verdicts are copied from `quatopsy.report/1` and are never recomputed in the browser. Derived geometry is a separate `quatopsy.view/1` payload labelled non-authoritative. Unknown report major versions are refused. The bundle loads no remote resources.
+
 ## Exit codes
 
 | Code | Meaning |
