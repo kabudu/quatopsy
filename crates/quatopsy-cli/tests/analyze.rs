@@ -94,8 +94,11 @@ fn usage_error_is_exit_64() {
 }
 
 fn tempfile_dir() -> PathBuf {
+    static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
     let dir = std::env::temp_dir().join(format!(
-        "quatopsy-cli-test-{}",
+        "quatopsy-cli-test-{}-{}-{}",
+        std::process::id(),
+        COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
