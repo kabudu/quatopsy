@@ -2,7 +2,7 @@
 
 ## Minimal shape
 
-Quatopsy starts as a Rust workspace with a pure analysis library, a CLI, a schema package, and a static browser visualiser compiled to WebAssembly only where shared computations require it. The browser consumes the same immutable JSON report produced by the CLI. No server, account, database, telemetry collector, plug-in runtime, or network dependency belongs in the first release.
+Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core`), a CLI (`quatopsy`), a schema package (`quatopsy-schema`), and a static browser visualiser compiled to WebAssembly only where shared computations require it. An independent `quatopsy-oracle` crate exists only for conformance tests and is not linked into production verdicts. The browser consumes the same immutable JSON report produced by the CLI. No server, account, database, telemetry collector, plug-in runtime, or network dependency belongs in the first release.
 
 ## Components
 
@@ -35,7 +35,7 @@ Bytes are snapshotted and hashed before parsing. Parsing either yields a fully d
 
 ## Numeric policy
 
-The semantic core uses IEEE 754 binary64 with documented operation ordering. Inputs are not silently clamped except for a narrowly bounded `acos` domain correction after a proven unit-domain calculation. Near-zero and near-pi regions produce explicit conditioning metadata. Parallel rule execution may be introduced only if report order and results remain deterministic.
+The semantic core uses IEEE 754 binary64 with documented operation ordering (w, x, y, z). Transcendental operations use `libm`. Inputs are not silently clamped except for a narrowly bounded `acos` domain correction after a proven unit-domain calculation. Profile `quatopsy.numeric/1` treats `|‖q‖ − 1| > 1e-6` as off-unit, `0 < ‖q‖ < 1e-12` as near-zero refusal, and `|p · q| <= 1e-12` as a non-unique lift tie. Parallel rule execution may be introduced only if report order and results remain deterministic.
 
 ## Resource governance
 

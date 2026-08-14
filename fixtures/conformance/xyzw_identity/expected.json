@@ -1,0 +1,14 @@
+{
+  "audit": "Identity samples declared as xyzw column order. Parsing must assemble (w,x,y,z)=(1,0,0,0) and pass.",
+  "result": "pass",
+  "exit_code": 0,
+  "rules": {
+    "QAT-NORM-001": "pass",
+    "QAT-TIME-001": "pass",
+    "QAT-LIFT-001": "pass",
+    "QAT-SIGN-001": "pass",
+    "QAT-RATE-001": "pass",
+    "QAT-PI-001": "pass"
+  },
+  "finding_reasons": []
+}

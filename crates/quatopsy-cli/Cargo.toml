@@ -1,0 +1,16 @@
+[package]
+name = "quatopsy-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Offline Quatopsy command-line interface."
+
+[[bin]]
+name = "quatopsy"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true }
+quatopsy-core = { workspace = true }
+quatopsy-schema = { workspace = true }

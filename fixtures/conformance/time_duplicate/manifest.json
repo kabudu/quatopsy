@@ -1,0 +1,12 @@
+{
+  "schema": "quatopsy.manifest/1",
+  "component_order": "wxyz",
+  "rotation_sense": "active",
+  "frame_from": "BODY",
+  "frame_to": "J2000",
+  "time_unit": "s",
+  "columns": {
+    "time": "t",
+    "quaternion": ["qw", "qx", "qy", "qz"]
+  }
+}

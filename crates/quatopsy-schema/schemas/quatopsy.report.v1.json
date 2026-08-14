@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quatopsy.local/schema/report/1",
+  "title": "quatopsy.report/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "analysis_id",
+    "tool",
+    "input",
+    "declarations",
+    "limits",
+    "result",
+    "rule_results",
+    "findings",
+    "repairs",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema": { "const": "quatopsy.report/1" },
+    "analysis_id": { "type": "string", "minLength": 64, "maxLength": 64 },
+    "result": { "enum": ["pass", "findings", "refused", "error"] },
+    "rule_results": { "type": "array" },
+    "findings": { "type": "array" },
+    "repairs": { "type": "array" },
+    "tool": { "type": "object" },
+    "input": { "type": "object" },
+    "declarations": { "type": "object" },
+    "limits": { "type": "object" },
+    "diagnostics": { "type": "object" }
+  }
+}

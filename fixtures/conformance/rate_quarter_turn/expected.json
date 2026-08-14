@@ -1,0 +1,16 @@
+{
+  "audit": "Single 1 s interval covering a +z rotation of pi/2. Quotient angle must be pi/2 and derived rate pi/2 rad/s within 1e-9.",
+  "result": "pass",
+  "exit_code": 0,
+  "rules": {
+    "QAT-NORM-001": "pass",
+    "QAT-TIME-001": "pass",
+    "QAT-LIFT-001": "pass",
+    "QAT-SIGN-001": "pass",
+    "QAT-RATE-001": "pass",
+    "QAT-PI-001": "pass"
+  },
+  "finding_reasons": [],
+  "expected_max_angle_rad": 1.5707963267948966,
+  "expected_max_rate_rad_s": 1.5707963267948966
+}

@@ -2,7 +2,7 @@
 
 ## Current state
 
-Quatopsy has no implemented product or release. The private planning repository uses local validation. After implementation is authorised, `./scripts/ci-local.sh` will be the authoritative local CI gate for every milestone and pull request.
+Quatopsy has an M1 conformance kernel and local CLI. It has no product release, hosted CI, signed binaries, or production support. The private repository uses `./scripts/ci-local.sh` as the authoritative local CI gate for every milestone and pull request.
 
 Hosted CI is disabled by policy while the repository is private. Adding or enabling hosted CI requires explicit user approval at the documented public-opening or product-release gate. Absent hosted checks are policy-compliant, not passing hosted CI.
 

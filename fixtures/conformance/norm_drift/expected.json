@@ -1,0 +1,15 @@
+{
+  "audit": "Second sample is finite, non-zero, and off unit with norm 2. This is QAT-NORM-001 invalid-data, not a refusal, because rotation analysis can still proceed after normalisation.",
+  "result": "findings",
+  "exit_code": 1,
+  "rules": {
+    "QAT-NORM-001": "finding",
+    "QAT-TIME-001": "pass",
+    "QAT-LIFT-001": "pass",
+    "QAT-SIGN-001": "pass",
+    "QAT-RATE-001": "pass",
+    "QAT-PI-001": "pass"
+  },
+  "finding_reasons": ["off-unit-sample"],
+  "finding_rows": [[3, 3]]
+}
