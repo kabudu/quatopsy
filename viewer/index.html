@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <title>Quatopsy viewer</title>
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header>
+    <h1>Quatopsy viewer</h1>
+    <p class="claim">Advisory visualisation of a canonical report. This view does not redefine verdicts and is not flight approval.</p>
+    <p id="result-banner" role="status"></p>
+  </header>
+  <main id="main">
+    <section class="panel" aria-labelledby="physical-heading">
+      <h2 id="physical-heading">Physical rotation SO(3)</h2>
+      <p class="layer-note">Derived body axes from unit quaternions. Measured raw samples remain distinct from this derived triad.</p>
+      <canvas id="physical" width="480" height="320" role="img" aria-labelledby="physical-caption"></canvas>
+      <p id="physical-caption">Body +x trail and current triad for the selected sample.</p>
+    </section>
+    <section class="panel" aria-labelledby="stereo-heading">
+      <h2 id="stereo-heading">Projected S^3 lift</h2>
+      <p id="projection-warning" class="warning" role="note"></p>
+      <canvas id="stereo" width="480" height="320" role="img" aria-labelledby="stereo-caption"></canvas>
+      <p id="stereo-caption">Stereographic projection of the derived lift. This is a projection artefact, not a physical path.</p>
+    </section>
+    <section class="panel" aria-labelledby="timeline-heading">
+      <h2 id="timeline-heading">Timeline</h2>
+      <p class="layer-note">Derived quotient angle versus sample identity. Colour is not the only state signal; the selected row is also listed in text.</p>
+      <canvas id="timeline" width="960" height="180" role="img" aria-labelledby="timeline-caption"></canvas>
+      <p id="timeline-caption">Angle in radians across downsampled samples. Findings are marked with squares.</p>
+      <label for="sample-slider">Selected sample</label>
+      <input id="sample-slider" type="range" min="0" max="0" value="0">
+    </section>
+    <section class="panel" aria-labelledby="evidence-heading">
+      <h2 id="evidence-heading">Evidence</h2>
+      <p id="selection" aria-live="polite"></p>
+      <ul id="findings"></ul>
+    </section>
+    <section class="panel" aria-labelledby="repair-heading">
+      <h2 id="repair-heading">Repair candidates</h2>
+      <p class="layer-note">Proposed data is a candidate overlay. It is not applied unless <code>quatopsy repair</code> writes a new file.</p>
+      <ul id="repairs"></ul>
+    </section>
+    <section class="legend" aria-labelledby="legend-heading">
+      <h2 id="legend-heading">Layers</h2>
+      <ul>
+        <li><span class="swatch raw" aria-hidden="true"></span> Raw measured quaternion components stay in the report and selection text.</li>
+        <li><span class="swatch derived" aria-hidden="true"></span> Derived lift, body axes, and rates. Solid stroke.</li>
+        <li><span class="swatch proposed" aria-hidden="true"></span> Proposed repair overlay. Dotted stroke.</li>
+        <li><span class="swatch artefact" aria-hidden="true"></span> Stereographic projection artefact. Never a physical trajectory.</li>
+      </ul>
+      <p id="downsample-note"></p>
+    </section>
+  </main>
+  <script type="application/json" id="quatopsy-report">%%QUATOPSY_REPORT%%</script>
+  <script type="application/json" id="quatopsy-view">%%QUATOPSY_VIEW%%</script>
+  <script src="viewer.js"></script>
+</body>
+</html>

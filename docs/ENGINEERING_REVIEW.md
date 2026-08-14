@@ -41,5 +41,5 @@ Novelty remains unestablished; the patent search is preliminary; legal name/mark
 
 ## Completion statement
 
-M2 implements sign-lift and normalisation repair candidates, digest-bound apply, privacy-preserving repro slices, cancellation cleanup, and hostile-input tests. The viewer, spacecraft profile freeze, packaging, and product release remain later milestones.
+M3 implements a non-authoritative local static viewer over the canonical report, with digest-bound derived geometry, labelled projection artefacts, evidence-preserving downsampling, and CSP-constrained bundles. Spacecraft profile freeze, packaging, and product release remain later milestones.
 

@@ -74,6 +74,32 @@ impl Quaternion {
             Some(self.scale(1.0 / n))
         }
     }
+
+    pub fn conjugate(self) -> Self {
+        Self {
+            w: self.w,
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
+    }
+
+    /// Hamilton product with factor order `self * other`.
+    pub fn hamilton_mul(self, other: Self) -> Self {
+        Self {
+            w: self.w * other.w - self.x * other.x - self.y * other.y - self.z * other.z,
+            x: self.w * other.x + self.x * other.w + self.y * other.z - self.z * other.y,
+            y: self.w * other.y - self.x * other.z + self.y * other.w + self.z * other.x,
+            z: self.w * other.z + self.x * other.y - self.y * other.x + self.z * other.w,
+        }
+    }
+
+    /// Rotate a vector by a unit quaternion: `q v q*`.
+    pub fn rotate_vector(self, vector: [f64; 3]) -> [f64; 3] {
+        let qv = Self::new(0.0, vector[0], vector[1], vector[2]);
+        let rotated = self.hamilton_mul(qv).hamilton_mul(self.conjugate());
+        [rotated.x, rotated.y, rotated.z]
+    }
 }
 
 /// Clamp a dot product to `[-1, 1]` after a proven unit-domain calculation.
@@ -127,6 +153,12 @@ pub fn lift_next(prev_lifted: Quaternion, next_unit: Quaternion) -> LiftDecision
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn identity_rotation_leaves_vector() {
+        let q = Quaternion::new(1.0, 0.0, 0.0, 0.0);
+        assert_eq!(q.rotate_vector([0.0, 1.0, 0.0]), [0.0, 1.0, 0.0]);
+    }
 
     #[test]
     fn antipodes_have_zero_physical_angle() {

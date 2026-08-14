@@ -23,6 +23,7 @@ pub mod limits;
 pub mod math;
 pub mod repair;
 pub mod repro;
+pub mod view;
 
 pub use limits::Limits as AnalysisLimits;
 

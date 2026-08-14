@@ -37,11 +37,11 @@ Exit: every initial defect fixture has a deterministic finding, evidence interva
 
 ## M3: Local visual debugger
 
-- [ ] Build the static browser viewer over the canonical report without redefining verdicts.
-- [ ] Synchronise physical 3D, projected `S^3`, timeline, evidence, and repair views by sample identity.
-- [ ] Label projection artefacts and distinguish raw, derived, and proposed data.
-- [ ] Meet keyboard, screen-reader, contrast, reduced-motion, colour-state, and bounded-rendering requirements.
-- [ ] Validate large-report downsampling retains findings and extrema.
+- [x] Build the static browser viewer over the canonical report without redefining verdicts.
+- [x] Synchronise physical 3D, projected `S^3`, timeline, evidence, and repair views by sample identity.
+- [x] Label projection artefacts and distinguish raw, derived, and proposed data.
+- [x] Meet keyboard, screen-reader, contrast, reduced-motion, colour-state, and bounded-rendering requirements.
+- [x] Validate large-report downsampling retains findings and extrema.
 
 Exit: public-workflow E2E tests reproduce all five initial defect stories and accessibility checks pass.
 

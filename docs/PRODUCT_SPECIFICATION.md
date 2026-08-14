@@ -14,7 +14,7 @@ A UTF-8 CSV file plus an explicit `quatopsy.manifest/1` document provides monoto
 
 Unsupported ambiguity is refused. Quatopsy must not guess component order, reference frames, units, or active/passive semantics. Numeric profile `quatopsy.numeric/1` uses absolute unit tolerance `1e-6`, near-zero refusal below `1e-12`, and near-pi lift ties when `|p · q| <= 1e-12` after unit normalisation.
 
-The M1 CLI is `quatopsy analyze --input <csv> --manifest <json> --report <json>`. It writes compact canonical JSON atomically and does not overwrite an existing report unless `--overwrite` is passed. Repair candidates and the visual debugger remain later milestones.
+The M1 CLI is `quatopsy analyze --input <csv> --manifest <json> --report <json>`. It writes compact canonical JSON atomically and does not overwrite an existing report unless `--overwrite` is passed. `quatopsy view --report <json> --output <dir>` writes a static local viewer bundle. Optional `--input` and `--manifest` bind derived geometry to the same digests as the report.
 
 ## Outputs
 
