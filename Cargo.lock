@@ -311,6 +311,7 @@ name = "quatopsy-core"
 version = "0.1.0"
 dependencies = [
  "csv",
+ "libc",
  "libm",
  "quatopsy-oracle",
  "quatopsy-schema",

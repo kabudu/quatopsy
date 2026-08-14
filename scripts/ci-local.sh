@@ -122,4 +122,18 @@ if report.get("schema") != "quatopsy.report/1":
     raise SystemExit(f"unexpected schema {report.get('schema')!r}")
 PY
 
+log "million-sample release budget"
+cargo test --release --locked -p quatopsy-core --test million -- --ignored --nocapture
+
+log "local checksum package"
+bash "$root/scripts/package-local.sh" "$tmp/dist"
+"$tmp/dist/quatopsy" --version >/dev/null
+python3 - "$tmp/dist/SHA256SUMS" <<'PY'
+from pathlib import Path
+import sys
+text = Path(sys.argv[1]).read_text(encoding="utf-8").strip()
+if "quatopsy" not in text or len(text.split()[0]) != 64:
+    raise SystemExit(f"invalid checksum file: {text!r}")
+PY
+
 log "passed"

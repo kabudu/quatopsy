@@ -4,14 +4,14 @@ use std::cmp::Ordering;
 
 use quatopsy_schema::{
     Confidence, Evidence, Finding, FindingClass, FiniteF64, NEAR_ZERO_NORM, NORM_ABS_TOLERANCE,
-    RULE_LIFT, RULE_NORM, RULE_PI, RULE_RATE, RULE_REPAIR, RULE_SIGN, RULE_TIME, RULE_VERSION,
-    RateSummary, ResultState, RuleResult, RuleState, Severity,
+    RULE_LIFT, RULE_NORM, RULE_PI, RULE_RATE, RULE_SIGN, RULE_TIME, RULE_UNWIND, RULE_VERSION,
+    RateSummary, ResultState, RuleResult, RuleState, Severity, UNWIND_ABS_TOLERANCE,
 };
 
 use crate::cancel::Cancel;
 use crate::ingest::Sample;
 use crate::limits::Limits;
-use crate::math::{Quaternion, lift_next, quotient_angle};
+use crate::math::{Quaternion, covering_angle, lift_next, quotient_angle};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum NormKind {
@@ -91,8 +91,9 @@ pub fn evaluate(samples: &[Sample], limits: Limits, cancel: Cancel<'_>) -> Analy
     };
 
     let (rate, rate_summary) = evaluate_rate(&prepared, rotation_ready);
+    let unwind = evaluate_unwind(&prepared, limits, &mut findings, &mut truncated_error);
 
-    let mut rule_results = vec![norm, time, lift, sign, rate, pi];
+    let mut rule_results = vec![norm, time, lift, sign, rate, pi, unwind];
     if truncated_error {
         for result in &mut rule_results {
             if result.truncated {
@@ -138,15 +139,10 @@ fn incomplete(reason_code: &'static str, message: &str) -> Analysis {
     };
     Analysis {
         result: ResultState::Error,
-        rule_results: vec![
-            refused(RULE_NORM),
-            refused(RULE_TIME),
-            refused(RULE_LIFT),
-            refused(RULE_SIGN),
-            refused(RULE_RATE),
-            refused(RULE_PI),
-            refused(RULE_REPAIR),
-        ],
+        rule_results: quatopsy_schema::enabled_rules()
+            .into_iter()
+            .map(refused)
+            .collect(),
         findings: Vec::new(),
         rate_summary: None,
         conditioning: Vec::new(),
@@ -519,6 +515,84 @@ fn evaluate_rate(
         },
         Some(summary),
     )
+}
+
+fn evaluate_unwind(
+    prepared: &[PreparedSample],
+    limits: Limits,
+    findings: &mut Vec<Finding>,
+    truncated: &mut bool,
+) -> RuleResult {
+    let supplied = prepared.iter().any(|item| item.sample.commanded.is_some());
+    if !supplied {
+        return RuleResult {
+            rule: RULE_UNWIND.to_string(),
+            version: RULE_VERSION.to_string(),
+            state: RuleState::Pass,
+            finding_count: 0,
+            truncated: false,
+            reason_code: "commanded-path-absent".to_string(),
+        };
+    }
+    if prepared.iter().any(|item| item.sample.commanded.is_none()) {
+        return rule_result(RULE_UNWIND, RuleState::Refused, 0, false);
+    }
+    let mut count = 0_u64;
+    let mut local_trunc = false;
+    for window in prepared.windows(2) {
+        let Some(prev) = window[0].sample.commanded.and_then(Quaternion::normalized) else {
+            return rule_result(RULE_UNWIND, RuleState::Refused, 0, false);
+        };
+        let Some(next) = window[1].sample.commanded.and_then(Quaternion::normalized) else {
+            return rule_result(RULE_UNWIND, RuleState::Refused, 0, false);
+        };
+        let shortest = quotient_angle(prev, next);
+        let covering = covering_angle(prev, next);
+        if covering > shortest + UNWIND_ABS_TOLERANCE
+            && !push_finding(
+                findings,
+                limits,
+                &mut local_trunc,
+                &mut count,
+                pair_finding(
+                    &window[0],
+                    &window[1],
+                    RULE_UNWIND,
+                    FindingClass::DynamicThreshold,
+                    Severity::Medium,
+                    Confidence::NumericTolerance,
+                    "commanded-long-way",
+                    "commanded adjacent covering exceeds the quotient-shortest rotation",
+                    vec![
+                        evidence("commanded_covering_rad", "rad", covering),
+                        evidence("shortest_angle_rad", "rad", shortest),
+                    ],
+                ),
+            )
+        {
+            break;
+        }
+    }
+    *truncated = *truncated || local_trunc;
+    let state = if local_trunc {
+        RuleState::Error
+    } else if count > 0 {
+        RuleState::Finding
+    } else {
+        RuleState::Pass
+    };
+    RuleResult {
+        rule: RULE_UNWIND.to_string(),
+        version: RULE_VERSION.to_string(),
+        state,
+        finding_count: count,
+        truncated: local_trunc,
+        reason_code: if count > 0 {
+            "commanded-long-way".to_string()
+        } else {
+            "commanded-path-shortest".to_string()
+        },
+    }
 }
 
 fn promote(current: &mut RuleState, candidate: RuleState) {

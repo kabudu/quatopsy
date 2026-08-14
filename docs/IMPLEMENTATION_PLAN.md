@@ -47,11 +47,11 @@ Exit: public-workflow E2E tests reproduce all five initial defect stories and ac
 
 ## M4: Spacecraft qualification and packaging
 
-- [ ] Define and freeze the supported spacecraft CSV profile with representative synthetic and public fixtures.
-- [ ] Add optional commanded-path comparison for bounded unwinding diagnostics.
-- [ ] Benchmark one million samples against the documented performance budget.
-- [ ] Package reproducible signed or checksummed binaries only when release infrastructure and authorization exist.
-- [ ] Complete install, upgrade, downgrade, rollback, removal, and report-compatibility tests.
+- [x] Define and freeze the supported spacecraft CSV profile with representative synthetic and public fixtures.
+- [x] Add optional commanded-path comparison for bounded unwinding diagnostics.
+- [x] Benchmark one million samples against the documented performance budget.
+- [x] Package reproducible signed or checksummed binaries only when release infrastructure and authorization exist.
+- [x] Complete install, upgrade, downgrade, rollback, removal, and report-compatibility tests.
 
 Exit: supported scope passes adversarial, portability, lifecycle, performance, and documentation gates.
 

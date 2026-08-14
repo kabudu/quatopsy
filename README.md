@@ -10,7 +10,7 @@ Quatopsy does not claim to invent quaternions, sign canonicalisation, shortest-p
 
 ## Status
 
-M3 adds a local static viewer over the canonical report. No safety qualification or independent external validation is claimed.
+M4 freezes the spacecraft CSV profile, adds commanded-path comparison, and asserts the million-sample budget locally. No safety qualification, signed publication, or independent external validation is claimed.
 
 The learning-laboratory concept is a separate future project and is not part of Quatopsy.
 
@@ -49,6 +49,7 @@ Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 - [Novelty and prior art](docs/NOVELTY.md)
 - [Validation](docs/VALIDATION.md)
 - [Release policy](docs/RELEASE.md)
+- [Spacecraft CSV profile](docs/SPACECRAFT_PROFILE.md)
 - [Requirements traceability](docs/REQUIREMENTS_TRACEABILITY.md)
 
 ## Name audit

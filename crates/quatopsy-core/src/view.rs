@@ -385,6 +385,7 @@ mod tests {
                 source_row: i + 2,
                 timestamp_ns: (i as i64) * 1_000_000,
                 raw: q,
+                commanded: None,
                 timestamp_finite: true,
                 timestamp_overflow: false,
             });

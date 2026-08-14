@@ -35,4 +35,4 @@ Do not create GitHub Actions workflows, publish packages, open the repository, o
 
 ## Milestone notes
 
-M1 owns the conformance kernel, canonical report protocol, and closed V1 rule registry. M2 owns repair candidates, digest-bound apply, and privacy-preserving repro slices. M3 owns the non-authoritative local static viewer. Spacecraft profile freeze, packaging, and product release remain later milestones.
+M1 owns the conformance kernel, canonical report protocol, and closed V1 rule registry. M2 owns repair candidates, digest-bound apply, and privacy-preserving repro slices. M3 owns the non-authoritative local static viewer. M4 owns the frozen spacecraft CSV profile, commanded-path comparison, the million-sample budget, and local checksum packaging. Product release remains a later milestone.

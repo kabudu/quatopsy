@@ -34,7 +34,7 @@ Jobs are replayable from immutable inputs and configuration. Partial outputs are
 
 ## Capacity targets
 
-The design target is 10 million samples maximum, one million samples under 10 seconds, and under 512 MiB resident memory on the registered reference machine. These are unverified targets until milestone M4 evidence exists. Browser limits may be lower and must be explicit.
+The supported analysis budget is one million samples in under 10 seconds and under 512 MiB peak RSS on the local CI host, excluding viewer generation. The compiled sample maximum remains 10 million. Evidence is the ignored release test `million_samples_meet_budget` run by `./scripts/ci-local.sh`. Browser geometry remains downsampled and is outside this budget.
 
 ## Incident response
 

@@ -41,5 +41,5 @@ Novelty remains unestablished; the patent search is preliminary; legal name/mark
 
 ## Completion statement
 
-M3 implements a non-authoritative local static viewer over the canonical report, with digest-bound derived geometry, labelled projection artefacts, evidence-preserving downsampling, and CSP-constrained bundles. Spacecraft profile freeze, packaging, and product release remain later milestones.
+M4 freezes spacecraft CSV profile `quatopsy.spacecraft-csv/1`, adds `QAT-UNWIND-001`, asserts the million-sample budget in local CI, and emits checksummed local binaries without signing or publication. Product release remains a later milestone.
 

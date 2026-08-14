@@ -3,8 +3,8 @@
 use quatopsy_schema::{
     ALG_NORMALISE, ALG_SIGN_LIFT, ALG_VERSION, ComponentOrder, Declarations, Finding, FiniteF64,
     NEAR_ZERO_NORM, NORM_ABS_TOLERANCE, REPAIR_MATRIX_ABS_TOLERANCE, RULE_NORM, RULE_PI,
-    RULE_REPAIR, RULE_SIGN, RULE_TIME, RULE_VERSION, Repair, RepairDisposition, RuleResult,
-    RuleState,
+    RULE_REPAIR, RULE_SIGN, RULE_TIME, RULE_UNWIND, RULE_VERSION, Repair, RepairDisposition,
+    RuleResult, RuleState,
 };
 
 use crate::ingest::Sample;
@@ -51,6 +51,7 @@ pub fn attach_repairs(
             RULE_PI => RepairDisposition::Unsafe,
             RULE_NORM => RepairDisposition::Unsafe,
             RULE_TIME => RepairDisposition::Inapplicable,
+            RULE_UNWIND => RepairDisposition::Inapplicable,
             _ => RepairDisposition::Inapplicable,
         };
     }
