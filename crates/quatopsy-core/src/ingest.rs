@@ -16,6 +16,7 @@ pub struct Sample {
     pub source_row: u64,
     pub timestamp_ns: i64,
     pub raw: Quaternion,
+    pub commanded: Option<Quaternion>,
     pub timestamp_finite: bool,
     pub timestamp_overflow: bool,
 }
@@ -197,6 +198,17 @@ fn declarations_from_manifest(manifest: &ManifestDocument) -> Result<Declaration
             names.push(name.as_str());
         }
     }
+    if let Some(commanded) = &manifest.columns.commanded_quaternion {
+        for name in commanded {
+            if name.is_empty() {
+                return Err(IngestError::refused(
+                    "missing-commanded-column",
+                    "commanded quaternion column names must be non-empty",
+                ));
+            }
+            names.push(name.as_str());
+        }
+    }
     let unique = names.len()
         == names
             .iter()
@@ -218,6 +230,7 @@ fn declarations_from_manifest(manifest: &ManifestDocument) -> Result<Declaration
         time_column: manifest.columns.time.clone(),
         quaternion_columns: manifest.columns.quaternion.clone(),
         angular_velocity_columns: manifest.columns.angular_velocity.clone(),
+        commanded_quaternion_columns: manifest.columns.commanded_quaternion.clone(),
     })
 }
 
@@ -266,6 +279,16 @@ fn parse_csv(
         required_column(&index, &manifest.columns.quaternion[2])?,
         required_column(&index, &manifest.columns.quaternion[3])?,
     ];
+    let commanded_idx = if let Some(cols) = &manifest.columns.commanded_quaternion {
+        Some([
+            required_column(&index, &cols[0])?,
+            required_column(&index, &cols[1])?,
+            required_column(&index, &cols[2])?,
+            required_column(&index, &cols[3])?,
+        ])
+    } else {
+        None
+    };
 
     let mut samples = Vec::new();
     for record in reader.records() {
@@ -300,10 +323,25 @@ fn parse_csv(
             parse_component(record.get(quat_idx[3]).unwrap_or(""))?,
         ];
         let raw = assemble_quaternion(manifest.component_order, components);
+        let commanded = if let Some(idx) = commanded_idx {
+            let commanded_components = [
+                parse_component(record.get(idx[0]).unwrap_or(""))?,
+                parse_component(record.get(idx[1]).unwrap_or(""))?,
+                parse_component(record.get(idx[2]).unwrap_or(""))?,
+                parse_component(record.get(idx[3]).unwrap_or(""))?,
+            ];
+            Some(assemble_quaternion(
+                manifest.component_order,
+                commanded_components,
+            ))
+        } else {
+            None
+        };
         samples.push(Sample {
             source_row,
             timestamp_ns,
             raw,
+            commanded,
             timestamp_finite,
             timestamp_overflow,
         });

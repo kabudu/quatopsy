@@ -1,5 +1,5 @@
 {
-  "audit": "Identity then a pi radian rotation about +x. Unit dot product is exactly 0, so the lift must retain the raw sign and emit QAT-PI-001 rather than a unique sign repair.",
+  "audit": "Measured path is the quotient-shortest +z quarter turn. Commanded path uses the antipodal covering to the same orientation. QAT-UNWIND-001 must fire; QAT-SIGN-001 must not.",
   "result": "findings",
   "exit_code": 1,
   "rules": {
@@ -8,12 +8,12 @@
     "QAT-LIFT-001": "pass",
     "QAT-SIGN-001": "pass",
     "QAT-RATE-001": "pass",
-    "QAT-PI-001": "finding",
+    "QAT-PI-001": "pass",
     "QAT-REPAIR-001": "pass",
-    "QAT-UNWIND-001": "pass"
+    "QAT-UNWIND-001": "finding"
   },
   "finding_reasons": [
-    "near-pi-ambiguity"
+    "commanded-long-way"
   ],
   "finding_rows": [
     [
@@ -23,6 +23,6 @@
   ],
   "repairs": [],
   "finding_dispositions": [
-    "unsafe"
+    "inapplicable"
   ]
 }

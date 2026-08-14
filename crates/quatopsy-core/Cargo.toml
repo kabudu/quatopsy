@@ -16,6 +16,7 @@ sha2 = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
+libc = "0.2"
 quatopsy-oracle = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

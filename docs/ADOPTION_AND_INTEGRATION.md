@@ -42,7 +42,7 @@ CLI flags, exit codes, schema major versions, rule IDs, and canonical input prof
 
 ## Performance budgets
 
-The first target is one million samples analysed in under 10 seconds and under 512 MiB resident memory on a documented reference machine, excluding viewer generation. Adapters must stream and respect the same limits. These are design targets until benchmark evidence exists.
+The first target is one million samples analysed in under 10 seconds and under 512 MiB resident memory, excluding viewer generation. Local CI asserts this budget with a generated identity series. Adapters must stream and respect the same limits.
 
 ## Privacy and telemetry
 

@@ -205,6 +205,33 @@ fn missing_manifest_field_is_refused() {
 }
 
 #[test]
+fn qat_unwind_001_commanded_long_way() {
+    run_case("commanded_long_way");
+}
+
+#[test]
+fn frozen_spacecraft_profile_passes() {
+    let dir = workspace_root().join("fixtures/profile/spacecraft_v1");
+    let csv = fs::read(dir.join("input.csv")).unwrap();
+    let manifest = fs::read(dir.join("manifest.json")).unwrap();
+    let report = analyze(AnalyzeRequest {
+        csv_bytes: &csv,
+        manifest_bytes: &manifest,
+        engine_version: "0.1.0",
+        limits: Limits::defaults(),
+        cancelled: None,
+    });
+    assert_eq!(report.result, ResultState::Pass);
+    assert!(
+        report
+            .rule_results
+            .iter()
+            .any(|item| item.rule == "QAT-UNWIND-001"
+                && item.reason_code == "commanded-path-shortest")
+    );
+}
+
+#[test]
 fn analysis_id_is_stable_and_input_sensitive() {
     let dir = workspace_root().join("fixtures/conformance/clean_slew");
     let csv = fs::read(dir.join("input.csv")).unwrap();

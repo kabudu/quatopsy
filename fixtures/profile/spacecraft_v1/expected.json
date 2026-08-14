@@ -1,7 +1,8 @@
 {
-  "audit": "Single 1 s interval covering a +z rotation of pi/2. Quotient angle must be pi/2 and derived rate pi/2 rad/s within 1e-9.",
+  "audit": "Frozen spacecraft CSV profile representative slew. Commanded path matches the quotient-shortest measured path. All enabled rules pass.",
   "result": "pass",
   "exit_code": 0,
+  "profile": "quatopsy.spacecraft-csv/1",
   "rules": {
     "QAT-NORM-001": "pass",
     "QAT-TIME-001": "pass",
@@ -13,8 +14,6 @@
     "QAT-UNWIND-001": "pass"
   },
   "finding_reasons": [],
-  "expected_max_angle_rad": 1.5707963267948966,
-  "expected_max_rate_rad_s": 1.5707963267948966,
   "repairs": [],
   "finding_dispositions": []
 }

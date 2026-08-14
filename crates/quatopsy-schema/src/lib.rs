@@ -22,6 +22,7 @@ pub const RULE_SIGN: &str = "QAT-SIGN-001";
 pub const RULE_RATE: &str = "QAT-RATE-001";
 pub const RULE_PI: &str = "QAT-PI-001";
 pub const RULE_REPAIR: &str = "QAT-REPAIR-001";
+pub const RULE_UNWIND: &str = "QAT-UNWIND-001";
 pub const RULE_VERSION: &str = "1";
 pub const ALG_SIGN_LIFT: &str = "sign-lift";
 pub const ALG_NORMALISE: &str = "normalise";
@@ -34,8 +35,11 @@ pub const NORM_ABS_TOLERANCE: f64 = 1.0e-6;
 pub const NEAR_ZERO_NORM: f64 = 1.0e-12;
 /// `|p · q| <= PI_TIE_ABS_DOT` is a non-unique lift tie after unit normalisation.
 pub const PI_TIE_ABS_DOT: f64 = 1.0e-12;
+/// Adjacent commanded covering longer than the quotient-shortest path by this amount is a finding.
+pub const UNWIND_ABS_TOLERANCE: f64 = 1.0e-9;
+pub const SPACECRAFT_PROFILE_ID: &str = "quatopsy.spacecraft-csv/1";
 
-pub fn enabled_rules() -> [&'static str; 7] {
+pub fn enabled_rules() -> [&'static str; 8] {
     [
         RULE_NORM,
         RULE_TIME,
@@ -44,6 +48,7 @@ pub fn enabled_rules() -> [&'static str; 7] {
         RULE_RATE,
         RULE_PI,
         RULE_REPAIR,
+        RULE_UNWIND,
     ]
 }
 
@@ -94,6 +99,8 @@ pub struct ManifestColumns {
     pub quaternion: [String; 4],
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub angular_velocity: Option<[String; 3]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub commanded_quaternion: Option<[String; 4]>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -339,6 +346,8 @@ pub struct Declarations {
     pub time_column: String,
     pub quaternion_columns: [String; 4],
     pub angular_velocity_columns: Option<[String; 3]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub commanded_quaternion_columns: Option<[String; 4]>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -419,7 +428,7 @@ mod tests {
         let canonical = enabled_rules_canonical();
         assert_eq!(
             canonical,
-            "QAT-LIFT-001\nQAT-NORM-001\nQAT-PI-001\nQAT-RATE-001\nQAT-REPAIR-001\nQAT-SIGN-001\nQAT-TIME-001"
+            "QAT-LIFT-001\nQAT-NORM-001\nQAT-PI-001\nQAT-RATE-001\nQAT-REPAIR-001\nQAT-SIGN-001\nQAT-TIME-001\nQAT-UNWIND-001"
         );
         assert!(report_schema_supported(REPORT_SCHEMA));
         assert!(!report_schema_supported("quatopsy.report/99"));

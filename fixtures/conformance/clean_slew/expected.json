@@ -9,7 +9,8 @@
     "QAT-SIGN-001": "pass",
     "QAT-RATE-001": "pass",
     "QAT-PI-001": "pass",
-    "QAT-REPAIR-001": "pass"
+    "QAT-REPAIR-001": "pass",
+    "QAT-UNWIND-001": "pass"
   },
   "finding_reasons": [],
   "rate_interval_count": 4,

@@ -4,6 +4,19 @@
 
 ### Added
 
+- Frozen spacecraft CSV profile `quatopsy.spacecraft-csv/1` with synthetic representative fixtures.
+- `QAT-UNWIND-001` commanded-path comparison against the quotient-shortest baseline.
+- One-million-sample release budget check and local checksum packaging via `scripts/package-local.sh`.
+- Install, upgrade, rollback, removal, and report-compatibility lifecycle tests.
+
+### Claims
+
+M4 proves the frozen spacecraft CSV profile, commanded-path diagnostics, and the million-sample budget on the local CI host. It does not sign or publish binaries, open the repository, or claim flight safety, novelty, or independent external validation.
+
+## M3
+
+### Added
+
 - Static local viewer bundle via `quatopsy view`, with CSP, no remote loads, and report-bound derived geometry.
 - Linked physical `SO(3)`, stereographic `S^3`, timeline, evidence, and repair views keyed by `source_row`.
 - Evidence-preserving downsampling that retains finding endpoints and angle/rate extrema.

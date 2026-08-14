@@ -202,6 +202,7 @@ fn ingest_failure_report(
             time_column: String::new(),
             quaternion_columns: [String::new(), String::new(), String::new(), String::new()],
             angular_velocity_columns: None,
+            commanded_quaternion_columns: None,
         },
         limits: limits_used(limits),
         result,

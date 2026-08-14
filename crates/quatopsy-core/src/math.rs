@@ -113,6 +113,12 @@ pub fn quotient_angle(p: Quaternion, q: Quaternion) -> f64 {
     2.0 * acos(dotted)
 }
 
+/// Covering angle on `S^3`: `2 acos(p · q)` for unit quaternions, without sign invariance.
+pub fn covering_angle(p: Quaternion, q: Quaternion) -> f64 {
+    let dotted = clamp_unit_dot(p.dot(q));
+    2.0 * acos(dotted)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LiftDecision {
     pub lifted: Quaternion,
@@ -153,6 +159,17 @@ pub fn lift_next(prev_lifted: Quaternion, next_unit: Quaternion) -> LiftDecision
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn covering_angle_detects_long_way_to_same_orientation() {
+        let identity = Quaternion::new(1.0, 0.0, 0.0, 0.0);
+        let s = std::f64::consts::FRAC_1_SQRT_2;
+        let short = Quaternion::new(s, 0.0, 0.0, s);
+        let long = short.negate();
+        assert!((quotient_angle(identity, short) - std::f64::consts::FRAC_PI_2).abs() < 1e-12);
+        assert!((quotient_angle(identity, long) - std::f64::consts::FRAC_PI_2).abs() < 1e-12);
+        assert!(covering_angle(identity, long) > covering_angle(identity, short) + 1.0);
+    }
 
     #[test]
     fn identity_rotation_leaves_vector() {
