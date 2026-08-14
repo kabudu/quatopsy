@@ -1,13 +1,13 @@
 //! Bounded UTF-8 CSV and explicit-manifest ingest.
 
 use std::collections::HashMap;
-use std::time::Instant;
 
 use csv::ReaderBuilder;
 use quatopsy_schema::{ComponentOrder, Declarations, MANIFEST_SCHEMA, ManifestDocument, TimeUnit};
 use serde_json::error::Category;
 use thiserror::Error;
 
+use crate::cancel::Cancel;
 use crate::limits::Limits;
 use crate::math::Quaternion;
 
@@ -66,14 +66,23 @@ impl IngestError {
             message: message.into(),
         }
     }
+
+    pub(crate) fn failed_timeout() -> Self {
+        Self::failed("timeout", "analysis exceeded wall-clock limit")
+    }
+
+    pub(crate) fn failed_cancelled() -> Self {
+        Self::failed("cancelled", "analysis was cancelled")
+    }
 }
 
 pub fn ingest_bytes(
     csv_bytes: &[u8],
     manifest_bytes: &[u8],
     limits: Limits,
-    deadline: Instant,
+    cancel: Cancel<'_>,
 ) -> Result<ParsedTrajectory, IngestError> {
+    cancel.check()?;
     if csv_bytes.len() as u64 > limits.max_input_bytes {
         return Err(IngestError::failed(
             "input-byte-limit",
@@ -82,12 +91,6 @@ pub fn ingest_bytes(
                 csv_bytes.len(),
                 limits.max_input_bytes
             ),
-        ));
-    }
-    if Instant::now() > deadline {
-        return Err(IngestError::failed(
-            "timeout",
-            "analysis exceeded wall-clock limit",
         ));
     }
 
@@ -101,7 +104,7 @@ pub fn ingest_bytes(
 
     let manifest = parse_manifest(manifest_bytes)?;
     let declarations = declarations_from_manifest(&manifest)?;
-    let samples = parse_csv(csv_body, &manifest, limits, deadline)?;
+    let samples = parse_csv(csv_body, &manifest, limits, cancel)?;
     if samples.is_empty() {
         return Err(IngestError::refused(
             "empty-input",
@@ -222,7 +225,7 @@ fn parse_csv(
     csv_body: &[u8],
     manifest: &ManifestDocument,
     limits: Limits,
-    deadline: Instant,
+    cancel: Cancel<'_>,
 ) -> Result<Vec<Sample>, IngestError> {
     let mut reader = ReaderBuilder::new()
         .has_headers(true)
@@ -266,12 +269,7 @@ fn parse_csv(
 
     let mut samples = Vec::new();
     for record in reader.records() {
-        if Instant::now() > deadline {
-            return Err(IngestError::failed(
-                "timeout",
-                "analysis exceeded wall-clock limit",
-            ));
-        }
+        cancel.check()?;
         let record = record.map_err(|err| {
             IngestError::failed("csv-record", format!("CSV record could not be read: {err}"))
         })?;

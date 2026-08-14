@@ -18,7 +18,12 @@ pub const RULE_LIFT: &str = "QAT-LIFT-001";
 pub const RULE_SIGN: &str = "QAT-SIGN-001";
 pub const RULE_RATE: &str = "QAT-RATE-001";
 pub const RULE_PI: &str = "QAT-PI-001";
+pub const RULE_REPAIR: &str = "QAT-REPAIR-001";
 pub const RULE_VERSION: &str = "1";
+pub const ALG_SIGN_LIFT: &str = "sign-lift";
+pub const ALG_NORMALISE: &str = "normalise";
+pub const ALG_VERSION: &str = "1";
+pub const REPAIR_MATRIX_ABS_TOLERANCE: f64 = 1.0e-12;
 
 /// Absolute tolerance on `|‖q‖ − 1|` for unit-norm acceptance.
 pub const NORM_ABS_TOLERANCE: f64 = 1.0e-6;
@@ -27,9 +32,15 @@ pub const NEAR_ZERO_NORM: f64 = 1.0e-12;
 /// `|p · q| <= PI_TIE_ABS_DOT` is a non-unique lift tie after unit normalisation.
 pub const PI_TIE_ABS_DOT: f64 = 1.0e-12;
 
-pub fn enabled_rules() -> [&'static str; 6] {
+pub fn enabled_rules() -> [&'static str; 7] {
     [
-        RULE_NORM, RULE_TIME, RULE_LIFT, RULE_SIGN, RULE_RATE, RULE_PI,
+        RULE_NORM,
+        RULE_TIME,
+        RULE_LIFT,
+        RULE_SIGN,
+        RULE_RATE,
+        RULE_PI,
+        RULE_REPAIR,
     ]
 }
 
@@ -250,6 +261,7 @@ pub struct Finding {
     pub evidence: Vec<Evidence>,
     pub summary: String,
     pub reason_code: String,
+    pub repair_disposition: RepairDisposition,
     pub repair_refs: Vec<String>,
 }
 
@@ -263,15 +275,38 @@ pub struct RuleResult {
     pub reason_code: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum RepairDisposition {
+    None,
+    Proposed,
+    Inapplicable,
+    Unsafe,
+}
+
+impl RepairDisposition {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::Proposed => "proposed",
+            Self::Inapplicable => "inapplicable",
+            Self::Unsafe => "unsafe",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Repair {
     pub id: String,
     pub algorithm: String,
     pub algorithm_version: String,
     pub source_analysis_id: String,
+    pub disposition: RepairDisposition,
     pub physical_orientation_equivalent: bool,
     pub affected_rows: Vec<u64>,
     pub preconditions: Vec<String>,
+    pub numeric_tolerance: FiniteF64,
+    pub max_norm_delta: Option<FiniteF64>,
     pub output_digest: Option<String>,
 }
 
@@ -377,7 +412,7 @@ mod tests {
         let canonical = enabled_rules_canonical();
         assert_eq!(
             canonical,
-            "QAT-LIFT-001\nQAT-NORM-001\nQAT-PI-001\nQAT-RATE-001\nQAT-SIGN-001\nQAT-TIME-001"
+            "QAT-LIFT-001\nQAT-NORM-001\nQAT-PI-001\nQAT-RATE-001\nQAT-REPAIR-001\nQAT-SIGN-001\nQAT-TIME-001"
         );
     }
 }

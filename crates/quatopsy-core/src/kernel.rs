@@ -1,14 +1,14 @@
 //! Closed V1 rule registry, lift construction, and fail-closed aggregation.
 
 use std::cmp::Ordering;
-use std::time::Instant;
 
 use quatopsy_schema::{
     Confidence, Evidence, Finding, FindingClass, FiniteF64, NEAR_ZERO_NORM, NORM_ABS_TOLERANCE,
-    RULE_LIFT, RULE_NORM, RULE_PI, RULE_RATE, RULE_SIGN, RULE_TIME, RULE_VERSION, RateSummary,
-    ResultState, RuleResult, RuleState, Severity,
+    RULE_LIFT, RULE_NORM, RULE_PI, RULE_RATE, RULE_REPAIR, RULE_SIGN, RULE_TIME, RULE_VERSION,
+    RateSummary, ResultState, RuleResult, RuleState, Severity,
 };
 
+use crate::cancel::Cancel;
 use crate::ingest::Sample;
 use crate::limits::Limits;
 use crate::math::{Quaternion, lift_next, quotient_angle};
@@ -42,13 +42,18 @@ pub struct Analysis {
     pub message: String,
 }
 
-pub fn evaluate(samples: &[Sample], limits: Limits, deadline: Instant) -> Analysis {
+pub fn evaluate(samples: &[Sample], limits: Limits, cancel: Cancel<'_>) -> Analysis {
     let mut findings: Vec<Finding> = Vec::new();
     let mut conditioning = Vec::new();
     let mut truncated_error = false;
 
-    if Instant::now() > deadline {
-        return incomplete("timeout", "analysis exceeded wall-clock limit");
+    if cancel.check().is_err() {
+        let reason = if cancel.is_cancelled() {
+            "cancelled"
+        } else {
+            "timeout"
+        };
+        return incomplete(reason, "analysis did not complete");
     }
 
     let prepared: Vec<PreparedSample> = samples.iter().cloned().map(prepare_sample).collect();
@@ -140,6 +145,7 @@ fn incomplete(reason_code: &'static str, message: &str) -> Analysis {
             refused(RULE_SIGN),
             refused(RULE_RATE),
             refused(RULE_PI),
+            refused(RULE_REPAIR),
         ],
         findings: Vec::new(),
         rate_summary: None,
@@ -629,6 +635,7 @@ fn pair_finding(
         evidence: evidence_values,
         summary: summary.to_string(),
         reason_code: reason.to_string(),
+        repair_disposition: quatopsy_schema::RepairDisposition::None,
         repair_refs: Vec::new(),
     }
 }

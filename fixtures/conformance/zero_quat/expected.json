@@ -8,8 +8,20 @@
     "QAT-LIFT-001": "refused",
     "QAT-SIGN-001": "refused",
     "QAT-RATE-001": "refused",
-    "QAT-PI-001": "refused"
+    "QAT-PI-001": "refused",
+    "QAT-REPAIR-001": "pass"
   },
-  "finding_reasons": ["zero-sample"],
-  "finding_rows": [[3, 3]]
+  "finding_reasons": [
+    "zero-sample"
+  ],
+  "finding_rows": [
+    [
+      3,
+      3
+    ]
+  ],
+  "repairs": [],
+  "finding_dispositions": [
+    "unsafe"
+  ]
 }

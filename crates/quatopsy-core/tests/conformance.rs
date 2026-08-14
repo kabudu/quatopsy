@@ -20,6 +20,16 @@ struct Expected {
     expected_max_angle_rad: Option<f64>,
     #[serde(default)]
     expected_max_rate_rad_s: Option<f64>,
+    #[serde(default)]
+    repairs: Vec<ExpectedRepair>,
+    #[serde(default)]
+    finding_dispositions: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ExpectedRepair {
+    algorithm: String,
+    disposition: String,
 }
 
 fn workspace_root() -> PathBuf {
@@ -42,6 +52,7 @@ fn run_case(name: &str) {
         manifest_bytes: &manifest,
         engine_version: "0.1.0",
         limits: Limits::defaults(),
+        cancelled: None,
     });
     assert_eq!(
         report.result.as_str(),
@@ -81,6 +92,28 @@ fn run_case(name: &str) {
             .collect();
         assert_eq!(rows, expected.finding_rows, "case {name} finding rows");
     }
+    if !expected.finding_dispositions.is_empty() {
+        let got: Vec<_> = report
+            .findings
+            .iter()
+            .map(|finding| finding.repair_disposition.as_str().to_string())
+            .collect();
+        assert_eq!(
+            got, expected.finding_dispositions,
+            "case {name} dispositions"
+        );
+    }
+    let got_repairs: Vec<_> = report
+        .repairs
+        .iter()
+        .map(|repair| (repair.algorithm.as_str(), repair.disposition.as_str()))
+        .collect();
+    let want_repairs: Vec<_> = expected
+        .repairs
+        .iter()
+        .map(|repair| (repair.algorithm.as_str(), repair.disposition.as_str()))
+        .collect();
+    assert_eq!(got_repairs, want_repairs, "case {name} repairs");
     if let Some(count) = expected.rate_interval_count {
         let summary = report
             .diagnostics
@@ -165,6 +198,7 @@ fn missing_manifest_field_is_refused() {
         manifest_bytes: manifest,
         engine_version: "0.1.0",
         limits: Limits::defaults(),
+        cancelled: None,
     });
     assert_eq!(report.result, ResultState::Refused);
     assert_ne!(report.result, ResultState::Pass);
@@ -180,12 +214,14 @@ fn analysis_id_is_stable_and_input_sensitive() {
         manifest_bytes: &manifest,
         engine_version: "0.1.0",
         limits: Limits::defaults(),
+        cancelled: None,
     });
     let b = analyze(AnalyzeRequest {
         csv_bytes: &csv,
         manifest_bytes: &manifest,
         engine_version: "0.1.0",
         limits: Limits::defaults(),
+        cancelled: None,
     });
     assert_eq!(a.analysis_id, b.analysis_id);
     let mut csv2 = csv.clone();
@@ -195,6 +231,7 @@ fn analysis_id_is_stable_and_input_sensitive() {
         manifest_bytes: &manifest,
         engine_version: "0.1.0",
         limits: Limits::defaults(),
+        cancelled: None,
     });
     assert_ne!(a.analysis_id, c.analysis_id);
 }

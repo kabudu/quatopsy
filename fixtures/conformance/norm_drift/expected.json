@@ -8,8 +8,25 @@
     "QAT-LIFT-001": "pass",
     "QAT-SIGN-001": "pass",
     "QAT-RATE-001": "pass",
-    "QAT-PI-001": "pass"
+    "QAT-PI-001": "pass",
+    "QAT-REPAIR-001": "pass"
   },
-  "finding_reasons": ["off-unit-sample"],
-  "finding_rows": [[3, 3]]
+  "finding_reasons": [
+    "off-unit-sample"
+  ],
+  "finding_rows": [
+    [
+      3,
+      3
+    ]
+  ],
+  "repairs": [
+    {
+      "algorithm": "normalise",
+      "disposition": "proposed"
+    }
+  ],
+  "finding_dispositions": [
+    "proposed"
+  ]
 }

@@ -12,5 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { workspace = true }
+ctrlc = { workspace = true }
 quatopsy-core = { workspace = true }
 quatopsy-schema = { workspace = true }
+serde_json = { workspace = true }

@@ -8,9 +8,12 @@
     "QAT-LIFT-001": "pass",
     "QAT-SIGN-001": "pass",
     "QAT-RATE-001": "pass",
-    "QAT-PI-001": "pass"
+    "QAT-PI-001": "pass",
+    "QAT-REPAIR-001": "pass"
   },
   "finding_reasons": [],
   "expected_max_angle_rad": 1.5707963267948966,
-  "expected_max_rate_rad_s": 1.5707963267948966
+  "expected_max_rate_rad_s": 1.5707963267948966,
+  "repairs": [],
+  "finding_dispositions": []
 }

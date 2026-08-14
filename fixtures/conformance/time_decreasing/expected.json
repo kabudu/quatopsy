@@ -8,8 +8,20 @@
     "QAT-LIFT-001": "pass",
     "QAT-SIGN-001": "pass",
     "QAT-RATE-001": "refused",
-    "QAT-PI-001": "pass"
+    "QAT-PI-001": "pass",
+    "QAT-REPAIR-001": "pass"
   },
-  "finding_reasons": ["decreasing-timestamp"],
-  "finding_rows": [[3, 4]]
+  "finding_reasons": [
+    "decreasing-timestamp"
+  ],
+  "finding_rows": [
+    [
+      3,
+      4
+    ]
+  ],
+  "repairs": [],
+  "finding_dispositions": [
+    "inapplicable"
+  ]
 }
