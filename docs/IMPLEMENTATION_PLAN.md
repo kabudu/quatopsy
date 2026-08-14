@@ -1,0 +1,80 @@
+# Implementation plan
+
+## Delivery policy
+
+Implementation begins only after explicit authorization. Each milestone uses a scoped `codex/` feature branch, the repository's authoritative local CI, a reviewed pull request, squash merge, default-branch synchronisation, and branch cleanup. Checked boxes require behavioural evidence, not documentation alone.
+
+## M0: Planning and claim boundary
+
+- [x] Define the first vertical, candidate mechanism, non-goals, and result semantics in the planning corpus.
+- [x] Record point-in-time prior-art, product, package-name, and patent-surface searches.
+- [x] Define the optional status of independent validation and separate claims that depend on it.
+- [x] Complete the initial Lazarus engineering review and bootstrap validation.
+
+Exit evidence: planning commit on the private default branch. This milestone does not implement product behaviour.
+
+## M1: Conformance kernel and protocol
+
+- [ ] Persist the implementation workflow in `AGENTS.md` and create executable `scripts/ci-local.sh` before other implementation is counted complete.
+- [ ] Create the latest stable Rust workspace with library, schema, and CLI crates.
+- [ ] Implement canonical manifest and streaming CSV validation with bounded inputs.
+- [ ] Implement quaternion primitives, quotient distance, deterministic lift, and near-pi conditioning metadata.
+- [ ] Implement rule registry, fail-closed aggregation, canonical report schema, and exit codes.
+- [ ] Build independently encoded matrix and high-precision conformance oracles.
+- [ ] Verify deterministic reports across macOS and Linux-like clean environments where locally available.
+
+Exit: hand-audited fixtures prove `QAT-NORM-001`, `QAT-TIME-001`, `QAT-LIFT-001`, `QAT-SIGN-001`, `QAT-RATE-001`, and `QAT-PI-001`; local CI passes.
+
+## M2: Repairs and reproducible counterexamples
+
+- [ ] Implement sign-lift and normalisation repair candidates without source overwrite.
+- [ ] Prove sign repairs preserve the independent rotation-matrix oracle within tolerance.
+- [ ] Emit minimal reproducible fixture slices with source provenance and privacy controls.
+- [ ] Add atomic output, no-clobber defaults, cancellation cleanup, and clean mode.
+- [ ] Test hostile CSV, path, Unicode, numeric, and resource-exhaustion inputs.
+
+Exit: every initial defect fixture has a deterministic finding, evidence interval, repair disposition, and regression case.
+
+## M3: Local visual debugger
+
+- [ ] Build the static browser viewer over the canonical report without redefining verdicts.
+- [ ] Synchronise physical 3D, projected `S^3`, timeline, evidence, and repair views by sample identity.
+- [ ] Label projection artefacts and distinguish raw, derived, and proposed data.
+- [ ] Meet keyboard, screen-reader, contrast, reduced-motion, colour-state, and bounded-rendering requirements.
+- [ ] Validate large-report downsampling retains findings and extrema.
+
+Exit: public-workflow E2E tests reproduce all five initial defect stories and accessibility checks pass.
+
+## M4: Spacecraft qualification and packaging
+
+- [ ] Define and freeze the supported spacecraft CSV profile with representative synthetic and public fixtures.
+- [ ] Add optional commanded-path comparison for bounded unwinding diagnostics.
+- [ ] Benchmark one million samples against the documented performance budget.
+- [ ] Package reproducible signed or checksummed binaries only when release infrastructure and authorization exist.
+- [ ] Complete install, upgrade, downgrade, rollback, removal, and report-compatibility tests.
+
+Exit: supported scope passes adversarial, portability, lifecycle, performance, and documentation gates.
+
+## M5: Product release gate
+
+- [ ] Resolve every stop-ship correctness, security, privacy, compatibility, and legal/name risk.
+- [ ] Freeze evidence-bounded public claims and curated release presentation.
+- [ ] Produce and validate the full brand system only if productisation is approved.
+- [ ] Render release notes at desktop and narrow widths and verify the live release after publication.
+- [ ] Publish only with explicit release authorization and documented credentials path.
+
+Exit: release policy passes. External independent validation is welcome but is not required for this exit; unsupported independent-validation claims remain prohibited.
+
+## Optional post-release evidence track
+
+- [ ] Invite independent reproduction or expert challenge and record positive and negative results.
+- [ ] Conduct practitioner interviews or pilots if evidence of demand or workflow value is desired.
+- [ ] Measure debugging-time, false-finding, and adoption outcomes with a pre-registered protocol.
+- [ ] Explore ecosystem priorities using evidence rather than assumption.
+
+This track is optional and does not block implementation, product completion, publication, or release.
+
+## Separate future project
+
+- [ ] Explore the quaternion learning laboratory under a distinct mandate, name audit, claim boundary, and repository.
+
