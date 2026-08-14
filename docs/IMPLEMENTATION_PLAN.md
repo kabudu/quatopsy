@@ -27,11 +27,11 @@ Exit: hand-audited fixtures prove `QAT-NORM-001`, `QAT-TIME-001`, `QAT-LIFT-001`
 
 ## M2: Repairs and reproducible counterexamples
 
-- [ ] Implement sign-lift and normalisation repair candidates without source overwrite.
-- [ ] Prove sign repairs preserve the independent rotation-matrix oracle within tolerance.
-- [ ] Emit minimal reproducible fixture slices with source provenance and privacy controls.
-- [ ] Add atomic output, no-clobber defaults, cancellation cleanup, and clean mode.
-- [ ] Test hostile CSV, path, Unicode, numeric, and resource-exhaustion inputs.
+- [x] Implement sign-lift and normalisation repair candidates without source overwrite.
+- [x] Prove sign repairs preserve the independent rotation-matrix oracle within tolerance.
+- [x] Emit minimal reproducible fixture slices with source provenance and privacy controls.
+- [x] Add atomic output, no-clobber defaults, cancellation cleanup, and clean mode.
+- [x] Test hostile CSV, path, Unicode, numeric, and resource-exhaustion inputs.
 
 Exit: every initial defect fixture has a deterministic finding, evidence interval, repair disposition, and regression case.
 

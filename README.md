@@ -10,7 +10,7 @@ Quatopsy does not claim to invent quaternions, sign canonicalisation, shortest-p
 
 ## Status
 
-M1 conformance kernel is implemented: Rust workspace, closed V1 rule registry, canonical `quatopsy.report/1` JSON, and `./scripts/ci-local.sh`. No safety qualification, production support, repair application, visual debugger, or independent external validation is claimed.
+M2 adds repair candidates and reproducible slices on top of the M1 kernel. No safety qualification, visual debugger, or independent external validation is claimed.
 
 The learning-laboratory concept is a separate future project and is not part of Quatopsy.
 
@@ -22,6 +22,13 @@ cargo run --bin quatopsy -- analyze \
   --input fixtures/conformance/clean_slew/input.csv \
   --manifest fixtures/conformance/clean_slew/manifest.json \
   --report /tmp/quatopsy-report.json
+
+cargo run --bin quatopsy -- repair \
+  --report /tmp/quatopsy-report.json \
+  --input fixtures/conformance/sign_alternating/input.csv \
+  --manifest fixtures/conformance/sign_alternating/manifest.json \
+  --repair-id repair:sign-lift:1 \
+  --output /tmp/quatopsy-repaired.csv
 ```
 
 Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.

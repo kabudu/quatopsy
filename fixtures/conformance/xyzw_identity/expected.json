@@ -8,7 +8,10 @@
     "QAT-LIFT-001": "pass",
     "QAT-SIGN-001": "pass",
     "QAT-RATE-001": "pass",
-    "QAT-PI-001": "pass"
+    "QAT-PI-001": "pass",
+    "QAT-REPAIR-001": "pass"
   },
-  "finding_reasons": []
+  "finding_reasons": [],
+  "repairs": [],
+  "finding_dispositions": []
 }

@@ -1,6 +1,8 @@
 //! Resource limits for ingest and analysis. Compiled safe maxima cannot be
 //! exceeded by CLI flags.
 
+use quatopsy_schema::LimitsUsed;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Limits {
     pub max_input_bytes: u64,
@@ -28,6 +30,18 @@ impl Limits {
             max_findings_per_rule: SAFE_MAX_FINDINGS_PER_RULE,
             timeout_ms: SAFE_TIMEOUT_MS,
         }
+    }
+
+    pub fn from_report(used: &LimitsUsed) -> Self {
+        Self {
+            max_input_bytes: used.max_input_bytes,
+            max_samples: used.max_samples,
+            max_field_bytes: used.max_field_bytes,
+            max_columns: used.max_columns,
+            max_findings_per_rule: used.max_findings_per_rule,
+            timeout_ms: used.timeout_ms,
+        }
+        .clamp_to_safe()
     }
 
     pub fn clamp_to_safe(mut self) -> Self {

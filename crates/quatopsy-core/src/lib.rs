@@ -1,5 +1,6 @@
 //! Public analysis entry point.
 
+use std::sync::atomic::AtomicBool;
 use std::time::{Duration, Instant};
 
 use quatopsy_schema::{
@@ -7,31 +8,41 @@ use quatopsy_schema::{
     RULE_SET_VERSION, Report, ResultState, RuleState,
 };
 
+use crate::cancel::Cancel;
 use crate::identity::{analysis_id, sha256_hex};
 use crate::ingest::{IngestError, ingest_bytes};
 use crate::kernel::{Analysis, evaluate};
 use crate::limits::Limits;
+use crate::repair::attach_repairs;
 
+pub mod cancel;
 pub mod identity;
 pub mod ingest;
 pub mod kernel;
 pub mod limits;
 pub mod math;
+pub mod repair;
+pub mod repro;
 
 pub use limits::Limits as AnalysisLimits;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub struct AnalyzeRequest<'a> {
     pub csv_bytes: &'a [u8],
     pub manifest_bytes: &'a [u8],
     pub engine_version: &'a str,
     pub limits: Limits,
+    pub cancelled: Option<&'a AtomicBool>,
 }
 
 pub fn analyze(request: AnalyzeRequest<'_>) -> Report {
     let limits = request.limits.clamp_to_safe();
     let started = Instant::now();
     let deadline = started + Duration::from_millis(limits.timeout_ms.max(1));
+    let cancel = Cancel {
+        deadline,
+        flag: request.cancelled,
+    };
     let id = analysis_id(
         request.csv_bytes,
         request.manifest_bytes,
@@ -41,9 +52,32 @@ pub fn analyze(request: AnalyzeRequest<'_>) -> Report {
     let csv_sha256 = sha256_hex(request.csv_bytes);
     let manifest_sha256 = sha256_hex(request.manifest_bytes);
 
-    match ingest_bytes(request.csv_bytes, request.manifest_bytes, limits, deadline) {
+    match ingest_bytes(request.csv_bytes, request.manifest_bytes, limits, cancel) {
         Ok(parsed) => {
-            let analysis = evaluate(&parsed.samples, limits, deadline);
+            let mut analysis = evaluate(&parsed.samples, limits, cancel);
+            let mut repairs = Vec::new();
+            if analysis.complete && !cancel.is_cancelled() && !cancel.timed_out() {
+                let attached = attach_repairs(&parsed.samples, &mut analysis.findings, &id);
+                repairs = attached.0;
+                analysis.rule_results.push(attached.1);
+            } else if !analysis
+                .rule_results
+                .iter()
+                .any(|item| item.rule == quatopsy_schema::RULE_REPAIR)
+            {
+                analysis.rule_results.push(quatopsy_schema::RuleResult {
+                    rule: quatopsy_schema::RULE_REPAIR.to_string(),
+                    version: quatopsy_schema::RULE_VERSION.to_string(),
+                    state: quatopsy_schema::RuleState::Error,
+                    finding_count: 0,
+                    truncated: false,
+                    reason_code: analysis.reason_code.clone(),
+                });
+            }
+            analysis.result = quatopsy_schema::aggregate_result(
+                analysis.rule_results.iter().map(|item| item.state),
+            );
+            analysis.reason_code = analysis.result.as_str().to_string();
             build_report(
                 id,
                 request.engine_version,
@@ -54,6 +88,7 @@ pub fn analyze(request: AnalyzeRequest<'_>) -> Report {
                 parsed.declarations,
                 limits,
                 analysis,
+                repairs,
                 parsed.bom_stripped,
             )
         }
@@ -80,6 +115,7 @@ fn build_report(
     declarations: quatopsy_schema::Declarations,
     limits: Limits,
     analysis: Analysis,
+    repairs: Vec<quatopsy_schema::Repair>,
     bom_stripped: bool,
 ) -> Report {
     Report {
@@ -102,7 +138,7 @@ fn build_report(
         result: analysis.result,
         rule_results: analysis.rule_results,
         findings: analysis.findings,
-        repairs: Vec::new(),
+        repairs,
         diagnostics: Diagnostics {
             complete: analysis.complete,
             bom_stripped,

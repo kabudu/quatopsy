@@ -33,7 +33,7 @@ The proposed claim is bounded to supported rule conformance, not safe flight. Th
 
 ## Residual risks
 
-Novelty remains unestablished; the patent search is preliminary; legal name/mark clearance is absent; numeric tolerances and cross-platform determinism are unverified; the Rust architecture is planned but not implemented; performance targets are unmeasured; and user comprehension of representation versus physical motion is untested. These risks do not invalidate the bootstrap, but they constrain claims and own milestone gates.
+Novelty remains unestablished; the patent search is preliminary; legal name/mark clearance is absent; performance targets are unmeasured; and user comprehension of representation versus physical motion is untested pending the viewer. Kernel numeric behaviour is locked by `quatopsy.numeric/1` and fixture oracles, not by an independent external audit. These risks constrain claims and own later milestone gates.
 
 ## Documents tailored
 
@@ -41,5 +41,5 @@ Novelty remains unestablished; the patent search is preliminary; legal name/mark
 
 ## Completion statement
 
-M1 implements the conformance kernel, report protocol, closed V1 rules, independent oracles, and local CI. Later milestones still own repairs, the viewer, spacecraft profile freeze, packaging, and product release. No safety result or external validation is complete.
+M2 implements sign-lift and normalisation repair candidates, digest-bound apply, privacy-preserving repro slices, cancellation cleanup, and hostile-input tests. The viewer, spacecraft profile freeze, packaging, and product release remain later milestones.
 

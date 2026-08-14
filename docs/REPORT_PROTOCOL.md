@@ -14,7 +14,7 @@ Each finding includes a stable identifier, rule identifier and version, class, s
 
 ## Repairs
 
-Each repair has an algorithm identifier, source analysis ID, preconditions, exact affected rows, semantic declaration, output digest after generation, and whether physical rotations are expected to remain equivalent. Repair application is a separate explicit CLI action.
+Each repair has an algorithm identifier, source analysis ID, disposition (`proposed`, `inapplicable`, `unsafe`, or `none`), preconditions, exact affected rows, semantic declaration, numeric tolerance, optional output digest after generation, and whether physical rotations are expected to remain equivalent. Repair application is a separate explicit CLI action (`quatopsy repair`) and never overwrites the source CSV.
 
 ## Exit codes
 
