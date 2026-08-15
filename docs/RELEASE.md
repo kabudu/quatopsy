@@ -2,9 +2,9 @@
 
 ## Current state
 
-Quatopsy has an M4 spacecraft CSV profile, local CLI, viewer, and checksummed local package script. It has no product release, hosted CI, signed binaries, or production support. The private repository uses `./scripts/ci-local.sh` as the authoritative local CI gate for every milestone and pull request.
+Quatopsy `0.1.0` is a private research release: local CLI, viewer, frozen spacecraft CSV profile, checksummed local packaging, Apache-2.0 licence, and curated GitHub Release notes. It has no public repository visibility, hosted CI, signed binaries, crates.io publication, website, or production support. The private repository uses `./scripts/ci-local.sh` as the authoritative local CI gate for every milestone and pull request.
 
-Hosted CI is disabled by policy while the repository is private. Adding or enabling hosted CI requires explicit user approval at the documented public-opening or product-release gate. Absent hosted checks are policy-compliant, not passing hosted CI.
+Hosted CI is disabled by policy while the repository is private. Adding or enabling hosted CI requires explicit user approval at a later public-opening gate. Absent hosted checks are policy-compliant, not passing hosted CI.
 
 ## Stop-ship gates
 
@@ -29,7 +29,7 @@ Implementation increments begin on an updated clean `master`, use scoped `codex/
 
 ## Curated release notes
 
-Versioned curated release notes will live under `.github/release-notes/vX.Y.Z.md` once a real release is authorised. Release automation must fail closed if the matching curated title or body is missing, malformed, mismatched to the tag, or contains prohibited claims. It must never fall back to a raw changelog body.
+Versioned curated release notes live under `.github/release-notes/vX.Y.Z.md`. `scripts/check-release-notes.py` fails closed if the matching curated title or body is missing, malformed, mismatched to the workspace version, hard-wrapped, or contains prohibited claims. `scripts/publish-github-release.sh` refuses unless `QUATOPSY_RELEASE_AUTHORIZE=1` and the GitHub repository is still private. It never falls back to a raw changelog body and never publishes crates.
 
 The release title format is `Quatopsy vX.Y.Z: <short human theme>`. The body contains one opening summary, three to five material changes, explicit claim or compatibility boundaries, one primary install path, and links to detailed evidence and the changelog.
 
@@ -43,9 +43,13 @@ Before publication, create a rendered preview of the exact title and body at des
 
 Local CI and release automation scan all tracked text and release metadata and reject Unicode U+2014. Canonical release notes are also checked for hard wrapping and required content.
 
+## Credentials path
+
+Release credentials are the owner's local GitHub CLI authentication. No token, signing key, or crates.io credential is stored in the repository. `scripts/publish-github-release.sh` is the only GitHub Release entry point and requires `QUATOPSY_RELEASE_AUTHORIZE=1`. crates.io remains blocked by workspace `publish = false`.
+
 ## Visibility and publication
 
-Repository visibility remains private until the owner explicitly approves public opening. Public repository visibility, hosted CI, packages, binaries, a GitHub Release, website deployment, and production support are distinct gates and authorisations. No release credential is stored in the repository.
+Repository visibility remains private until the owner explicitly approves public opening. Public repository visibility, hosted CI, crates.io, signed binaries, website deployment, and production support are distinct gates and authorisations. A private GitHub Release of checksummed local artefacts is authorised only through `scripts/publish-github-release.sh`. No release credential is stored in the repository.
 
 ## Brand gate
 

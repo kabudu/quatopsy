@@ -4,4 +4,4 @@ The asserted budget is 1,000,000 samples analysed in under 10 seconds with peak 
 
 The workload is a synthetic increasing-time identity series generated in process. It exercises ingest, the closed rule registry, and report assembly at the documented sample count. It is not a substitute for a named laboratory reference machine or for third-party flight telemetry.
 
-Local checksum packaging is `scripts/package-local.sh`. It copies the release CLI and writes `SHA256SUMS`. It does not sign artefacts, publish packages, or create tags.
+Local checksum packaging is `scripts/package-local.sh`. It copies the release CLI and writes `SHA256SUMS` plus `PROVENANCE.txt`. It does not sign artefacts or publish crates. GitHub Release publication is a separate fail-closed script.

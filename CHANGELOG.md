@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.1.0 - 2026-08-15
+
+### Added
+
+- Apache-2.0 licence, frozen claims, stop-ship audit, curated `v0.1.0` notes, and fail-closed GitHub Release publishing.
+- Supply-chain license allowlist, package provenance, and desktop/narrow release-note preview.
+
+### Claims
+
+M5 completes the private research release policy for `0.1.0`. It does not open the repository, publish crates, sign binaries, enable hosted CI, ship a full brand system, or claim flight safety, novelty, or independent external validation.
+
+## M4
+
 ### Added
 
 - Frozen spacecraft CSV profile `quatopsy.spacecraft-csv/1` with synthetic representative fixtures.

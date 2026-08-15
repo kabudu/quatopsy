@@ -57,13 +57,13 @@ Exit: supported scope passes adversarial, portability, lifecycle, performance, a
 
 ## M5: Product release gate
 
-- [ ] Resolve every stop-ship correctness, security, privacy, compatibility, and legal/name risk.
-- [ ] Freeze evidence-bounded public claims and curated release presentation.
-- [ ] Produce and validate the full brand system only if productisation is approved.
-- [ ] Render release notes at desktop and narrow widths and verify the live release after publication.
-- [ ] Publish only with explicit release authorization and documented credentials path.
+- [x] Resolve every stop-ship correctness, security, privacy, compatibility, and legal/name risk.
+- [x] Freeze evidence-bounded public claims and curated release presentation.
+- [x] Produce and validate the full brand system only if productisation is approved.
+- [x] Render release notes at desktop and narrow widths and verify the live release after publication.
+- [x] Publish only with explicit release authorization and documented credentials path.
 
-Exit: release policy passes. External independent validation is welcome but is not required for this exit; unsupported independent-validation claims remain prohibited.
+Exit: release policy passes for a private `0.1.0` GitHub Release. External independent validation is welcome but is not required for this exit; unsupported independent-validation claims remain prohibited. Public opening, hosted CI, crates.io, signed binaries, and full brand productisation remain distinct unauthorised gates.
 
 ## Optional post-release evidence track
 
