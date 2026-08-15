@@ -10,7 +10,7 @@ Quatopsy does not claim to invent quaternions, sign canonicalisation, shortest-p
 
 ## Status
 
-M4 freezes the spacecraft CSV profile, adds commanded-path comparison, and asserts the million-sample budget locally. No safety qualification, signed publication, or independent external validation is claimed.
+M5 is a private `0.1.0` research release with frozen claims and checksummed local artefacts. No safety qualification, public opening, signed publication, crates.io package, hosted CI, full brand system, or independent external validation is claimed.
 
 The learning-laboratory concept is a separate future project and is not part of Quatopsy.
 
@@ -41,6 +41,8 @@ Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 
 ## Documentation
 
+- [Frozen claims](docs/CLAIMS.md)
+- [Release gate audit](docs/RELEASE_GATE.md)
 - [Product specification](docs/PRODUCT_SPECIFICATION.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Soundness case](docs/SOUNDNESS_CASE.md)

@@ -29,7 +29,7 @@ Mutation tests alter each rule comparison, sign branch, aggregator precedence, t
 
 ## Adoption lifecycle
 
-Test advisory output, selective enforcement, expiring overrides, brownfield baselines, monorepo units, clean analysis, version upgrade, supported downgrade, rollback, cache removal, and complete uninstall. Adapters are tested as conversion lifecycles with canonical provenance, not as alternative rule engines.
+Test install, upgrade, supported downgrade, rollback, report compatibility, clean analysis, and complete uninstall. `INT-3` policy overrides are deferred from V1. Adapters, when later added, are tested as conversion lifecycles with canonical provenance, not as alternative rule engines.
 
 ## Privacy sinks
 

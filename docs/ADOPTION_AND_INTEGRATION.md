@@ -34,7 +34,9 @@ Adapters produce the canonical CSV and manifest plus provenance. They cannot ass
 
 The CLI accepts explicit file lists and emits one report per analysis unit. Monorepos define units in versioned configuration with bounded parallelism. Forks and offline environments work after dependency bootstrap. Local and CI runs use identical engine, rule, limit, and numeric profiles.
 
-Hosted CI is disabled while the repository is private. Repository-owned local CI becomes authoritative once implementation begins. A later public-opening or release gate requires explicit user approval before hosted CI is added.
+Hosted CI is disabled while the repository is private. Repository-owned local CI is authoritative. Public opening remains a distinct gate and is not authorised by the private `0.1.0` GitHub Release.
+
+`INT-3` adoption modes (advisory, selective, required, scoped overrides) are deferred from V1. Operators may treat exit codes as advisory or required in their own scripts. Quatopsy does not ship an override or baseline engine.
 
 ## Compatibility and identity
 

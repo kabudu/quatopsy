@@ -128,12 +128,27 @@ cargo test --release --locked -p quatopsy-core --test million -- --ignored --noc
 log "local checksum package"
 bash "$root/scripts/package-local.sh" "$tmp/dist"
 "$tmp/dist/quatopsy" --version >/dev/null
-python3 - "$tmp/dist/SHA256SUMS" <<'PY'
+python3 - "$tmp/dist/SHA256SUMS" "$tmp/dist/PROVENANCE.txt" <<'PY'
 from pathlib import Path
 import sys
 text = Path(sys.argv[1]).read_text(encoding="utf-8").strip()
 if "quatopsy" not in text or len(text.split()[0]) != 64:
     raise SystemExit(f"invalid checksum file: {text!r}")
+prov = Path(sys.argv[2]).read_text(encoding="utf-8")
+if "Cargo.lock:" not in prov or "rustc:" not in prov:
+    raise SystemExit(f"invalid provenance file: {prov!r}")
 PY
+
+log "supply-chain licenses"
+python3 "$root/scripts/check-supply-chain.py"
+
+log "curated release notes"
+python3 "$root/scripts/check-release-notes.py"
+bash "$root/scripts/preview-release-notes.sh" "$tmp/release-notes-preview.html"
+
+log "publish script remains fail-closed"
+if QUATOPSY_RELEASE_AUTHORIZE= bash "$root/scripts/publish-github-release.sh"; then
+  fail "publish-github-release.sh must refuse without authorization"
+fi
 
 log "passed"

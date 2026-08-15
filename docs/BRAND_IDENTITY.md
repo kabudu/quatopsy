@@ -2,7 +2,7 @@
 
 ## Productisation state
 
-Quatopsy currently has a restrained research identity only. Full visual production is deferred until the candidate contribution survives internal matched evaluation, the supported product profile and audience are stable, the owner approves productisation, and legal review finds a viable name and mark path. This deferral does not block software implementation or a claim-bounded release.
+Quatopsy currently has a restrained research identity only. Full visual production remains deferred: productisation is not approved, and legal review has not cleared a public name and mark path. This deferral does not block the private `0.1.0` research release.
 
 ## Name and positioning
 
