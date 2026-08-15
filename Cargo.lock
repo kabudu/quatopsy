@@ -296,13 +296,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "quatopsy-adapt"
+version = "0.1.0"
+dependencies = [
+ "csv",
+ "quatopsy-schema",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+]
+
+[[package]]
 name = "quatopsy-cli"
 version = "0.1.0"
 dependencies = [
  "clap",
  "ctrlc",
+ "quatopsy-adapt",
  "quatopsy-core",
  "quatopsy-schema",
+ "serde",
  "serde_json",
 ]
 

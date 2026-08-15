@@ -6,20 +6,21 @@ Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research reposito
 
 - Quatopsy is a local-first, advisory quaternion trajectory linter plus a non-authoritative static viewer.
 - For declared `quatopsy.manifest/1` inputs and enabled V1 rules, reports follow `quatopsy.report/1` and the deterministic numeric profile `quatopsy.numeric/1`.
-- Supported rules are `QAT-NORM-001`, `QAT-TIME-001`, `QAT-LIFT-001`, `QAT-SIGN-001`, `QAT-RATE-001`, `QAT-PI-001`, `QAT-REPAIR-001`, and `QAT-UNWIND-001` when commanded columns are declared.
+- Supported rules are `QAT-NORM-001`, `QAT-TIME-001`, `QAT-LIFT-001`, `QAT-SIGN-001`, `QAT-RATE-001`, `QAT-PI-001`, `QAT-REPAIR-001`, `QAT-UNWIND-001` when commanded columns are declared, `QAT-CONV-001` when rotation-matrix columns are declared, and `QAT-OMEGA-001` when angular-velocity columns are declared.
 - Sign-lift repair candidates preserve represented orientation under the independent rotation-matrix oracle used in tests.
 - One million synthetic identity samples meet the documented time and RSS budget on the local CI host.
 - Local checksum packaging is available via `scripts/package-local.sh`.
+- `quatopsy adapt` converts IDS Jason-1 ASCII, ROS JSON, and TUBIN star-tracker CSV into canonical CSV plus manifest. Adapters never assign report `result` values.
+- `--policy advisory|selective|required` and `--override-file` change process exit only.
 
 ## Required non-claims
 
-Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, production-ready, complete, optimal, or independently validated. Do not state that a `pass` result is flight approval, actuator permission, or energy optimality. Do not state that commanded-path findings measure control effort or mission risk. Do not state that the candidate name is a cleared trademark.
+Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, production-ready, complete, optimal, or independently validated. Do not state that a `pass` result is flight approval, actuator permission, or energy optimality. Do not state that commanded-path findings measure control effort or mission risk. Do not state that the candidate name is a cleared trademark. Do not state that the TUBIN excerpt is a mission reconstruction or that adapters certify source conventions.
 
 ## Out of V1 supported scope
 
-- `QAT-CONV-001` remains limited: conventions are declared, not inferred, and automatic convention repair is refused.
-- Adapters (ROS, MCAP, SPICE, and similar) are outside the semantic core (`INT-2`).
-- Advisory, selective, and required adoption-policy engines with scoped overrides are not shipped (`INT-3`). Exit codes remain the only enforcement hook.
+- Automatic convention inference and automatic convention repair remain refused.
+- MCAP and SPICE kernel adapters are not shipped.
 - Hosted CI, crates.io publication, signed binaries, public repository visibility, websites, and production support remain distinct unauthorised gates.
 - Full visual brand assets are absent because productisation is not approved.
 

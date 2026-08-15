@@ -1,0 +1,20 @@
+{
+  "audit": "CSV is xyzw identity declared as wxyz. Redundant I matrix must yield component-order-mismatch.",
+  "result": "findings",
+  "rules": {
+    "QAT-NORM-001": "pass",
+    "QAT-TIME-001": "pass",
+    "QAT-LIFT-001": "pass",
+    "QAT-SIGN-001": "pass",
+    "QAT-RATE-001": "pass",
+    "QAT-PI-001": "pass",
+    "QAT-REPAIR-001": "pass",
+    "QAT-UNWIND-001": "pass",
+    "QAT-CONV-001": "finding",
+    "QAT-OMEGA-001": "pass"
+  },
+  "finding_reasons": [
+    "component-order-mismatch",
+    "component-order-mismatch"
+  ]
+}

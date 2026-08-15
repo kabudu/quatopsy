@@ -29,15 +29,15 @@ Mutation tests alter each rule comparison, sign branch, aggregator precedence, t
 
 ## Adoption lifecycle
 
-Test install, upgrade, supported downgrade, rollback, report compatibility, clean analysis, and complete uninstall. `INT-3` policy overrides are deferred from V1. Adapters, when later added, are tested as conversion lifecycles with canonical provenance, not as alternative rule engines.
+Test install, upgrade, supported downgrade, rollback, report compatibility, clean analysis, and complete uninstall. `INT-3` policy modes and expiring overrides are covered by CLI lifecycle tests. Adapters are tested as conversion lifecycles with canonical provenance, then analysed by the core; they are not alternative rule engines.
 
 ## Privacy sinks
 
-Capture stdout, stderr, reports, logs, crash diagnostics, temporary files, browser storage, and network activity. Default operation must emit no sample values to logs beyond bounded evidence in the user-requested report and must make no network requests.
+Capture stdout, stderr, reports, logs, crash diagnostics, temporary files, browser storage, and network activity. Default operation must emit no sample values to logs beyond bounded evidence in the user-requested report and must make no network requests. CLI tests assert default stderr does not echo CSV payload rows.
 
 ## Chaos and hostile cases
 
-Inject disk-full, permission failure, cancellation, malformed UTF-8, CSV formula text, path traversal names, symlinks, oversized fields, NaN/infinity encodings, timestamp overflow, finding floods, and corrupted cache entries. No partial, unsupported, or timed-out operation may become success.
+Inject permission failure, cancellation, malformed UTF-8, CSV formula text, path traversal names, symlinks, oversized fields, NaN/infinity encodings, timestamp overflow, and finding floods. Unwritable output directories must leave no committed report or repair file. No partial, unsupported, or timed-out operation may become success.
 
 ## Flake policy
 

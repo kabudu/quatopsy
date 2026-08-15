@@ -1,0 +1,21 @@
+{
+  "schema": "quatopsy.adapt.ros-json/1",
+  "frame_from": "base_link",
+  "frame_to": "map",
+  "samples": [
+    {
+      "t": 0,
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    {
+      "t": 1,
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    }
+  ]
+}

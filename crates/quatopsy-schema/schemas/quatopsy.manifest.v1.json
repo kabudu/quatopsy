@@ -37,6 +37,18 @@
           "minItems": 3,
           "maxItems": 3,
           "items": { "type": "string", "minLength": 1 }
+        },
+        "commanded_quaternion": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "rotation_matrix": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": { "type": "string", "minLength": 1 }
         }
       }
     }

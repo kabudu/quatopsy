@@ -10,7 +10,9 @@
     "QAT-RATE-001": "refused",
     "QAT-PI-001": "refused",
     "QAT-REPAIR-001": "pass",
-    "QAT-UNWIND-001": "pass"
+    "QAT-UNWIND-001": "pass",
+    "QAT-CONV-001": "pass",
+    "QAT-OMEGA-001": "pass"
   },
   "finding_reasons": [
     "zero-sample"

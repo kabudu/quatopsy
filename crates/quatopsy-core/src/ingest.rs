@@ -17,6 +17,8 @@ pub struct Sample {
     pub timestamp_ns: i64,
     pub raw: Quaternion,
     pub commanded: Option<Quaternion>,
+    pub omega: Option<Box<[f64; 3]>>,
+    pub rotation_matrix: Option<Box<[f64; 9]>>,
     pub timestamp_finite: bool,
     pub timestamp_overflow: bool,
 }
@@ -209,6 +211,17 @@ fn declarations_from_manifest(manifest: &ManifestDocument) -> Result<Declaration
             names.push(name.as_str());
         }
     }
+    if let Some(matrix) = &manifest.columns.rotation_matrix {
+        for name in matrix {
+            if name.is_empty() {
+                return Err(IngestError::refused(
+                    "missing-matrix-column",
+                    "rotation matrix column names must be non-empty",
+                ));
+            }
+            names.push(name.as_str());
+        }
+    }
     let unique = names.len()
         == names
             .iter()
@@ -231,6 +244,7 @@ fn declarations_from_manifest(manifest: &ManifestDocument) -> Result<Declaration
         quaternion_columns: manifest.columns.quaternion.clone(),
         angular_velocity_columns: manifest.columns.angular_velocity.clone(),
         commanded_quaternion_columns: manifest.columns.commanded_quaternion.clone(),
+        rotation_matrix_columns: manifest.columns.rotation_matrix.clone(),
     })
 }
 
@@ -289,6 +303,24 @@ fn parse_csv(
     } else {
         None
     };
+    let omega_idx = if let Some(cols) = &manifest.columns.angular_velocity {
+        Some([
+            required_column(&index, &cols[0])?,
+            required_column(&index, &cols[1])?,
+            required_column(&index, &cols[2])?,
+        ])
+    } else {
+        None
+    };
+    let matrix_idx = if let Some(cols) = &manifest.columns.rotation_matrix {
+        let mut idx = [0_usize; 9];
+        for (i, name) in cols.iter().enumerate() {
+            idx[i] = required_column(&index, name)?;
+        }
+        Some(idx)
+    } else {
+        None
+    };
 
     let mut samples = Vec::new();
     for record in reader.records() {
@@ -337,11 +369,31 @@ fn parse_csv(
         } else {
             None
         };
+        let omega = if let Some(idx) = omega_idx {
+            Some(Box::new([
+                parse_component(record.get(idx[0]).unwrap_or(""))?,
+                parse_component(record.get(idx[1]).unwrap_or(""))?,
+                parse_component(record.get(idx[2]).unwrap_or(""))?,
+            ]))
+        } else {
+            None
+        };
+        let rotation_matrix = if let Some(idx) = matrix_idx {
+            let mut values = [0.0_f64; 9];
+            for (i, column) in idx.iter().enumerate() {
+                values[i] = parse_component(record.get(*column).unwrap_or(""))?;
+            }
+            Some(Box::new(values))
+        } else {
+            None
+        };
         samples.push(Sample {
             source_row,
             timestamp_ns,
             raw,
             commanded,
+            omega,
+            rotation_matrix,
             timestamp_finite,
             timestamp_overflow,
         });

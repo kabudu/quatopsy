@@ -1,0 +1,22 @@
+{
+  "audit": "Quaternion kinematics are 0.1 rad/s about z but supplied omega is 1 rad/s.",
+  "result": "findings",
+  "rules": {
+    "QAT-NORM-001": "pass",
+    "QAT-TIME-001": "pass",
+    "QAT-LIFT-001": "pass",
+    "QAT-SIGN-001": "pass",
+    "QAT-RATE-001": "pass",
+    "QAT-PI-001": "pass",
+    "QAT-REPAIR-001": "pass",
+    "QAT-UNWIND-001": "pass",
+    "QAT-CONV-001": "pass",
+    "QAT-OMEGA-001": "finding"
+  },
+  "finding_reasons": [
+    "omega-inconsistent",
+    "omega-inconsistent",
+    "omega-inconsistent",
+    "omega-inconsistent"
+  ]
+}

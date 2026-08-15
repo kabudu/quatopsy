@@ -55,5 +55,5 @@ Parsing and analysis are side-effect-free until output commit. Cancellation remo
 
 ## Minimality rationale
 
-Rust provides explicit result types, bounded parsers, portable CLI distribution, and WebAssembly reuse. A service is unjustified because the first workflow is local, sensitive, deterministic, and batch-oriented. A plug-in system is deferred until two real adapters demonstrate a stable extension boundary.
+Rust provides explicit result types, bounded parsers, portable CLI distribution, and WebAssembly reuse. A service is unjustified because the first workflow is local, sensitive, deterministic, and batch-oriented. Three compiled adapters exist (`ids-jason1`, `ros-json`, `tubin-str`); a plug-in system remains out of scope until a fourth format needs a stable extension boundary.
 

@@ -23,6 +23,8 @@ pub const RULE_RATE: &str = "QAT-RATE-001";
 pub const RULE_PI: &str = "QAT-PI-001";
 pub const RULE_REPAIR: &str = "QAT-REPAIR-001";
 pub const RULE_UNWIND: &str = "QAT-UNWIND-001";
+pub const RULE_CONV: &str = "QAT-CONV-001";
+pub const RULE_OMEGA: &str = "QAT-OMEGA-001";
 pub const RULE_VERSION: &str = "1";
 pub const ALG_SIGN_LIFT: &str = "sign-lift";
 pub const ALG_NORMALISE: &str = "normalise";
@@ -37,9 +39,13 @@ pub const NEAR_ZERO_NORM: f64 = 1.0e-12;
 pub const PI_TIE_ABS_DOT: f64 = 1.0e-12;
 /// Adjacent commanded covering longer than the quotient-shortest path by this amount is a finding.
 pub const UNWIND_ABS_TOLERANCE: f64 = 1.0e-9;
+/// Maximum absolute element error between a declared rotation matrix and `R(q)`.
+pub const CONV_MATRIX_ABS_TOLERANCE: f64 = 1.0e-5;
+/// Maximum absolute body-rate error in rad/s between supplied omega and the quaternion kinematics.
+pub const OMEGA_ABS_TOLERANCE: f64 = 1.0e-3;
 pub const SPACECRAFT_PROFILE_ID: &str = "quatopsy.spacecraft-csv/1";
 
-pub fn enabled_rules() -> [&'static str; 8] {
+pub fn enabled_rules() -> [&'static str; 10] {
     [
         RULE_NORM,
         RULE_TIME,
@@ -49,6 +55,8 @@ pub fn enabled_rules() -> [&'static str; 8] {
         RULE_PI,
         RULE_REPAIR,
         RULE_UNWIND,
+        RULE_CONV,
+        RULE_OMEGA,
     ]
 }
 
@@ -101,6 +109,8 @@ pub struct ManifestColumns {
     pub angular_velocity: Option<[String; 3]>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub commanded_quaternion: Option<[String; 4]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rotation_matrix: Option<[String; 9]>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -348,6 +358,8 @@ pub struct Declarations {
     pub angular_velocity_columns: Option<[String; 3]>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub commanded_quaternion_columns: Option<[String; 4]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rotation_matrix_columns: Option<[String; 9]>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -398,6 +410,35 @@ pub fn report_schema_supported(schema: &str) -> bool {
     schema == REPORT_SCHEMA
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AdoptionMode {
+    Advisory,
+    Selective,
+    Required,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OverrideRecord {
+    pub rule: String,
+    pub authority: String,
+    pub reason: String,
+    pub created: String,
+    pub expires: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub input_sha256: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OverrideDocument {
+    pub schema: String,
+    pub overrides: Vec<OverrideRecord>,
+}
+
+pub const OVERRIDE_SCHEMA: &str = "quatopsy.override/1";
+
 pub fn canonical_json(report: &Report) -> Result<Vec<u8>, serde_json::Error> {
     serde_json::to_vec(report)
 }
@@ -428,7 +469,7 @@ mod tests {
         let canonical = enabled_rules_canonical();
         assert_eq!(
             canonical,
-            "QAT-LIFT-001\nQAT-NORM-001\nQAT-PI-001\nQAT-RATE-001\nQAT-REPAIR-001\nQAT-SIGN-001\nQAT-TIME-001\nQAT-UNWIND-001"
+            "QAT-CONV-001\nQAT-LIFT-001\nQAT-NORM-001\nQAT-OMEGA-001\nQAT-PI-001\nQAT-RATE-001\nQAT-REPAIR-001\nQAT-SIGN-001\nQAT-TIME-001\nQAT-UNWIND-001"
         );
         assert!(report_schema_supported(REPORT_SCHEMA));
         assert!(!report_schema_supported("quatopsy.report/99"));

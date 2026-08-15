@@ -39,9 +39,10 @@ Findings are classified as `invalid-data`, `representation-discontinuity`, `phys
 | QAT-SIGN-001 | Report raw antipodal sign discontinuities separately from physical motion | Required |
 | QAT-RATE-001 | Derive quotient-invariant inter-sample angles and angular rates | Required |
 | QAT-PI-001 | Identify numerically ambiguous near-pi intervals | Required |
-| QAT-CONV-001 | Validate declared convention against optional redundant evidence or fixtures | Limited |
+| QAT-CONV-001 | Compare declared quaternion to an optional supplied rotation matrix; refuse incomplete matrix evidence; never infer or repair convention | Required when matrix columns are declared |
 | QAT-REPAIR-001 | Emit sign-continuity and normalisation repair candidates with provenance | Required |
 | QAT-UNWIND-001 | Compare a supplied commanded path with the quotient-shortest baseline | Required when commanded columns are declared |
+| QAT-OMEGA-001 | Compare optional body angular-velocity columns with quaternion kinematics | Required when angular-velocity columns are declared |
 
 ## Repairs
 

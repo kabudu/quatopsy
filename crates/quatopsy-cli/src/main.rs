@@ -6,7 +6,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
-use clap::{Parser, Subcommand, error::ErrorKind};
+use clap::{Parser, Subcommand, ValueEnum, error::ErrorKind};
 use quatopsy_core::cancel::Cancel;
 use quatopsy_core::identity::{analysis_id, sha256_hex};
 use quatopsy_core::ingest::ingest_bytes;
@@ -19,8 +19,11 @@ use quatopsy_core::repro::{self, provenance, slice_csv};
 use quatopsy_core::view::{build_view, empty_view};
 use quatopsy_core::{AnalyzeRequest, analyze, report_bytes};
 use quatopsy_schema::{
-    RepairDisposition, Report, VIEW_MAX_POINTS, VIEW_SAFE_MAX_POINTS, report_schema_supported,
+    AdoptionMode, RepairDisposition, Report, VIEW_MAX_POINTS, VIEW_SAFE_MAX_POINTS,
+    report_schema_supported,
 };
+
+mod policy;
 
 const USAGE_EXIT: u8 = 64;
 
@@ -71,6 +74,15 @@ enum Commands {
         /// Include local paths in repro provenance. Off by default.
         #[arg(long, default_value_t = false)]
         include_paths: bool,
+        /// Adoption mode. Affects process exit only; the report result is unchanged.
+        #[arg(long, value_enum, default_value_t = PolicyArg::Required)]
+        policy: PolicyArg,
+        /// Rule IDs that fail the process in selective mode.
+        #[arg(long = "fail-on")]
+        fail_on: Vec<String>,
+        /// Override document. Suppresses named findings from process failure only.
+        #[arg(long = "override-file")]
+        override_file: Option<PathBuf>,
     },
     /// Materialise a proposed repair into a new CSV. Never overwrites the source.
     Repair {
@@ -106,6 +118,34 @@ enum Commands {
         #[arg(long, default_value_t = false)]
         clean: bool,
     },
+    /// Convert an external trajectory into canonical CSV and manifest. Never emits a verdict.
+    Adapt {
+        #[arg(long)]
+        format: String,
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output_dir: PathBuf,
+        #[arg(long, default_value_t = false)]
+        overwrite: bool,
+    },
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum PolicyArg {
+    Advisory,
+    Selective,
+    Required,
+}
+
+impl From<PolicyArg> for AdoptionMode {
+    fn from(value: PolicyArg) -> Self {
+        match value {
+            PolicyArg::Advisory => Self::Advisory,
+            PolicyArg::Selective => Self::Selective,
+            PolicyArg::Required => Self::Required,
+        }
+    }
 }
 
 fn main() -> ExitCode {
@@ -142,6 +182,9 @@ fn main() -> ExitCode {
             repairs_dir,
             repro_dir,
             include_paths,
+            policy,
+            fail_on,
+            override_file,
         } => {
             if let Err(code) = run_analyze(
                 input,
@@ -160,6 +203,9 @@ fn main() -> ExitCode {
                 repairs_dir,
                 repro_dir,
                 include_paths,
+                policy.into(),
+                fail_on,
+                override_file,
                 &cancelled,
             ) {
                 return code;
@@ -198,6 +244,17 @@ fn main() -> ExitCode {
             }
             ExitCode::SUCCESS
         }
+        Commands::Adapt {
+            format,
+            input,
+            output_dir,
+            overwrite,
+        } => {
+            if let Err(code) = run_adapt(format, input, output_dir, overwrite) {
+                return code;
+            }
+            ExitCode::SUCCESS
+        }
     }
 }
 
@@ -212,6 +269,9 @@ fn run_analyze(
     repairs_dir: Option<PathBuf>,
     repro_dir: Option<PathBuf>,
     include_paths: bool,
+    policy: AdoptionMode,
+    fail_on: Vec<String>,
+    override_file: Option<PathBuf>,
     cancelled: &AtomicBool,
 ) -> Result<(), ExitCode> {
     let mut temps = TempGuard::default();
@@ -272,12 +332,108 @@ fn run_analyze(
     }
     print_summary(&report);
     temps.disarm();
-    let code = report.result.exit_code();
+    if policy == AdoptionMode::Selective && fail_on.is_empty() {
+        eprintln!("error: selective policy requires at least one --fail-on rule");
+        return Err(ExitCode::from(USAGE_EXIT));
+    }
+    let mut overridden = Vec::new();
+    if let Some(path) = override_file {
+        let bytes = read_bounded(&path, limits.max_input_bytes)?;
+        match policy::load_overrides(&bytes, &report.input.csv_sha256, &utc_now_stamp()) {
+            Ok(rules) => overridden = rules,
+            Err(err) => {
+                eprintln!("error: {err}");
+                return Err(ExitCode::from(2));
+            }
+        }
+    }
+    let code = policy::exit_code(&report, policy, &fail_on, &overridden);
     if code == 0 {
         Ok(())
     } else {
         Err(ExitCode::from(code as u8))
     }
+}
+
+fn utc_now_stamp() -> String {
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    civil_stamp(secs)
+}
+
+fn civil_stamp(secs: u64) -> String {
+    let days = (secs / 86400) as i64;
+    let rem = secs % 86400;
+    let (year, month, day) = civil_from_days(days);
+    format!(
+        "{year:04}-{month:02}-{day:02}T{:02}:{:02}:{:02}Z",
+        rem / 3600,
+        (rem % 3600) / 60,
+        rem % 60
+    )
+}
+
+fn civil_from_days(days: i64) -> (i32, u32, u32) {
+    let z = days + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z.rem_euclid(146_097);
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let y = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = mp + if mp < 10 { 3 } else { -9 };
+    let year = y + i64::from(m <= 2);
+    (year as i32, m as u32, d as u32)
+}
+
+fn run_adapt(
+    format: String,
+    input: PathBuf,
+    output_dir: PathBuf,
+    overwrite: bool,
+) -> Result<(), ExitCode> {
+    let parsed = quatopsy_adapt::AdapterFormat::parse(&format).map_err(|err| {
+        eprintln!("error: {err}");
+        ExitCode::from(USAGE_EXIT)
+    })?;
+    guard_path(&input, false)?;
+    if output_dir.exists() && !output_dir.is_dir() {
+        eprintln!("error: adapter output must be a directory");
+        return Err(ExitCode::from(USAGE_EXIT));
+    }
+    fs::create_dir_all(&output_dir).map_err(|err| {
+        eprintln!("error: could not create {}: {err}", output_dir.display());
+        ExitCode::from(3)
+    })?;
+    let csv_path = output_dir.join("input.csv");
+    let manifest_path = output_dir.join("manifest.json");
+    let provenance_path = output_dir.join("provenance.json");
+    for path in [&csv_path, &manifest_path, &provenance_path] {
+        refuse_if_exists(path, overwrite)?;
+        guard_output_path(path)?;
+    }
+    let bytes = read_bounded(&input, SAFE_MAX_INPUT_BYTES)?;
+    let out = quatopsy_adapt::adapt(parsed, &bytes, env!("CARGO_PKG_VERSION")).map_err(|err| {
+        eprintln!("error: {err}");
+        ExitCode::from(2)
+    })?;
+    fs::write(&csv_path, out.csv.as_bytes()).map_err(|err| {
+        eprintln!("error: {err}");
+        ExitCode::from(3)
+    })?;
+    fs::write(&manifest_path, out.manifest.as_bytes()).map_err(|err| {
+        eprintln!("error: {err}");
+        ExitCode::from(3)
+    })?;
+    fs::write(&provenance_path, out.provenance.as_bytes()).map_err(|err| {
+        eprintln!("error: {err}");
+        ExitCode::from(3)
+    })?;
+    println!("adapter: {}", output_dir.display());
+    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -370,6 +526,9 @@ fn run_repair(
         ExitCode::from(3)
     })?;
     plan.repair.output_digest = Some(sha256_hex(&rendered));
+    if cancelled.load(Ordering::Relaxed) {
+        return cancelled_exit(&mut temps);
+    }
     write_atomic(&output, &rendered, &mut temps).map_err(|err| {
         eprintln!("error: could not write {}: {err}", output.display());
         ExitCode::from(3)
@@ -709,6 +868,16 @@ fn guard_path(path: &Path, missing_ok: bool) -> Result<(), ExitCode> {
 }
 
 fn guard_output_path(path: &Path) -> Result<(), ExitCode> {
+    if path
+        .components()
+        .any(|c| matches!(c, std::path::Component::ParentDir))
+    {
+        eprintln!(
+            "error: refusing parent-directory output path {}",
+            path.display()
+        );
+        return Err(ExitCode::from(3));
+    }
     match fs::symlink_metadata(path) {
         Ok(meta) => {
             if meta.file_type().is_symlink() {

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added
+
+- `QAT-CONV-001` matrix comparison and `QAT-OMEGA-001` body-rate comparison.
+- `quatopsy adapt` for `ids-jason1`, `ros-json`, and `tubin-str`, with provenance that never contains `result`.
+- Adoption policy `--policy` / `--fail-on` / `--override-file` (exit only).
+- CC BY 4.0 TUBIN star-tracker excerpt and mutation/fuzz/privacy/permission E2E coverage.
+
+### Claims
+
+These close the previously deferred V1 gaps. They do not claim flight safety, TUBIN reconstruction, novelty, or independent external validation.
+
 ## 0.1.0 - 2026-08-15
 
 ### Added

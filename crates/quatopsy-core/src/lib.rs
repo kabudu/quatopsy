@@ -55,7 +55,13 @@ pub fn analyze(request: AnalyzeRequest<'_>) -> Report {
 
     match ingest_bytes(request.csv_bytes, request.manifest_bytes, limits, cancel) {
         Ok(parsed) => {
-            let mut analysis = evaluate(&parsed.samples, limits, cancel);
+            let mut analysis = evaluate(
+                &parsed.samples,
+                limits,
+                cancel,
+                parsed.manifest.component_order,
+                parsed.manifest.rotation_sense,
+            );
             let mut repairs = Vec::new();
             if analysis.complete && !cancel.is_cancelled() && !cancel.timed_out() {
                 let attached = attach_repairs(&parsed.samples, &mut analysis.findings, &id);
@@ -203,6 +209,7 @@ fn ingest_failure_report(
             quaternion_columns: [String::new(), String::new(), String::new(), String::new()],
             angular_velocity_columns: None,
             commanded_quaternion_columns: None,
+            rotation_matrix_columns: None,
         },
         limits: limits_used(limits),
         result,

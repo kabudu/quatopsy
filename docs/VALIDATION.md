@@ -19,7 +19,9 @@
 
 ## Corpus
 
-Before implementation evaluation, freeze inclusion rules and SHA-256 digests for: analytic constant-axis paths; random seeded paths; alternating-sign representations; near-zero and near-pi boundaries; norm drift; timestamp defects; convention mutations; commanded multi-turn and shortest paths; hostile parser cases; and pre-selected public spacecraft-like examples whose licences permit redistribution. Crashes, timeouts, refusals, and excluded rows remain in results.
+Before implementation evaluation, freeze inclusion rules and SHA-256 digests for: analytic constant-axis paths; random seeded paths; alternating-sign representations; near-zero and near-pi boundaries; norm drift; timestamp defects; convention mutations; commanded multi-turn and shortest paths; hostile parser cases; and redistributable public spacecraft examples. The TUBIN star-tracker excerpt (`fixtures/public/tubin_str/`, CC BY 4.0, 10.5281/zenodo.19708907) is the in-repo public-flight evaluation slice. Crashes, timeouts, refusals, and excluded rows remain in results.
+
+Mutation tests invert named comparisons (norm, near-zero, time, sign, aggregator, omega, convention). Seeded fuzz (256 paths) asserts that refused, error, and findings states never become pass. Authoritative local CI runs on the development host; Linux-like reproduction is optional via `scripts/linux-conformance.sh` when a compatible container image is already present.
 
 ## Baselines
 
