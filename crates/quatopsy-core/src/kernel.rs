@@ -3,15 +3,16 @@
 use std::cmp::Ordering;
 
 use quatopsy_schema::{
-    Confidence, Evidence, Finding, FindingClass, FiniteF64, NEAR_ZERO_NORM, NORM_ABS_TOLERANCE,
-    RULE_LIFT, RULE_NORM, RULE_PI, RULE_RATE, RULE_SIGN, RULE_TIME, RULE_UNWIND, RULE_VERSION,
-    RateSummary, ResultState, RuleResult, RuleState, Severity, UNWIND_ABS_TOLERANCE,
+    CONV_MATRIX_ABS_TOLERANCE, ComponentOrder, Confidence, Evidence, Finding, FindingClass,
+    FiniteF64, NEAR_ZERO_NORM, NORM_ABS_TOLERANCE, OMEGA_ABS_TOLERANCE, RULE_CONV, RULE_LIFT,
+    RULE_NORM, RULE_OMEGA, RULE_PI, RULE_RATE, RULE_SIGN, RULE_TIME, RULE_UNWIND, RULE_VERSION,
+    RateSummary, ResultState, RotationSense, RuleResult, RuleState, Severity, UNWIND_ABS_TOLERANCE,
 };
 
 use crate::cancel::Cancel;
 use crate::ingest::Sample;
 use crate::limits::Limits;
-use crate::math::{Quaternion, covering_angle, lift_next, quotient_angle};
+use crate::math::{Quaternion, body_rate, covering_angle, lift_next, quotient_angle};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum NormKind {
@@ -42,7 +43,13 @@ pub struct Analysis {
     pub message: String,
 }
 
-pub fn evaluate(samples: &[Sample], limits: Limits, cancel: Cancel<'_>) -> Analysis {
+pub fn evaluate(
+    samples: &[Sample],
+    limits: Limits,
+    cancel: Cancel<'_>,
+    component_order: ComponentOrder,
+    rotation_sense: RotationSense,
+) -> Analysis {
     let mut findings: Vec<Finding> = Vec::new();
     let mut conditioning = Vec::new();
     let mut truncated_error = false;
@@ -92,8 +99,17 @@ pub fn evaluate(samples: &[Sample], limits: Limits, cancel: Cancel<'_>) -> Analy
 
     let (rate, rate_summary) = evaluate_rate(&prepared, rotation_ready);
     let unwind = evaluate_unwind(&prepared, limits, &mut findings, &mut truncated_error);
+    let conv = evaluate_conv(
+        &prepared,
+        limits,
+        &mut findings,
+        &mut truncated_error,
+        component_order,
+        rotation_sense,
+    );
+    let omega = evaluate_omega(&prepared, limits, &mut findings, &mut truncated_error);
 
-    let mut rule_results = vec![norm, time, lift, sign, rate, pi, unwind];
+    let mut rule_results = vec![norm, time, lift, sign, rate, pi, unwind, conv, omega];
     if truncated_error {
         for result in &mut rule_results {
             if result.truncated {
@@ -591,6 +607,250 @@ fn evaluate_unwind(
             "commanded-long-way".to_string()
         } else {
             "commanded-path-shortest".to_string()
+        },
+    }
+}
+
+fn matrix_max_abs_err(declared: [[f64; 3]; 3], supplied: [f64; 9]) -> f64 {
+    let mut max = 0.0_f64;
+    for i in 0..3 {
+        for j in 0..3 {
+            let err = libm::fabs(declared[i][j] - supplied[i * 3 + j]);
+            if err > max {
+                max = err;
+            }
+        }
+    }
+    max
+}
+
+fn apply_sense(matrix: [[f64; 3]; 3], sense: RotationSense) -> [[f64; 3]; 3] {
+    match sense {
+        RotationSense::Active => matrix,
+        RotationSense::Passive => [
+            [matrix[0][0], matrix[1][0], matrix[2][0]],
+            [matrix[0][1], matrix[1][1], matrix[2][1]],
+            [matrix[0][2], matrix[1][2], matrix[2][2]],
+        ],
+    }
+}
+
+fn alternate_quaternion(q: Quaternion, declared: ComponentOrder) -> Quaternion {
+    match declared {
+        ComponentOrder::Wxyz => Quaternion::new(q.z, q.w, q.x, q.y),
+        ComponentOrder::Xyzw => Quaternion::new(q.x, q.y, q.z, q.w),
+    }
+}
+
+fn evaluate_conv(
+    prepared: &[PreparedSample],
+    limits: Limits,
+    findings: &mut Vec<Finding>,
+    truncated: &mut bool,
+    component_order: ComponentOrder,
+    rotation_sense: RotationSense,
+) -> RuleResult {
+    let supplied = prepared
+        .iter()
+        .any(|item| item.sample.rotation_matrix.is_some());
+    if !supplied {
+        return RuleResult {
+            rule: RULE_CONV.to_string(),
+            version: RULE_VERSION.to_string(),
+            state: RuleState::Pass,
+            finding_count: 0,
+            truncated: false,
+            reason_code: "redundant-evidence-absent".to_string(),
+        };
+    }
+    if prepared
+        .iter()
+        .any(|item| item.sample.rotation_matrix.is_none())
+    {
+        return rule_result(RULE_CONV, RuleState::Refused, 0, false);
+    }
+    let mut count = 0_u64;
+    let mut local_trunc = false;
+    let mut state = RuleState::Pass;
+    for item in prepared {
+        let Some(unit) = item.unit else {
+            return rule_result(RULE_CONV, RuleState::Refused, 0, false);
+        };
+        let Some(matrix) = item.sample.rotation_matrix.as_deref() else {
+            return rule_result(RULE_CONV, RuleState::Refused, 0, false);
+        };
+        if matrix.iter().any(|value| !value.is_finite()) {
+            return rule_result(RULE_CONV, RuleState::Refused, 0, false);
+        }
+        let declared_r = apply_sense(unit.rotation_matrix(), rotation_sense);
+        let declared_err = matrix_max_abs_err(declared_r, *matrix);
+        let opposite_sense = match rotation_sense {
+            RotationSense::Active => RotationSense::Passive,
+            RotationSense::Passive => RotationSense::Active,
+        };
+        let opposite_err =
+            matrix_max_abs_err(apply_sense(unit.rotation_matrix(), opposite_sense), *matrix);
+        let alt = alternate_quaternion(unit, component_order);
+        let Some(alt_unit) = alt.normalized() else {
+            return rule_result(RULE_CONV, RuleState::Refused, 0, false);
+        };
+        let alt_err = matrix_max_abs_err(
+            apply_sense(alt_unit.rotation_matrix(), rotation_sense),
+            *matrix,
+        );
+        if declared_err <= CONV_MATRIX_ABS_TOLERANCE {
+            continue;
+        }
+        let reason = if alt_err + CONV_MATRIX_ABS_TOLERANCE < declared_err
+            && alt_err <= CONV_MATRIX_ABS_TOLERANCE
+        {
+            "component-order-mismatch"
+        } else if opposite_err + CONV_MATRIX_ABS_TOLERANCE < declared_err
+            && opposite_err <= CONV_MATRIX_ABS_TOLERANCE
+        {
+            "rotation-sense-mismatch"
+        } else {
+            "matrix-inconsistent"
+        };
+        if push_finding(
+            findings,
+            limits,
+            &mut local_trunc,
+            &mut count,
+            pair_finding(
+                item,
+                item,
+                RULE_CONV,
+                FindingClass::ConventionMismatch,
+                Severity::High,
+                Confidence::NumericTolerance,
+                reason,
+                "declared quaternion convention disagrees with the supplied rotation matrix",
+                vec![
+                    evidence("declared_matrix_err", "1", declared_err),
+                    evidence("alternate_order_err", "1", alt_err),
+                    evidence("opposite_sense_err", "1", opposite_err),
+                ],
+            ),
+        ) {
+            promote(&mut state, RuleState::Finding);
+        } else {
+            break;
+        }
+    }
+    *truncated = *truncated || local_trunc;
+    if local_trunc {
+        state = RuleState::Error;
+    }
+    RuleResult {
+        rule: RULE_CONV.to_string(),
+        version: RULE_VERSION.to_string(),
+        state,
+        finding_count: count,
+        truncated: local_trunc,
+        reason_code: if count > 0 {
+            "convention-mismatch".to_string()
+        } else {
+            "matrix-consistent".to_string()
+        },
+    }
+}
+
+fn evaluate_omega(
+    prepared: &[PreparedSample],
+    limits: Limits,
+    findings: &mut Vec<Finding>,
+    truncated: &mut bool,
+) -> RuleResult {
+    let supplied = prepared.iter().any(|item| item.sample.omega.is_some());
+    if !supplied {
+        return RuleResult {
+            rule: RULE_OMEGA.to_string(),
+            version: RULE_VERSION.to_string(),
+            state: RuleState::Pass,
+            finding_count: 0,
+            truncated: false,
+            reason_code: "omega-absent".to_string(),
+        };
+    }
+    if prepared.iter().any(|item| item.sample.omega.is_none()) {
+        return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
+    }
+    let mut count = 0_u64;
+    let mut local_trunc = false;
+    let mut state = RuleState::Pass;
+    for window in prepared.windows(2) {
+        let prev = &window[0];
+        let next = &window[1];
+        let Some(p) = prev.unit else {
+            return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
+        };
+        let Some(q) = next.unit else {
+            return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
+        };
+        let dt_ns = next
+            .sample
+            .timestamp_ns
+            .saturating_sub(prev.sample.timestamp_ns);
+        if dt_ns <= 0 {
+            return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
+        }
+        let dt_s = dt_ns as f64 / 1_000_000_000.0;
+        let Some(predicted) = body_rate(p, q, dt_s) else {
+            return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
+        };
+        let Some(measured) = next.sample.omega.as_deref() else {
+            return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
+        };
+        if measured.iter().any(|value| !value.is_finite()) {
+            return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
+        }
+        let err = (0..3)
+            .map(|i| libm::fabs(predicted[i] - measured[i]))
+            .fold(0.0_f64, f64::max);
+        if err <= OMEGA_ABS_TOLERANCE {
+            continue;
+        }
+        if push_finding(
+            findings,
+            limits,
+            &mut local_trunc,
+            &mut count,
+            pair_finding(
+                prev,
+                next,
+                RULE_OMEGA,
+                FindingClass::DynamicThreshold,
+                Severity::Medium,
+                Confidence::NumericTolerance,
+                "omega-inconsistent",
+                "supplied body angular velocity disagrees with quaternion kinematics",
+                vec![
+                    evidence("omega_err_rad_s", "rad/s", err),
+                    evidence("predicted_wx", "rad/s", predicted[0]),
+                    evidence("measured_wx", "rad/s", measured[0]),
+                ],
+            ),
+        ) {
+            promote(&mut state, RuleState::Finding);
+        } else {
+            break;
+        }
+    }
+    *truncated = *truncated || local_trunc;
+    if local_trunc {
+        state = RuleState::Error;
+    }
+    RuleResult {
+        rule: RULE_OMEGA.to_string(),
+        version: RULE_VERSION.to_string(),
+        state,
+        finding_count: count,
+        truncated: local_trunc,
+        reason_code: if count > 0 {
+            "omega-inconsistent".to_string()
+        } else {
+            "omega-consistent".to_string()
         },
     }
 }

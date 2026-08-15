@@ -22,15 +22,21 @@ Each repair has an algorithm identifier, source analysis ID, disposition (`propo
 
 `QAT-UNWIND-001` is enabled for every analysis. When commanded quaternion columns are absent it records `commanded-path-absent` and passes. When they are present it compares adjacent covering angle `2 acos(p·q)` with the quotient-shortest angle `2 acos(|p·q|)` and records `commanded-long-way` findings when the commanded covering is longer.
 
+`QAT-CONV-001` is enabled for every analysis. When rotation-matrix columns are absent it records `redundant-evidence-absent` and passes. When they are present it compares the declared `R(q)` with the supplied matrix and records `component-order-mismatch`, `rotation-sense-mismatch`, or `matrix-inconsistent`.
+
+`QAT-OMEGA-001` is enabled for every analysis. When angular-velocity columns are absent it records `omega-absent` and passes. When they are present it compares supplied body rate with the kinematics of the lifted adjacent pair.
+
 ## Exit codes
 
 | Code | Meaning |
 | --- | --- |
-| 0 | `pass` |
-| 1 | `findings` |
-| 2 | `refused` |
+| 0 | `pass`, or `findings` under `--policy advisory`, or non-blocking `findings` under `--policy selective` |
+| 1 | `findings` under `--policy required` (default), or blocking selective findings |
+| 2 | `refused`, or invalid/expired override document |
 | 3 | `error` |
 | 64 | CLI usage error before analysis identity exists |
+
+`--policy` and `--override-file` change process exit only. They never rewrite `report.result`.
 
 ## Compatibility
 

@@ -35,6 +35,11 @@ cargo run --bin quatopsy -- view \
   --input fixtures/conformance/sign_alternating/input.csv \
   --manifest fixtures/conformance/sign_alternating/manifest.json \
   --output /tmp/quatopsy-view
+
+cargo run --bin quatopsy -- adapt \
+  --format tubin-str \
+  --input fixtures/public/tubin_str/source.csv \
+  --output-dir /tmp/quatopsy-tubin
 ```
 
 Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.

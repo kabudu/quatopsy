@@ -274,6 +274,128 @@ fn repair_refuses_input_that_does_not_match_the_report() {
     assert!(!output.exists());
 }
 
+#[test]
+fn default_stderr_does_not_echo_sample_payload() {
+    let root = workspace_root();
+    let tmp = tempfile_dir();
+    let report = tmp.join("report.json");
+    let output = Command::new(bin())
+        .args([
+            "analyze",
+            "--input",
+            root.join("fixtures/conformance/clean_slew/input.csv")
+                .to_str()
+                .unwrap(),
+            "--manifest",
+            root.join("fixtures/conformance/clean_slew/manifest.json")
+                .to_str()
+                .unwrap(),
+            "--report",
+            report.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let csv = fs::read_to_string(root.join("fixtures/conformance/clean_slew/input.csv")).unwrap();
+    let payload = csv.lines().nth(1).unwrap();
+    assert!(
+        !stderr.contains(payload),
+        "stderr leaked sample row {payload:?}: {stderr}"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn unwritable_report_directory_leaves_no_committed_file() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = workspace_root();
+    let tmp = tempfile_dir();
+    let locked = tmp.join("locked");
+    fs::create_dir_all(&locked).unwrap();
+    let report = locked.join("report.json");
+    let mut perms = fs::metadata(&locked).unwrap().permissions();
+    perms.set_mode(0o555);
+    fs::set_permissions(&locked, perms).unwrap();
+    let status = Command::new(bin())
+        .args([
+            "analyze",
+            "--input",
+            root.join("fixtures/conformance/clean_slew/input.csv")
+                .to_str()
+                .unwrap(),
+            "--manifest",
+            root.join("fixtures/conformance/clean_slew/manifest.json")
+                .to_str()
+                .unwrap(),
+            "--report",
+            report.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    let mut restore = fs::metadata(&locked).unwrap().permissions();
+    restore.set_mode(0o755);
+    fs::set_permissions(&locked, restore).unwrap();
+    assert_eq!(status.code(), Some(3));
+    assert!(!report.exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn cancelled_repair_write_leaves_source_and_output_untouched() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = workspace_root();
+    let tmp = tempfile_dir();
+    let input = root.join("fixtures/conformance/sign_alternating/input.csv");
+    let manifest = root.join("fixtures/conformance/sign_alternating/manifest.json");
+    let report = tmp.join("report.json");
+    assert_eq!(
+        Command::new(bin())
+            .args([
+                "analyze",
+                "--input",
+                input.to_str().unwrap(),
+                "--manifest",
+                manifest.to_str().unwrap(),
+                "--report",
+                report.to_str().unwrap(),
+            ])
+            .status()
+            .unwrap()
+            .code(),
+        Some(1)
+    );
+    let locked = tmp.join("locked-repair");
+    fs::create_dir_all(&locked).unwrap();
+    let output = locked.join("repaired.csv");
+    let mut perms = fs::metadata(&locked).unwrap().permissions();
+    perms.set_mode(0o555);
+    fs::set_permissions(&locked, perms).unwrap();
+    let before = fs::read(&input).unwrap();
+    let status = Command::new(bin())
+        .args([
+            "repair",
+            "--report",
+            report.to_str().unwrap(),
+            "--input",
+            input.to_str().unwrap(),
+            "--manifest",
+            manifest.to_str().unwrap(),
+            "--repair-id",
+            "repair:sign-lift:1",
+            "--output",
+            output.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    let mut restore = fs::metadata(&locked).unwrap().permissions();
+    restore.set_mode(0o755);
+    fs::set_permissions(&locked, restore).unwrap();
+    assert_eq!(status.code(), Some(3));
+    assert!(!output.exists());
+    assert_eq!(fs::read(&input).unwrap(), before);
+}
+
 fn tempfile_dir() -> PathBuf {
     static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
     let dir = std::env::temp_dir().join(format!(

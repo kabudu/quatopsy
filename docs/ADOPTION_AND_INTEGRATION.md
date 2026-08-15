@@ -24,7 +24,9 @@ Adapters produce the canonical CSV and manifest plus provenance. They cannot ass
 | --- | --- | --- | --- |
 | CSV | Universal export | Canonical V1 profile | First release |
 | JSON report | Tool-neutral evidence | Stable report protocol | First release |
-| ROS 2 / MCAP | Pose and transform logs | Offline converter | Planned |
+| ROS 2 JSON | Pose logs | Offline `ros-json` converter | Shipped |
+| TUBIN STR CSV | Public star-tracker telemetry | Offline `tubin-str` converter | Shipped |
+| IDS Jason-1 ASCII | Published qbody layout | Offline `ids-jason1` converter | Shipped |
 | SPICE CK | Spacecraft attitude kernels | Read-only converter with frame provenance | Planned |
 | Foxglove | 3D pose and plots | Report/marker export, no verdict reinterpretation | Candidate |
 | Basilisk | Simulation and Vizard | Fixture/report adapter | Candidate |
@@ -36,7 +38,7 @@ The CLI accepts explicit file lists and emits one report per analysis unit. Mono
 
 Hosted CI is disabled while the repository is private. Repository-owned local CI is authoritative. Public opening remains a distinct gate and is not authorised by the private `0.1.0` GitHub Release.
 
-`INT-3` adoption modes (advisory, selective, required, scoped overrides) are deferred from V1. Operators may treat exit codes as advisory or required in their own scripts. Quatopsy does not ship an override or baseline engine.
+`INT-3` adoption modes are `advisory`, `selective`, and `required`. Selective mode requires `--fail-on`. `--override-file` accepts `quatopsy.override/1` records with authority, reason, expiry, and optional input digest. Overrides and policy change process exit only; they never convert findings into a report `pass`.
 
 ## Compatibility and identity
 

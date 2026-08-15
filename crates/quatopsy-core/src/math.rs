@@ -100,6 +100,53 @@ impl Quaternion {
         let rotated = self.hamilton_mul(qv).hamilton_mul(self.conjugate());
         [rotated.x, rotated.y, rotated.z]
     }
+
+    /// Active rotation matrix for a unit quaternion using the outer-product form.
+    pub fn rotation_matrix(self) -> [[f64; 3]; 3] {
+        let uu = self.x * self.x + self.y * self.y + self.z * self.z;
+        let ww = self.w * self.w;
+        let s = ww - uu;
+        let x = self.x;
+        let y = self.y;
+        let z = self.z;
+        let w = self.w;
+        [
+            [
+                s + 2.0 * x * x,
+                2.0 * x * y - 2.0 * w * z,
+                2.0 * x * z + 2.0 * w * y,
+            ],
+            [
+                2.0 * y * x + 2.0 * w * z,
+                s + 2.0 * y * y,
+                2.0 * y * z - 2.0 * w * x,
+            ],
+            [
+                2.0 * z * x - 2.0 * w * y,
+                2.0 * z * y + 2.0 * w * x,
+                s + 2.0 * z * z,
+            ],
+        ]
+    }
+}
+
+/// Body angular velocity of `next` relative to `prev` from the lifted pair, rad/s.
+pub fn body_rate(prev: Quaternion, next: Quaternion, dt_s: f64) -> Option<[f64; 3]> {
+    if dt_s <= 0.0 || !dt_s.is_finite() {
+        return None;
+    }
+    let mut rel = prev.conjugate().hamilton_mul(next);
+    if rel.w < 0.0 {
+        rel = rel.negate();
+    }
+    let vec_norm = sqrt(rel.x * rel.x + rel.y * rel.y + rel.z * rel.z);
+    if vec_norm < 1.0e-18 {
+        return Some([0.0, 0.0, 0.0]);
+    }
+    let w = clamp_unit_dot(rel.w);
+    let angle = 2.0 * acos(w);
+    let scale = angle / (vec_norm * dt_s);
+    Some([rel.x * scale, rel.y * scale, rel.z * scale])
 }
 
 /// Clamp a dot product to `[-1, 1]` after a proven unit-domain calculation.

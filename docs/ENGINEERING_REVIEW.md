@@ -37,7 +37,7 @@ Novelty remains unestablished; the patent search is preliminary; legal name/mark
 
 ## Documents tailored
 
-`SOUNDNESS_CASE.md` and `REPORT_PROTOCOL.md` were added because the product makes machine-checkable semantic claims. A separate integration-contract document is deferred until the first adapter is designed; its boundary is covered in architecture and adoption documents. Full brand assets are intentionally absent because productisation is not approved. `AGENTS.md` and `scripts/ci-local.sh` exist as of M1.
+`SOUNDNESS_CASE.md` and `REPORT_PROTOCOL.md` were added because the product makes machine-checkable semantic claims. Adapter provenance and `quatopsy-adapt` contract tests cover the integration boundary. Full brand assets are intentionally absent because productisation is not approved. `AGENTS.md` and `scripts/ci-local.sh` exist as of M1.
 
 ## Completion statement
 

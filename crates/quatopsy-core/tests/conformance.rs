@@ -262,3 +262,23 @@ fn analysis_id_is_stable_and_input_sensitive() {
     });
     assert_ne!(a.analysis_id, c.analysis_id);
 }
+
+#[test]
+fn qat_conv_001_matrix_match() {
+    run_case("conv_matrix_match");
+}
+
+#[test]
+fn qat_conv_001_component_order_mismatch() {
+    run_case("conv_wrong_order");
+}
+
+#[test]
+fn qat_omega_001_matches_kinematics() {
+    run_case("omega_match");
+}
+
+#[test]
+fn qat_omega_001_flags_inconsistent_body_rate() {
+    run_case("omega_mismatch");
+}

@@ -65,6 +65,17 @@ Exit: supported scope passes adversarial, portability, lifecycle, performance, a
 
 Exit: release policy passes for a private `0.1.0` GitHub Release. External independent validation is welcome but is not required for this exit; unsupported independent-validation claims remain prohibited. Public opening, hosted CI, crates.io, signed binaries, and full brand productisation remain distinct unauthorised gates.
 
+## V1 gap closure
+
+- [x] Evaluate against redistributable public flight attitude samples (TUBIN excerpt) plus format-compatible IDS/ROS adapters.
+- [x] Implement `QAT-CONV-001` against supplied rotation-matrix columns.
+- [x] Keep adapters outside verdict ownership (`INT-2`) with contract tests.
+- [x] Ship advisory, selective, and required adoption with scoped overrides (`INT-3`).
+- [x] Use optional angular-velocity columns in `QAT-OMEGA-001`.
+- [x] Meet the documented E2E bar for mutation, fuzz, privacy sinks, and permission chaos.
+
+Exit: local CI plus the named fixtures and CLI tests.
+
 ## Optional post-release evidence track
 
 - [ ] Invite independent reproduction or expert challenge and record positive and negative results.

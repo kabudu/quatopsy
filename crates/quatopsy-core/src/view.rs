@@ -386,6 +386,8 @@ mod tests {
                 timestamp_ns: (i as i64) * 1_000_000,
                 raw: q,
                 commanded: None,
+                omega: None,
+                rotation_matrix: None,
                 timestamp_finite: true,
                 timestamp_overflow: false,
             });
