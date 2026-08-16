@@ -42,8 +42,9 @@ Exit: every initial defect fixture has a deterministic finding, evidence interva
 - [x] Label projection artefacts and distinguish raw, derived, and proposed data.
 - [x] Meet keyboard, screen-reader, contrast, reduced-motion, colour-state, and bounded-rendering requirements.
 - [x] Validate large-report downsampling retains bounded geometry extrema and a navigation link for every finding.
+- [x] Refine the static viewer into a responsive forensic investigation console with synchronized playback, direct timeline navigation, dense evidence summaries, and visually distinct canonical, derived, proposed, and projection layers.
 
-Exit: public-workflow E2E tests reproduce all five initial defect stories and accessibility checks pass.
+Exit: public-workflow E2E tests reproduce all five initial defect stories, accessibility checks pass, and the generated bundle passes desktop and narrow visual QA without becoming a free-form quaternion learning laboratory.
 
 ## M4: Spacecraft qualification and packaging
 
