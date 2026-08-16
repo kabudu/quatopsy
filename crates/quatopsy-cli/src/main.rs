@@ -26,6 +26,7 @@ use quatopsy_schema::{
 mod policy;
 
 const USAGE_EXIT: u8 = 64;
+const MAX_REPRO_SLICES: usize = 1024;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -275,6 +276,14 @@ fn run_analyze(
     cancelled: &AtomicBool,
 ) -> Result<(), ExitCode> {
     let mut temps = TempGuard::default();
+    if policy == AdoptionMode::Selective && fail_on.is_empty() {
+        eprintln!("error: selective policy requires at least one --fail-on rule");
+        return Err(ExitCode::from(USAGE_EXIT));
+    }
+    policy::validate_fail_on(&fail_on).map_err(|err| {
+        eprintln!("error: {err}");
+        ExitCode::from(USAGE_EXIT)
+    })?;
     refuse_if_exists(&report_path, overwrite)?;
     guard_path(&input, false)?;
     guard_path(&manifest, false)?;
@@ -284,6 +293,17 @@ fn run_analyze(
     }
     let csv_bytes = read_bounded(&input, limits.max_input_bytes)?;
     let manifest_bytes = read_bounded(&manifest, limits.max_input_bytes)?;
+    let overridden = if let Some(path) = override_file {
+        let bytes = read_bounded(&path, limits.max_input_bytes)?;
+        policy::load_overrides(&bytes, &sha256_hex(&csv_bytes), &utc_now_stamp()).map_err(
+            |err| {
+                eprintln!("error: {err}");
+                ExitCode::from(2)
+            },
+        )?
+    } else {
+        Vec::new()
+    };
     if cancelled.load(Ordering::Relaxed) {
         return cancelled_exit(&mut temps);
     }
@@ -298,15 +318,9 @@ fn run_analyze(
         eprintln!("error: canonical JSON serialization failed: {err}");
         ExitCode::from(3)
     })?;
-    write_atomic(&report_path, &encoded, &mut temps).map_err(|err| {
-        eprintln!(
-            "error: could not write report {}: {err}",
-            report_path.display()
-        );
-        ExitCode::from(3)
-    })?;
+    let mut outputs = vec![PendingOutput::new(report_path.clone(), encoded, overwrite)];
     if let Some(dir) = repairs_dir {
-        emit_repairs(
+        prepare_repairs(
             &dir,
             &csv_bytes,
             &manifest_bytes,
@@ -314,39 +328,28 @@ fn run_analyze(
             limits,
             cancelled,
             overwrite,
-            &mut temps,
+            &mut outputs,
         )?;
     }
     if let Some(dir) = repro_dir
         && !report.findings.is_empty()
     {
-        emit_repro(
+        prepare_repro(
             &dir,
             &csv_bytes,
             &manifest_bytes,
             &report,
             include_paths.then(|| input.display().to_string()),
             overwrite,
-            &mut temps,
+            &mut outputs,
         )?;
     }
+    commit_outputs(&mut outputs, &mut temps).map_err(|err| {
+        eprintln!("error: could not commit analysis outputs: {err}");
+        ExitCode::from(3)
+    })?;
     print_summary(&report);
     temps.disarm();
-    if policy == AdoptionMode::Selective && fail_on.is_empty() {
-        eprintln!("error: selective policy requires at least one --fail-on rule");
-        return Err(ExitCode::from(USAGE_EXIT));
-    }
-    let mut overridden = Vec::new();
-    if let Some(path) = override_file {
-        let bytes = read_bounded(&path, limits.max_input_bytes)?;
-        match policy::load_overrides(&bytes, &report.input.csv_sha256, &utc_now_stamp()) {
-            Ok(rules) => overridden = rules,
-            Err(err) => {
-                eprintln!("error: {err}");
-                return Err(ExitCode::from(2));
-            }
-        }
-    }
     let code = policy::exit_code(&report, policy, &fail_on, &overridden);
     if code == 0 {
         Ok(())
@@ -529,7 +532,7 @@ fn run_repair(
     if cancelled.load(Ordering::Relaxed) {
         return cancelled_exit(&mut temps);
     }
-    write_atomic(&output, &rendered, &mut temps).map_err(|err| {
+    write_atomic(&output, &rendered, overwrite, &mut temps).map_err(|err| {
         eprintln!("error: could not write {}: {err}", output.display());
         ExitCode::from(3)
     })?;
@@ -600,12 +603,13 @@ fn run_view(
             &css_path,
             &report_json,
             &view_json,
+            overwrite,
             &mut temps,
         )?;
         println!("viewer: {}", index.display());
         println!("protocol: refused-unsupported-schema");
         temps.disarm();
-        return Ok(());
+        return Err(ExitCode::from(2));
     }
     let report: Report = serde_json::from_value(value).map_err(|err| {
         eprintln!("error: report could not be parsed: {err}");
@@ -680,6 +684,7 @@ fn run_view(
         &css_path,
         &report_json,
         &view_json,
+        overwrite,
         &mut temps,
     )?;
     println!("viewer: {}", index.display());
@@ -688,6 +693,7 @@ fn run_view(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn write_bundle(
     output: &Path,
     index: &Path,
@@ -695,6 +701,7 @@ fn write_bundle(
     css_path: &Path,
     report_json: &str,
     view_json: &str,
+    overwrite: bool,
     temps: &mut TempGuard,
 ) -> Result<(), ExitCode> {
     fs::create_dir_all(output).map_err(|err| {
@@ -704,16 +711,21 @@ fn write_bundle(
     let html = VIEWER_HTML
         .replace("%%QUATOPSY_REPORT%%", report_json)
         .replace("%%QUATOPSY_VIEW%%", view_json);
-    write_atomic(index, html.as_bytes(), temps).map_err(|err| {
-        eprintln!("error: could not write {}: {err}", index.display());
-        ExitCode::from(3)
-    })?;
-    write_atomic(js_path, VIEWER_JS.as_bytes(), temps).map_err(|err| {
-        eprintln!("error: could not write {}: {err}", js_path.display());
-        ExitCode::from(3)
-    })?;
-    write_atomic(css_path, VIEWER_CSS.as_bytes(), temps).map_err(|err| {
-        eprintln!("error: could not write {}: {err}", css_path.display());
+    let mut outputs = [
+        PendingOutput::new(index.to_path_buf(), html.into_bytes(), overwrite),
+        PendingOutput::new(
+            js_path.to_path_buf(),
+            VIEWER_JS.as_bytes().to_vec(),
+            overwrite,
+        ),
+        PendingOutput::new(
+            css_path.to_path_buf(),
+            VIEWER_CSS.as_bytes().to_vec(),
+            overwrite,
+        ),
+    ];
+    commit_outputs(&mut outputs, temps).map_err(|err| {
+        eprintln!("error: could not commit viewer bundle: {err}");
         ExitCode::from(3)
     })?;
     Ok(())
@@ -726,7 +738,7 @@ fn embed_json(raw: &str) -> String {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn emit_repairs(
+fn prepare_repairs(
     dir: &Path,
     csv_bytes: &[u8],
     manifest_bytes: &[u8],
@@ -734,7 +746,7 @@ fn emit_repairs(
     limits: Limits,
     cancelled: &AtomicBool,
     overwrite: bool,
-    temps: &mut TempGuard,
+    outputs: &mut Vec<PendingOutput>,
 ) -> Result<(), ExitCode> {
     fs::create_dir_all(dir).map_err(|err| {
         eprintln!("error: cannot create {}: {err}", dir.display());
@@ -772,66 +784,71 @@ fn emit_repairs(
         })?;
         let path = dir.join(format!("{}.csv", repair.id.replace(':', "_")));
         refuse_if_exists(&path, overwrite)?;
-        write_atomic(&path, &rendered, temps).map_err(|err| {
-            eprintln!("error: could not write {}: {err}", path.display());
-            ExitCode::from(3)
-        })?;
+        guard_output_path(&path)?;
+        outputs.push(PendingOutput::new(path, rendered, overwrite));
     }
     Ok(())
 }
 
-fn emit_repro(
+fn prepare_repro(
     dir: &Path,
     csv_bytes: &[u8],
     manifest_bytes: &[u8],
     report: &Report,
     input_path: Option<String>,
     overwrite: bool,
-    temps: &mut TempGuard,
+    outputs: &mut Vec<PendingOutput>,
 ) -> Result<(), ExitCode> {
-    let Some((start, end)) = repro::repro_bounds(&report.findings, report.input.sample_count)
-    else {
-        return Ok(());
-    };
+    if report.findings.len() > MAX_REPRO_SLICES {
+        eprintln!(
+            "error: repro export has {} findings, limit is {MAX_REPRO_SLICES}",
+            report.findings.len()
+        );
+        return Err(ExitCode::from(3));
+    }
     fs::create_dir_all(dir).map_err(|err| {
         eprintln!("error: cannot create {}: {err}", dir.display());
         ExitCode::from(3)
     })?;
-    let slice = slice_csv(csv_bytes, start, end).map_err(|err| {
-        eprintln!("error: {err}");
-        ExitCode::from(3)
-    })?;
-    let slice_path = dir.join("slice.csv");
-    let manifest_path = dir.join("manifest.json");
-    let provenance_path = dir.join("provenance.json");
-    refuse_if_exists(&slice_path, overwrite)?;
-    refuse_if_exists(&manifest_path, overwrite)?;
-    refuse_if_exists(&provenance_path, overwrite)?;
-    write_atomic(&slice_path, &slice, temps).map_err(|err| {
-        eprintln!("error: {err}");
-        ExitCode::from(3)
-    })?;
-    write_atomic(&manifest_path, manifest_bytes, temps).map_err(|err| {
-        eprintln!("error: {err}");
-        ExitCode::from(3)
-    })?;
-    let meta = provenance(
-        report.analysis_id.clone(),
-        report.input.csv_sha256.clone(),
-        report.input.manifest_sha256.clone(),
-        start,
-        end,
-        &report.findings,
-        input_path,
-    );
-    let encoded = serde_json::to_vec_pretty(&meta).map_err(|err| {
-        eprintln!("error: {err}");
-        ExitCode::from(3)
-    })?;
-    write_atomic(&provenance_path, &encoded, temps).map_err(|err| {
-        eprintln!("error: {err}");
-        ExitCode::from(3)
-    })?;
+    for (index, finding) in report.findings.iter().enumerate() {
+        let target = if report.findings.len() == 1 {
+            dir.to_path_buf()
+        } else {
+            dir.join(format!("finding-{:04}", index + 1))
+        };
+        let (start, end) = repro::finding_repro_bounds(finding);
+        let slice = slice_csv(csv_bytes, start, end).map_err(|err| {
+            eprintln!("error: {err}");
+            ExitCode::from(3)
+        })?;
+        let slice_path = target.join("slice.csv");
+        let manifest_path = target.join("manifest.json");
+        let provenance_path = target.join("provenance.json");
+        for path in [&slice_path, &manifest_path, &provenance_path] {
+            refuse_if_exists(path, overwrite)?;
+            guard_output_path(path)?;
+        }
+        let meta = provenance(
+            report.analysis_id.clone(),
+            report.input.csv_sha256.clone(),
+            report.input.manifest_sha256.clone(),
+            start,
+            end,
+            std::slice::from_ref(finding),
+            input_path.clone(),
+        );
+        let encoded = serde_json::to_vec_pretty(&meta).map_err(|err| {
+            eprintln!("error: {err}");
+            ExitCode::from(3)
+        })?;
+        outputs.push(PendingOutput::new(slice_path, slice, overwrite));
+        outputs.push(PendingOutput::new(
+            manifest_path,
+            manifest_bytes.to_vec(),
+            overwrite,
+        ));
+        outputs.push(PendingOutput::new(provenance_path, encoded, overwrite));
+    }
     Ok(())
 }
 
@@ -877,6 +894,23 @@ fn guard_output_path(path: &Path) -> Result<(), ExitCode> {
             path.display()
         );
         return Err(ExitCode::from(3));
+    }
+    if let Some(parent) = path.parent().filter(|item| !item.as_os_str().is_empty()) {
+        match fs::symlink_metadata(parent) {
+            Ok(meta) if meta.file_type().is_symlink() => {
+                eprintln!("error: refusing symlink output parent {}", parent.display());
+                return Err(ExitCode::from(3));
+            }
+            Ok(_) => {}
+            Err(err) if err.kind() == io::ErrorKind::NotFound => {}
+            Err(err) => {
+                eprintln!(
+                    "error: cannot stat output parent {}: {err}",
+                    parent.display()
+                );
+                return Err(ExitCode::from(USAGE_EXIT));
+            }
+        }
     }
     match fs::symlink_metadata(path) {
         Ok(meta) => {
@@ -930,35 +964,149 @@ fn read_bounded(path: &Path, max_bytes: u64) -> Result<Vec<u8>, ExitCode> {
     })
 }
 
-fn write_atomic(path: &Path, bytes: &[u8], temps: &mut TempGuard) -> io::Result<()> {
-    let parent = path
-        .parent()
-        .filter(|item| !item.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    fs::create_dir_all(parent)?;
-    let mut tmp_name = path
-        .file_name()
-        .map(|name| name.to_os_string())
-        .unwrap_or_else(|| "output.tmp".into());
-    tmp_name.push(".tmp");
-    let tmp_path = parent.join(tmp_name);
-    if tmp_path.exists() {
-        fs::remove_file(&tmp_path)?;
+struct PendingOutput {
+    path: PathBuf,
+    bytes: Vec<u8>,
+    overwrite: bool,
+}
+
+impl PendingOutput {
+    fn new(path: PathBuf, bytes: Vec<u8>, overwrite: bool) -> Self {
+        Self {
+            path,
+            bytes,
+            overwrite,
+        }
     }
-    temps.paths.push(tmp_path.clone());
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(&tmp_path)?;
-    file.write_all(bytes)?;
-    file.sync_all()?;
-    drop(file);
-    fs::rename(&tmp_path, path).inspect_err(|_| {
-        let _ = fs::remove_file(&tmp_path);
-    })?;
-    temps.paths.retain(|item| item != &tmp_path);
-    File::open(parent)?.sync_all()?;
+}
+
+fn commit_outputs(outputs: &mut [PendingOutput], temps: &mut TempGuard) -> io::Result<()> {
+    static NONCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let transaction = NONCE.fetch_add(1, Ordering::Relaxed);
+    let mut staged = Vec::with_capacity(outputs.len());
+    for (index, output) in outputs.iter().enumerate() {
+        refuse_for_commit(output)?;
+        let parent = output
+            .path
+            .parent()
+            .filter(|item| !item.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new("."));
+        fs::create_dir_all(parent)?;
+        let name = output
+            .path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy();
+        let temporary = parent.join(format!(
+            ".{name}.quatopsy-{}-{transaction}-{index}.tmp",
+            std::process::id()
+        ));
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temporary)?;
+        file.write_all(&output.bytes)?;
+        file.sync_all()?;
+        drop(file);
+        temps.paths.push(temporary.clone());
+        staged.push(temporary);
+    }
+
+    let mut committed: Vec<(PathBuf, Option<PathBuf>)> = Vec::new();
+    for (index, output) in outputs.iter().enumerate() {
+        let parent = output
+            .path
+            .parent()
+            .filter(|item| !item.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new("."));
+        let backup = if output.overwrite && output.path.exists() {
+            let name = output
+                .path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy();
+            let backup = parent.join(format!(
+                ".{name}.quatopsy-{}-{transaction}-{index}.backup",
+                std::process::id()
+            ));
+            if let Err(err) = fs::rename(&output.path, &backup) {
+                rollback_outputs(&committed);
+                return Err(err);
+            }
+            temps.paths.push(backup.clone());
+            Some(backup)
+        } else {
+            None
+        };
+        let result = if output.overwrite {
+            fs::rename(&staged[index], &output.path)
+        } else {
+            fs::hard_link(&staged[index], &output.path)
+                .and_then(|()| fs::remove_file(&staged[index]))
+        };
+        if let Err(err) = result {
+            if let Some(path) = &backup {
+                let _ = fs::rename(path, &output.path);
+            }
+            rollback_outputs(&committed);
+            return Err(err);
+        }
+        temps.paths.retain(|item| item != &staged[index]);
+        committed.push((output.path.clone(), backup));
+    }
+    for (path, _) in &committed {
+        if let Some(parent) = path.parent()
+            && let Err(err) = File::open(parent).and_then(|directory| directory.sync_all())
+        {
+            rollback_outputs(&committed);
+            return Err(err);
+        }
+    }
+    for (_, backup) in &committed {
+        if let Some(backup) = backup {
+            let _ = fs::remove_file(backup);
+            temps.paths.retain(|item| item != backup);
+        }
+    }
     Ok(())
+}
+
+fn refuse_for_commit(output: &PendingOutput) -> io::Result<()> {
+    match fs::symlink_metadata(&output.path) {
+        Ok(meta) if meta.file_type().is_symlink() || !meta.file_type().is_file() => Err(
+            io::Error::new(io::ErrorKind::InvalidInput, "unsafe output target"),
+        ),
+        Ok(_) if !output.overwrite => Err(io::Error::new(
+            io::ErrorKind::AlreadyExists,
+            "output target already exists",
+        )),
+        Ok(_) => Ok(()),
+        Err(err) if err.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(err) => Err(err),
+    }
+}
+
+fn rollback_outputs(committed: &[(PathBuf, Option<PathBuf>)]) {
+    for (path, backup) in committed.iter().rev() {
+        let _ = fs::remove_file(path);
+        if let Some(backup) = backup {
+            let _ = fs::rename(backup, path);
+        }
+    }
+}
+
+fn write_atomic(
+    path: &Path,
+    bytes: &[u8],
+    overwrite: bool,
+    temps: &mut TempGuard,
+) -> io::Result<()> {
+    let mut output = [PendingOutput::new(
+        path.to_path_buf(),
+        bytes.to_vec(),
+        overwrite,
+    )];
+    commit_outputs(&mut output, temps)
 }
 
 fn cancelled_exit(temps: &mut TempGuard) -> Result<(), ExitCode> {
@@ -1016,5 +1164,74 @@ fn print_summary(report: &Report) {
     }
     if !report.diagnostics.message.is_empty() {
         println!("message: {}", report.diagnostics.message);
+    }
+}
+
+#[cfg(test)]
+mod transaction_tests {
+    use super::*;
+
+    fn temporary_dir() -> PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "quatopsy-output-transaction-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn failed_batch_commit_restores_overwritten_target() {
+        let dir = temporary_dir();
+        let target = dir.join("result.json");
+        fs::write(&target, b"original").unwrap();
+        let mut outputs = [
+            PendingOutput::new(target.clone(), b"replacement".to_vec(), true),
+            PendingOutput::new(target.clone(), b"collision".to_vec(), false),
+        ];
+        let mut temps = TempGuard::default();
+        assert!(commit_outputs(&mut outputs, &mut temps).is_err());
+        assert_eq!(fs::read(&target).unwrap(), b"original");
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn no_clobber_commit_preserves_concurrently_created_target() {
+        let dir = temporary_dir();
+        let target = dir.join("result.json");
+        let mut outputs = [PendingOutput::new(target.clone(), b"new".to_vec(), false)];
+        fs::write(&target, b"racer").unwrap();
+        let mut temps = TempGuard::default();
+        assert!(commit_outputs(&mut outputs, &mut temps).is_err());
+        assert_eq!(fs::read(&target).unwrap(), b"racer");
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn repro_limit_refuses_before_creating_output_directory() {
+        let csv = b"t,qw,qx,qy,qz\n0,1,0,0,0\n1,-1,0,0,0\n";
+        let manifest = br#"{"schema":"quatopsy.manifest/1","component_order":"wxyz","rotation_sense":"active","frame_from":"BODY","frame_to":"J2000","time_unit":"s","columns":{"time":"t","quaternion":["qw","qx","qy","qz"]}}"#;
+        let mut report = analyze(AnalyzeRequest {
+            csv_bytes: csv,
+            manifest_bytes: manifest,
+            engine_version: "0.1.0",
+            limits: Limits::defaults(),
+            cancelled: None,
+        });
+        let finding = report.findings[0].clone();
+        report.findings = vec![finding; MAX_REPRO_SLICES + 1];
+        let root = temporary_dir();
+        let output = root.join("repro");
+        let mut pending = Vec::new();
+        assert!(
+            prepare_repro(&output, csv, manifest, &report, None, false, &mut pending,).is_err()
+        );
+        assert!(!output.exists());
+        assert!(pending.is_empty());
+        fs::remove_dir_all(root).unwrap();
     }
 }

@@ -39,7 +39,7 @@ The CLI accepts explicit file lists and emits one report per analysis unit. Mono
 
 Hosted CI is disabled while the repository is private. Repository-owned local CI is authoritative. Public opening remains a distinct gate and is not authorised by the private `0.1.0` GitHub Release.
 
-`INT-3` adoption modes are `advisory`, `selective`, and `required`. Selective mode requires `--fail-on`. `--override-file` accepts `quatopsy.override/1` records with authority, reason, expiry, and optional input digest. Overrides and policy change process exit only; they never convert findings into a report `pass`.
+`INT-3` adoption modes are `advisory`, `selective`, and `required`. Selective mode requires at least one exact closed-registry `--fail-on` rule. `--override-file` accepts `quatopsy.override/1` records with authority, reason, canonical UTC creation and expiry timestamps, and optional input digest. Duplicate rules, malformed timestamps, future creation times, and expired records are refused before report creation. Overrides and policy change process exit only; they never convert findings into a report `pass`.
 
 ## Compatibility and identity
 
@@ -51,7 +51,7 @@ The first target is one million samples analysed in under 10 seconds and under 5
 
 ## Privacy and telemetry
 
-No telemetry is collected by default. Analysis is local and network-free. Logs exclude sample payloads and paths unless verbose mode is explicitly selected. Any future usage metrics require opt-in, schema disclosure, bounded retention, deletion, and a separate threat-model update.
+No telemetry is collected. Analysis is local and network-free. The CLI has no persistent or verbose logger; terminal diagnostics do not echo sample payload rows, while explicit user-supplied paths may appear in filesystem errors. Any future usage metrics or persistent logging require opt-in, schema disclosure, bounded retention, deletion, and a separate threat-model update.
 
 ## Rollback and removal
 
@@ -60,4 +60,3 @@ Rule upgrades are version-pinned and reversible. A clean analysis bypasses cache
 ## Optional adoption evidence
 
 Interviews, pilots, customer discovery, cohort measurement, and ecosystem ranking are optional post-release evidence. They do not gate architecture freeze, implementation, completion, or release. Without them, Quatopsy must not claim validated demand, market fit, practitioner preference, or measured onboarding reduction.
-

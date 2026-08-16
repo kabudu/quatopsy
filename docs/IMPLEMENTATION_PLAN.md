@@ -29,8 +29,8 @@ Exit: hand-audited fixtures prove `QAT-NORM-001`, `QAT-TIME-001`, `QAT-LIFT-001`
 
 - [x] Implement sign-lift and normalisation repair candidates without source overwrite.
 - [x] Prove sign repairs preserve the independent rotation-matrix oracle within tolerance.
-- [x] Emit minimal reproducible fixture slices with source provenance and privacy controls.
-- [x] Add atomic output, no-clobber defaults, cancellation cleanup, and clean mode.
+- [x] Emit one context-bounded reproducible fixture slice per finding with source provenance and path privacy controls.
+- [x] Add staged output-set commit with rollback, race-safe no-clobber defaults, cancellation cleanup, and clean mode.
 - [x] Test hostile CSV, path, Unicode, numeric, and resource-exhaustion inputs.
 
 Exit: every initial defect fixture has a deterministic finding, evidence interval, repair disposition, and regression case.
@@ -41,7 +41,7 @@ Exit: every initial defect fixture has a deterministic finding, evidence interva
 - [x] Synchronise physical 3D, projected `S^3`, timeline, evidence, and repair views by sample identity.
 - [x] Label projection artefacts and distinguish raw, derived, and proposed data.
 - [x] Meet keyboard, screen-reader, contrast, reduced-motion, colour-state, and bounded-rendering requirements.
-- [x] Validate large-report downsampling retains findings and extrema.
+- [x] Validate large-report downsampling retains bounded geometry extrema and a navigation link for every finding.
 
 Exit: public-workflow E2E tests reproduce all five initial defect stories and accessibility checks pass.
 
@@ -51,7 +51,7 @@ Exit: public-workflow E2E tests reproduce all five initial defect stories and ac
 - [x] Add optional commanded-path comparison for bounded unwinding diagnostics.
 - [x] Benchmark one million samples against the documented performance budget.
 - [x] Package reproducible signed or checksummed binaries only when release infrastructure and authorization exist.
-- [x] Complete install, upgrade, downgrade, rollback, removal, and report-compatibility tests.
+- [x] Complete local binary copy/install, repeated-analysis compatibility, removal, V1 report-reader compatibility, and unknown-major refusal tests.
 
 Exit: supported scope passes adversarial, portability, lifecycle, performance, and documentation gates.
 
@@ -60,7 +60,7 @@ Exit: supported scope passes adversarial, portability, lifecycle, performance, a
 - [x] Resolve every stop-ship correctness, security, privacy, compatibility, and legal/name risk.
 - [x] Freeze evidence-bounded public claims and curated release presentation.
 - [x] Produce and validate the full brand system only if productisation is approved.
-- [x] Render release notes at desktop and narrow widths and verify the live release after publication.
+- [x] Generate and validate release-note previews at desktop and narrow widths before publication.
 - [x] Publish only with explicit release authorization and documented credentials path.
 
 Exit: release policy passes for a private `0.1.0` GitHub Release. External independent validation is welcome but is not required for this exit; unsupported independent-validation claims remain prohibited. Public opening, hosted CI, crates.io, signed binaries, and full brand productisation remain distinct unauthorised gates.
@@ -72,13 +72,14 @@ Exit: release policy passes for a private `0.1.0` GitHub Release. External indep
 - [x] Keep adapters outside verdict ownership (`INT-2`) with contract tests.
 - [x] Ship advisory, selective, and required adoption with scoped overrides (`INT-3`).
 - [x] Use optional angular-velocity columns in `QAT-OMEGA-001`.
-- [x] Meet the documented E2E bar for mutation, fuzz, privacy sinks, and permission chaos.
+- [x] Meet the documented automated E2E bar for mutation, seeded fuzz, default stderr privacy, output cleanup, and permission failures.
 - [x] Ship uncompressed MCAP JSON and SPICE CK type 3 adapters outside verdict ownership.
 
 Exit: local CI plus the named fixtures and CLI tests.
 
 ## Optional post-release evidence track
 
+- [ ] Verify the canonical release page at desktop and narrow widths after an authorised publication.
 - [ ] Invite independent reproduction or expert challenge and record positive and negative results.
 - [ ] Conduct practitioner interviews or pilots if evidence of demand or workflow value is desired.
 - [ ] Measure debugging-time, false-finding, and adoption outcomes with a pre-registered protocol.
@@ -89,4 +90,3 @@ This track is optional and does not block implementation, product completion, pu
 ## Separate future project
 
 - [ ] Explore the quaternion learning laboratory under a distinct mandate, name audit, claim boundary, and repository.
-

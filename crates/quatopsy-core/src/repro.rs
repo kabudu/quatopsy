@@ -16,20 +16,11 @@ pub struct ReproProvenance {
     pub input_path: Option<String>,
 }
 
-pub fn repro_bounds(findings: &[Finding], sample_count_hint: u64) -> Option<(u64, u64)> {
-    let mut start = u64::MAX;
-    let mut end = 0_u64;
-    for finding in findings {
-        start = start.min(finding.source_row_start);
-        end = end.max(finding.source_row_end);
-    }
-    if start == u64::MAX {
-        return None;
-    }
-    let padded_start = start.saturating_sub(1).max(2);
-    let padded_end = end.saturating_add(1);
-    let _ = sample_count_hint;
-    Some((padded_start, padded_end))
+pub fn finding_repro_bounds(finding: &Finding) -> (u64, u64) {
+    (
+        finding.source_row_start.saturating_sub(1).max(2),
+        finding.source_row_end.saturating_add(1),
+    )
 }
 
 pub fn slice_csv(csv_bytes: &[u8], start_row: u64, end_row: u64) -> Result<Vec<u8>, String> {
@@ -75,5 +66,33 @@ pub fn provenance(
         source_row_end: end_row,
         finding_ids: findings.iter().map(|finding| finding.id.clone()).collect(),
         input_path,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use quatopsy_schema::{Confidence, FindingClass, RepairDisposition, Severity};
+
+    #[test]
+    fn finding_slice_is_bounded_to_one_context_row() {
+        let finding = Finding {
+            id: "finding:test".to_string(),
+            rule: "QAT-SIGN-001".to_string(),
+            rule_version: "1".to_string(),
+            class: FindingClass::RepresentationDiscontinuity,
+            severity: Severity::Medium,
+            confidence: Confidence::Exact,
+            source_row_start: 100,
+            source_row_end: 101,
+            timestamp_ns_start: 0,
+            timestamp_ns_end: 1,
+            evidence: Vec::new(),
+            summary: "test".to_string(),
+            reason_code: "test".to_string(),
+            repair_disposition: RepairDisposition::None,
+            repair_refs: Vec::new(),
+        };
+        assert_eq!(finding_repro_bounds(&finding), (99, 102));
     }
 }

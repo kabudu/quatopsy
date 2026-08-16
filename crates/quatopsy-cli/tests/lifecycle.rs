@@ -26,7 +26,7 @@ fn tempfile_dir() -> PathBuf {
 }
 
 #[test]
-fn install_upgrade_rollback_removal_and_report_compatibility() {
+fn install_repeat_analysis_removal_and_report_compatibility() {
     let root = workspace_root();
     let tmp = tempfile_dir();
     let source_csv = root.join("fixtures/conformance/clean_slew/input.csv");
@@ -122,7 +122,7 @@ fn install_upgrade_rollback_removal_and_report_compatibility() {
             .status()
             .unwrap()
             .code(),
-        Some(0)
+        Some(2)
     );
     let js = fs::read_to_string(future_view.join("viewer.js")).unwrap();
     assert!(js.contains("Viewer refused unknown report schema"));

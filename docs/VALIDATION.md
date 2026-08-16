@@ -43,7 +43,10 @@ Conformance metrics are exact counts with confidence intervals for sampled fuzz 
 
 Internal reproducible evidence can support implementation and release claims within the tested scope. External independent reproduction and expert challenge are optional and do not gate implementation, product completion, or release. Without them, public copy must not claim independent validation, broad external reproducibility, or expert consensus.
 
+## Viewer browser evidence
+
+The 2026-08-16 forensic gap-closure review generated the `sign_alternating` viewer through the public CLI and loaded it from a local HTTP server in the in-app browser. The accessibility snapshot exposed the skip link, six named regions, text verdict, labelled range input, descriptive canvas alternatives, keyboard-operable finding buttons, and separate raw, derived, and proposed state text. Clicking a finding selected the linked source-row geometry, the page emitted no console errors, and a 375 by 812 viewport had no horizontal overflow. The local server observed requests only for `index.html`, `viewer.js`, and `viewer.css`. Automated tests retain the source, CSP, contrast, keyboard wiring, bounded geometry, and finding-link assertions; this browser inspection is supporting evidence rather than a substitute for those tests.
+
 ## Optional post-release evidence
 
 Independent reproduction, practitioner interviews, pilots, adoption cohorts, and ecosystem ranking may be pursued after release. Their absence prohibits demand, preference, adoption, and independently validated claims only.
-

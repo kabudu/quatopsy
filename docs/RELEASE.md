@@ -15,7 +15,7 @@ External independent validation, expert challenge, practitioner interviews, pilo
 ## Release gates
 
 1. Supported rule semantics pass conformance, mutation, adversarial, deterministic, and portability checks.
-2. Resource limits, atomic output, cancellation, rollback, downgrade, removal, and privacy sinks pass E2E tests.
+2. Resource limits, output-set rollback, cancellation, local binary removal, report compatibility, and documented privacy sinks pass E2E tests. Cross-version executable downgrade testing begins when a second supported version exists.
 3. Dependencies, licences, lockfiles, build provenance, and artefact digests pass supply-chain review.
 4. Traceability maps every supported requirement to behavioural evidence.
 5. Public claims match evidence and state explicit non-claims.

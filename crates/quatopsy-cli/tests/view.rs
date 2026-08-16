@@ -127,7 +127,7 @@ fn unknown_report_schema_is_refused_by_the_viewer_bundle() {
         ])
         .status()
         .unwrap();
-    assert_eq!(status.code(), Some(0));
+    assert_eq!(status.code(), Some(2));
     let html = fs::read_to_string(out.join("index.html")).unwrap();
     let js = fs::read_to_string(out.join("viewer.js")).unwrap();
     assert!(js.contains("Viewer refused unknown report schema"));

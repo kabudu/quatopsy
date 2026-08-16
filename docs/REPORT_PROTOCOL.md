@@ -18,7 +18,7 @@ Each repair has an algorithm identifier, source analysis ID, disposition (`propo
 
 ## Viewer
 
-`quatopsy view` writes a static HTML/CSS/JS bundle. Verdicts are copied from `quatopsy.report/1` and are never recomputed in the browser. Derived geometry is a separate `quatopsy.view/1` payload labelled non-authoritative. Unknown report major versions are refused. The bundle loads no remote resources.
+`quatopsy view` writes a static HTML/CSS/JS bundle. Verdicts are copied from `quatopsy.report/1` and are never recomputed in the browser. Derived geometry is a separate `quatopsy.view/1` payload labelled non-authoritative. Unknown report major versions produce an explanatory non-authoritative bundle and return refusal exit 2. The bundle loads no remote resources.
 
 `QAT-UNWIND-001` is enabled for every analysis. When commanded quaternion columns are absent it records `commanded-path-absent` and passes. When they are present it compares adjacent covering angle `2 acos(p·q)` with the quotient-shortest angle `2 acos(|p·q|)` and records `commanded-long-way` findings when the commanded covering is longer.
 
@@ -41,4 +41,3 @@ Each repair has an algorithm identifier, source analysis ID, disposition (`propo
 ## Compatibility
 
 Consumers reject unknown major schema versions. Unknown optional fields in a known major version are retained or ignored without changing verdicts. Rule semantic changes require a new rule version and cannot overwrite historical meaning.
-

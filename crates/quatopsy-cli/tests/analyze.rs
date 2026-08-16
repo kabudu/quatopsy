@@ -120,9 +120,11 @@ fn sign_repair_is_a_new_file_and_clears_sign_findings() {
             .code(),
         Some(1)
     );
-    let provenance = fs::read_to_string(tmp.join("repro/provenance.json")).unwrap();
+    let provenance = fs::read_to_string(tmp.join("repro/finding-0001/provenance.json")).unwrap();
     assert!(!provenance.contains(input.to_str().unwrap()));
-    assert!(tmp.join("repro/slice.csv").exists());
+    assert!(tmp.join("repro/finding-0001/slice.csv").exists());
+    let metadata: serde_json::Value = serde_json::from_str(&provenance).unwrap();
+    assert_eq!(metadata["finding_ids"].as_array().unwrap().len(), 1);
     assert_eq!(
         Command::new(bin())
             .args([
@@ -222,6 +224,36 @@ fn symlink_output_is_refused() {
         .unwrap();
     assert_eq!(status.code(), Some(3));
     assert_eq!(fs::read(&target).unwrap(), b"nope");
+}
+
+#[cfg(unix)]
+#[test]
+fn symlink_output_parent_is_refused() {
+    let root = workspace_root();
+    let tmp = tempfile_dir();
+    let real = tmp.join("real");
+    let linked = tmp.join("linked");
+    fs::create_dir_all(&real).unwrap();
+    std::os::unix::fs::symlink(&real, &linked).unwrap();
+    let report = linked.join("report.json");
+    let status = Command::new(bin())
+        .args([
+            "analyze",
+            "--input",
+            root.join("fixtures/conformance/clean_slew/input.csv")
+                .to_str()
+                .unwrap(),
+            "--manifest",
+            root.join("fixtures/conformance/clean_slew/manifest.json")
+                .to_str()
+                .unwrap(),
+            "--report",
+            report.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    assert_eq!(status.code(), Some(3));
+    assert!(!real.join("report.json").exists());
 }
 
 #[test]
@@ -336,6 +368,35 @@ fn unwritable_report_directory_leaves_no_committed_file() {
     let mut restore = fs::metadata(&locked).unwrap().permissions();
     restore.set_mode(0o755);
     fs::set_permissions(&locked, restore).unwrap();
+    assert_eq!(status.code(), Some(3));
+    assert!(!report.exists());
+}
+
+#[test]
+fn failed_auxiliary_output_leaves_no_committed_analysis_output() {
+    let root = workspace_root();
+    let tmp = tempfile_dir();
+    let report = tmp.join("report.json");
+    let repairs_target = tmp.join("not-a-directory");
+    fs::write(&repairs_target, b"occupied").unwrap();
+    let status = Command::new(bin())
+        .args([
+            "analyze",
+            "--input",
+            root.join("fixtures/conformance/sign_alternating/input.csv")
+                .to_str()
+                .unwrap(),
+            "--manifest",
+            root.join("fixtures/conformance/sign_alternating/manifest.json")
+                .to_str()
+                .unwrap(),
+            "--report",
+            report.to_str().unwrap(),
+            "--repairs-dir",
+            repairs_target.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
     assert_eq!(status.code(), Some(3));
     assert!(!report.exists());
 }
