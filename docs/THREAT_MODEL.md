@@ -27,7 +27,7 @@ All input files, manifests, adapters, report files, viewer bundles, and future i
 
 Use memory-safe Rust, bounded streaming parse, checked arithmetic, finite-value validation, path and Unicode tests, dependency locking and audit, reproducible builds where supported, least-privilege release credentials, atomic writes, explicit overwrite flags, cancellation cleanup, fuzzing, mutation tests, and canonical digest verification.
 
-Archives, ROS bags, MCAP, and SPICE files are handled only by later isolated adapters with decompression, recursion, entry, and path limits. They do not enter V1 core parsing.
+Archives, ROS bags, MCAP, and SPICE files are handled only by isolated adapters with record, message, compression, and size limits. Compressed MCAP chunks and nested chunks are refused. SPICE reading is limited to little-endian IEEE DAF/CK type 3 discrete pointing. These formats do not enter core CSV parsing.
 
 ## Privacy
 

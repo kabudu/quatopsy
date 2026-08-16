@@ -25,9 +25,10 @@ Adapters produce the canonical CSV and manifest plus provenance. They cannot ass
 | CSV | Universal export | Canonical V1 profile | First release |
 | JSON report | Tool-neutral evidence | Stable report protocol | First release |
 | ROS 2 JSON | Pose logs | Offline `ros-json` converter | Shipped |
+| MCAP JSON | Timestamped JSON poses in uncompressed MCAP | Offline `mcap-json` converter | Shipped |
+| SPICE CK | Discrete type 3 C-kernels (LTL-IEEE) | Offline `spice-ck` converter | Shipped |
 | TUBIN STR CSV | Public star-tracker telemetry | Offline `tubin-str` converter | Shipped |
 | IDS Jason-1 ASCII | Published qbody layout | Offline `ids-jason1` converter | Shipped |
-| SPICE CK | Spacecraft attitude kernels | Read-only converter with frame provenance | Planned |
 | Foxglove | 3D pose and plots | Report/marker export, no verdict reinterpretation | Candidate |
 | Basilisk | Simulation and Vizard | Fixture/report adapter | Candidate |
 | SciPy / NumPy | Rotation analysis | Reference-oracle and import helpers | Candidate |

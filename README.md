@@ -42,6 +42,8 @@ cargo run --bin quatopsy -- adapt \
   --output-dir /tmp/quatopsy-tubin
 ```
 
+`quatopsy adapt --format mcap-json` and `--format spice-ck` convert uncompressed MCAP JSON poses and little-endian CK type 3 kernels into the same canonical CSV and manifest. They never assign a report `result`.
+
 Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 
 ## Documentation
