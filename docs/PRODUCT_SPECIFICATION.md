@@ -58,5 +58,4 @@ V1 succeeds when a hand-audited conformance suite proves deterministic detection
 
 ## Non-goals
 
-Quatopsy V1 is not a controller, trajectory optimiser, simulator, sensor-fusion filter, collision planner, certification tool, live mission-control system, proof of safe motion, energy estimator without a supplied dynamics model, or quaternion learning laboratory.
-
+Quatopsy V1 is not a controller, trajectory optimiser, simulator, sensor-fusion filter, collision planner, certification tool, live mission-control system, proof of safe motion, energy estimator without a supplied dynamics model, or quaternion learning laboratory. Viewer interaction is bound to report evidence, retained sample identity, and separately labelled repair candidates; it does not provide free-form quaternion construction or tutorial exercises.

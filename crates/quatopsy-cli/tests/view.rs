@@ -146,15 +146,26 @@ fn viewer_assets_meet_keyboard_contrast_and_text_state_requirements() {
     assert!(html.contains("Skip to main content"));
     assert!(html.contains("aria-live=\"polite\""));
     assert!(html.contains("role=\"status\""));
+    assert!(html.contains("aria-label=\"Trajectory playback controls\""));
+    assert!(html.contains("id=\"play\""));
+    assert!(html.contains("id=\"timeline\"") && html.contains("tabindex=\"0\""));
+    assert!(html.contains("Evidence queue"));
+    assert!(html.contains("Non-physical view"));
     assert!(css.contains("prefers-reduced-motion"));
     assert!(css.contains("forced-colors"));
+    assert!(css.contains("max-width: 480px"));
     assert!(js.contains("ArrowRight"));
     assert!(js.contains("ArrowLeft"));
+    assert!(js.contains("timeline.addEventListener(\"click\""));
+    assert!(js.contains("window.setInterval"));
+    assert!(js.contains("if (reduced || samples.length < 2)"));
     assert!(js.contains("the viewer did not recompute rules"));
-    assert!(contrast(0x16, 0x16, 0x16, 0xf4, 0xf1, 0xea) >= 4.5);
-    assert!(contrast(0x8a, 0x12, 0x12, 0xf4, 0xf1, 0xea) >= 4.5);
-    assert!(contrast(0x0b, 0x4d, 0x32, 0xf4, 0xf1, 0xea) >= 4.5);
-    let _ = css;
+    assert!(!js.contains("alert("));
+    assert!(!js.contains("confirm("));
+    assert!(!js.contains("prompt("));
+    assert!(contrast(0xee, 0xf4, 0xf6, 0x05, 0x08, 0x0b) >= 4.5);
+    assert!(contrast(0xff, 0x77, 0x70, 0x05, 0x08, 0x0b) >= 4.5);
+    assert!(contrast(0x9b, 0xab, 0xb4, 0x05, 0x08, 0x0b) >= 4.5);
 }
 
 fn lin(channel: u8) -> f64 {

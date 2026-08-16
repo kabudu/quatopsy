@@ -12,7 +12,7 @@ Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core
 4. `repair`: opt-in candidate transforms that never overwrite input.
 5. `report`: canonical versioned JSON and terminal rendering.
 6. `cli`: public offline workflow, resource limits, exit codes, and atomic output.
-7. `viewer`: local static UI for linked 3D, projected `S^3`, timeline, and evidence views.
+7. `viewer`: local static forensic console for linked physical attitude, projected `S^3`, timeline, canonical evidence, and proposed-repair views. Playback and canvas navigation only change the selected retained sample; they never recompute rules or alter the report.
 8. `adapters`: converters into the canonical input contract, outside the semantic core (`ids-jason1`, `ros-json`, `tubin-str`, `mcap-json`, `spice-ck`).
 
 ## Data flow
@@ -56,4 +56,3 @@ Parsing and analysis are side-effect-free until output commit. Cancellation remo
 ## Minimality rationale
 
 Rust provides explicit result types, bounded parsers, portable CLI distribution, and WebAssembly reuse. A service is unjustified because the first workflow is local, sensitive, deterministic, and batch-oriented. Adapters are compiled formats, not a plug-in runtime.
-

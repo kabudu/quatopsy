@@ -1,6 +1,6 @@
 # Quatopsy
 
-Quatopsy is a candidate local-first product for diagnosing quaternion orientation trajectories before or after they drive a spacecraft, robot, simulator, or animation system. It combines a deterministic trajectory linter with a visual debugger that links physical motion in `SO(3)` to a projected lift in `S^3`.
+Quatopsy is a candidate local-first product for diagnosing quaternion orientation trajectories before or after they drive a spacecraft, robot, simulator, or animation system. It combines a deterministic trajectory linter with a responsive forensic investigation console that links physical motion in `SO(3)` to a projected lift in `S^3`, canonical evidence, and unapplied repair candidates.
 
 ## Candidate contribution
 

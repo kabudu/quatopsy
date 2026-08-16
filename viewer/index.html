@@ -3,59 +3,100 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
-  <title>Quatopsy viewer</title>
+  <title>Quatopsy investigation console</title>
   <link rel="stylesheet" href="viewer.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to main content</a>
-  <header>
-    <h1>Quatopsy viewer</h1>
-    <p class="claim">Advisory visualisation of a canonical report. This view does not redefine verdicts and is not flight approval.</p>
-    <p id="result-banner" role="status"></p>
+  <header class="masthead">
+    <div class="brand-lockup">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <div>
+        <p class="eyebrow">Orientation trajectory forensics</p>
+        <h1>QUATOPSY <span>/ investigation console</span></h1>
+      </div>
+    </div>
+    <p class="claim">Advisory view of a canonical report. No verdicts are recomputed. Not flight approval.</p>
   </header>
+  <aside id="result-banner" class="status-strip" role="status"></aside>
   <main id="main">
-    <section class="panel" aria-labelledby="physical-heading">
-      <h2 id="physical-heading">Physical rotation SO(3)</h2>
-      <p class="layer-note">Derived body axes from unit quaternions. Measured raw samples remain distinct from this derived triad.</p>
-      <canvas id="physical" width="480" height="320" role="img" aria-labelledby="physical-caption"></canvas>
-      <p id="physical-caption">Body +x trail and current triad for the selected sample.</p>
+    <section class="casebar" aria-labelledby="case-heading">
+      <div><p class="eyebrow" id="case-heading">Case status</p><p class="case-result" id="case-result">Loading report</p></div>
+      <dl class="metrics" aria-label="Report summary">
+        <div><dt>Findings</dt><dd id="metric-findings">0</dd></div>
+        <div><dt>Geometry</dt><dd id="metric-samples">0 / 0</dd></div>
+        <div><dt>Selected row</dt><dd id="metric-row">--</dd></div>
+        <div><dt>Time</dt><dd id="metric-time">--</dd></div>
+      </dl>
     </section>
-    <section class="panel" aria-labelledby="stereo-heading">
-      <h2 id="stereo-heading">Projected S^3 lift</h2>
-      <p id="projection-warning" class="warning" role="note"></p>
-      <canvas id="stereo" width="480" height="320" role="img" aria-labelledby="stereo-caption"></canvas>
-      <p id="stereo-caption">Stereographic projection of the derived lift. This is a projection artefact, not a physical path.</p>
+    <section class="workspace" aria-label="Linked trajectory investigation views">
+      <article class="panel panel-physical" aria-labelledby="physical-heading">
+        <header class="panel-head"><div><p class="panel-index">01 / physical attitude</p><h2 id="physical-heading">SO(3) body-frame trace</h2></div><span class="data-chip">Derived</span></header>
+        <p class="layer-note">Derived body axes from unit quaternions. Measured raw samples remain distinct.</p>
+        <div class="viewport-shell">
+          <canvas id="physical" width="720" height="460" role="img" aria-labelledby="physical-caption"></canvas>
+          <span class="viewport-label viewport-label-top">Inertial frame</span><span class="viewport-label viewport-label-bottom">Body +X trail</span>
+        </div>
+        <p id="physical-caption" class="sr-detail">Body +x trail and current body triad for the selected sample.</p>
+      </article>
+      <article class="panel panel-stereo" aria-labelledby="stereo-heading">
+        <header class="panel-head"><div><p class="panel-index">02 / representation lift</p><h2 id="stereo-heading">Projected S<sup>3</sup> topology</h2></div><span class="data-chip artefact-chip">Projection</span></header>
+        <p id="projection-warning" class="warning" role="note"></p>
+        <div class="viewport-shell">
+          <canvas id="stereo" width="720" height="460" role="img" aria-labelledby="stereo-caption"></canvas>
+          <span class="viewport-label viewport-label-top">Stereographic field</span><span class="viewport-label viewport-label-bottom">Non-physical view</span>
+        </div>
+        <p id="stereo-caption" class="sr-detail">Stereographic projection of the derived lift. This projection is not a physical path.</p>
+      </article>
+      <article class="panel panel-timeline" aria-labelledby="timeline-heading">
+        <header class="panel-head"><div><p class="panel-index">03 / temporal evidence</p><h2 id="timeline-heading">Quotient-angle timeline</h2></div><span class="key-hint">Click plot or use arrow keys</span></header>
+        <p class="layer-note">Derived quotient angle by sample identity. Diamond markers identify finding-linked geometry.</p>
+        <canvas id="timeline" width="1440" height="260" role="img" aria-labelledby="timeline-caption" tabindex="0"></canvas>
+        <p id="timeline-caption" class="sr-detail">Angle in radians across bounded geometry. Finding-linked rows use diamond markers.</p>
+        <div class="transport" aria-label="Trajectory playback controls">
+          <button id="step-back" type="button" aria-label="Previous sample">&#8592;</button>
+          <button id="play" type="button" aria-label="Play trajectory" aria-pressed="false"><span aria-hidden="true">&#9654;</span> Play</button>
+          <button id="step-forward" type="button" aria-label="Next sample">&#8594;</button>
+          <label for="sample-slider">Selected sample <output id="sample-position" for="sample-slider">1 / 1</output></label>
+          <input id="sample-slider" type="range" min="0" max="0" value="0">
+        </div>
+      </article>
     </section>
-    <section class="panel" aria-labelledby="timeline-heading">
-      <h2 id="timeline-heading">Timeline</h2>
-      <p class="layer-note">Derived quotient angle versus sample identity. Colour is not the only state signal; the selected row is also listed in text.</p>
-      <canvas id="timeline" width="960" height="180" role="img" aria-labelledby="timeline-caption"></canvas>
-      <p id="timeline-caption">Angle in radians across downsampled samples. Findings are marked with squares.</p>
-      <label for="sample-slider">Selected sample</label>
-      <input id="sample-slider" type="range" min="0" max="0" value="0">
-    </section>
-    <section class="panel" aria-labelledby="evidence-heading">
-      <h2 id="evidence-heading">Evidence</h2>
-      <p id="selection" aria-live="polite"></p>
-      <ul id="findings"></ul>
-    </section>
-    <section class="panel" aria-labelledby="repair-heading">
-      <h2 id="repair-heading">Repair candidates</h2>
-      <p class="layer-note">Proposed data is a candidate overlay. It is not applied unless <code>quatopsy repair</code> writes a new file.</p>
-      <ul id="repairs"></ul>
+    <section class="lower-grid">
+      <article class="panel evidence-panel" aria-labelledby="evidence-heading">
+        <header class="panel-head"><div><p class="panel-index">04 / canonical findings</p><h2 id="evidence-heading">Evidence queue</h2></div><span class="data-chip canonical-chip">Canonical</span></header>
+        <p class="queue-note">Select a finding to synchronize every view to its retained evidence row.</p>
+        <ol id="findings" class="finding-list"></ol>
+      </article>
+      <aside class="detail-stack" aria-label="Selected evidence details">
+        <section class="panel selection-panel" aria-labelledby="selection-heading">
+          <header class="panel-head"><div><p class="panel-index">Selected sample</p><h2 id="selection-heading">Identity and values</h2></div></header>
+          <p id="selection" class="sr-only" aria-live="polite"></p>
+          <dl class="sample-data">
+            <div><dt>Source row</dt><dd id="detail-row">--</dd></div><div><dt>Timestamp</dt><dd id="detail-time">--</dd></div>
+            <div class="wide"><dt>Raw quaternion</dt><dd id="detail-raw">Unavailable</dd></div><div class="wide"><dt>Derived lift</dt><dd id="detail-lift">Unavailable</dd></div>
+            <div class="wide proposed-row"><dt>Proposed repair</dt><dd id="detail-proposed">None</dd></div>
+          </dl>
+        </section>
+        <section class="panel repair-panel" aria-labelledby="repair-heading">
+          <header class="panel-head"><div><p class="panel-index">Candidate output</p><h2 id="repair-heading">Repair candidates</h2></div></header>
+          <p class="layer-note">Proposed data is a candidate overlay. It is only applied when <code>quatopsy repair</code> writes a new file.</p>
+          <ul id="repairs" class="repair-list"></ul>
+        </section>
+      </aside>
     </section>
     <section class="legend" aria-labelledby="legend-heading">
-      <h2 id="legend-heading">Layers</h2>
+      <div><p class="eyebrow">Display contract</p><h2 id="legend-heading">Layers and provenance</h2></div>
       <ul>
-        <li><span class="swatch raw" aria-hidden="true"></span> Raw measured quaternion components stay in the report and selection text.</li>
-        <li><span class="swatch derived" aria-hidden="true"></span> Derived lift, body axes, and rates. Solid stroke.</li>
-        <li><span class="swatch proposed" aria-hidden="true"></span> Proposed repair overlay. Dotted stroke.</li>
-        <li><span class="swatch artefact" aria-hidden="true"></span> Stereographic projection artefact. Never a physical trajectory.</li>
+        <li><span class="swatch raw" aria-hidden="true"></span><strong>Raw</strong><span>Measured components</span></li><li><span class="swatch derived" aria-hidden="true"></span><strong>Derived</strong><span>Axes, lift and rates</span></li>
+        <li><span class="swatch proposed" aria-hidden="true"></span><strong>Proposed</strong><span>Unapplied candidate</span></li><li><span class="swatch artefact" aria-hidden="true"></span><strong>Projection</strong><span>Non-physical artefact</span></li>
       </ul>
       <p id="downsample-note"></p>
     </section>
   </main>
+  <footer><span>LOCAL / STATIC / OFFLINE</span><span id="analysis-id">Analysis identity unavailable</span></footer>
   <script type="application/json" id="quatopsy-report">%%QUATOPSY_REPORT%%</script>
   <script type="application/json" id="quatopsy-view">%%QUATOPSY_VIEW%%</script>
   <script src="viewer.js"></script>

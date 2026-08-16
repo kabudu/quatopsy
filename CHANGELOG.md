@@ -4,6 +4,7 @@
 
 ### Added
 
+- Responsive forensic investigation console with synchronized trajectory playback, timeline scrubbing, evidence navigation, sample telemetry, and richer offline canvas rendering.
 - Forensic gap closure for strict adoption-policy validation, canonical UTC overrides, unknown-major refusal exits, transactionally committed output sets, per-finding reproducers, and bounded viewer finding navigation.
 - `QAT-CONV-001` matrix comparison and `QAT-OMEGA-001` body-rate comparison.
 - `quatopsy adapt` for `ids-jason1`, `ros-json`, `tubin-str`, uncompressed `mcap-json`, and `spice-ck` type 3, with provenance that never contains `result`.
