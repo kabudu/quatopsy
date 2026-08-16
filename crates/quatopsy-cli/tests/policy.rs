@@ -293,3 +293,71 @@ fn expired_override_is_refused() {
         .unwrap();
     assert_eq!(status.code(), Some(2));
 }
+
+fn adapt_then_analyze(format: &str, source: &[u8]) {
+    let tmp = tempfile_dir();
+    let input = tmp.join("source.bin");
+    fs::write(&input, source).unwrap();
+    let out = tmp.join("adapted");
+    let status = Command::new(bin())
+        .args([
+            "adapt",
+            "--format",
+            format,
+            "--input",
+            input.to_str().unwrap(),
+            "--output-dir",
+            out.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    assert!(status.success(), "{format} adapt failed");
+    let provenance = fs::read_to_string(out.join("provenance.json")).unwrap();
+    assert!(!provenance.contains("\"result\""));
+    let report = tmp.join("report.json");
+    let status = Command::new(bin())
+        .args([
+            "analyze",
+            "--input",
+            out.join("input.csv").to_str().unwrap(),
+            "--manifest",
+            out.join("manifest.json").to_str().unwrap(),
+            "--report",
+            report.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    assert!(status.code().is_some());
+    let body = fs::read_to_string(&report).unwrap();
+    assert!(body.contains("\"schema\":\"quatopsy.report/1\""));
+    assert!(!body.contains("\"result\":\"error\""));
+}
+
+#[test]
+fn mcap_adapter_emits_canonical_files_without_verdicts() {
+    let bytes = quatopsy_adapt::encode_mcap_json_poses(
+        "base_link",
+        "map",
+        &[(0.0, 0.0, 0.0, 0.0, 1.0), (1.0, 0.0, 0.0, 0.0, 1.0)],
+    );
+    adapt_then_analyze("mcap-json", &bytes);
+}
+
+#[test]
+fn spice_ck_adapter_emits_canonical_files_without_verdicts() {
+    let bytes = quatopsy_adapt::encode_ck_type3(
+        -82_000,
+        1,
+        &[
+            (0.0, 1.0, 0.0, 0.0, 0.0),
+            (
+                1.0,
+                std::f64::consts::FRAC_1_SQRT_2,
+                0.0,
+                0.0,
+                std::f64::consts::FRAC_1_SQRT_2,
+            ),
+        ],
+    );
+    adapt_then_analyze("spice-ck", &bytes);
+}

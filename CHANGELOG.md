@@ -5,7 +5,7 @@
 ### Added
 
 - `QAT-CONV-001` matrix comparison and `QAT-OMEGA-001` body-rate comparison.
-- `quatopsy adapt` for `ids-jason1`, `ros-json`, and `tubin-str`, with provenance that never contains `result`.
+- `quatopsy adapt` for `ids-jason1`, `ros-json`, `tubin-str`, uncompressed `mcap-json`, and `spice-ck` type 3, with provenance that never contains `result`.
 - Adoption policy `--policy` / `--fail-on` / `--override-file` (exit only).
 - CC BY 4.0 TUBIN star-tracker excerpt and mutation/fuzz/privacy/permission E2E coverage.
 

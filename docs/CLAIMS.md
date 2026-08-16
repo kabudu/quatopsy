@@ -10,7 +10,7 @@ Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research reposito
 - Sign-lift repair candidates preserve represented orientation under the independent rotation-matrix oracle used in tests.
 - One million synthetic identity samples meet the documented time and RSS budget on the local CI host.
 - Local checksum packaging is available via `scripts/package-local.sh`.
-- `quatopsy adapt` converts IDS Jason-1 ASCII, ROS JSON, and TUBIN star-tracker CSV into canonical CSV plus manifest. Adapters never assign report `result` values.
+- `quatopsy adapt` converts IDS Jason-1 ASCII, ROS JSON, uncompressed MCAP JSON poses, SPICE CK type 3, and TUBIN star-tracker CSV into canonical CSV plus manifest. Adapters never assign report `result` values.
 - `--policy advisory|selective|required` and `--override-file` change process exit only.
 
 ## Required non-claims
@@ -20,7 +20,6 @@ Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, pr
 ## Out of V1 supported scope
 
 - Automatic convention inference and automatic convention repair remain refused.
-- MCAP and SPICE kernel adapters are not shipped.
 - Hosted CI, crates.io publication, signed binaries, public repository visibility, websites, and production support remain distinct unauthorised gates.
 - Full visual brand assets are absent because productisation is not approved.
 

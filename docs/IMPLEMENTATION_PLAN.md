@@ -73,6 +73,7 @@ Exit: release policy passes for a private `0.1.0` GitHub Release. External indep
 - [x] Ship advisory, selective, and required adoption with scoped overrides (`INT-3`).
 - [x] Use optional angular-velocity columns in `QAT-OMEGA-001`.
 - [x] Meet the documented E2E bar for mutation, fuzz, privacy sinks, and permission chaos.
+- [x] Ship uncompressed MCAP JSON and SPICE CK type 3 adapters outside verdict ownership.
 
 Exit: local CI plus the named fixtures and CLI tests.
 

@@ -1,5 +1,8 @@
 //! Converters into canonical CSV plus manifest. No report or result types.
 
+mod mcap;
+mod spice;
+
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -15,6 +18,8 @@ pub enum AdapterFormat {
     IdsJason1,
     RosJson,
     TubinStr,
+    McapJson,
+    SpiceCk,
 }
 
 impl AdapterFormat {
@@ -23,6 +28,8 @@ impl AdapterFormat {
             Self::IdsJason1 => "ids-jason1",
             Self::RosJson => "ros-json",
             Self::TubinStr => "tubin-str",
+            Self::McapJson => "mcap-json",
+            Self::SpiceCk => "spice-ck",
         }
     }
 
@@ -31,6 +38,8 @@ impl AdapterFormat {
             "ids-jason1" => Ok(Self::IdsJason1),
             "ros-json" => Ok(Self::RosJson),
             "tubin-str" => Ok(Self::TubinStr),
+            "mcap-json" => Ok(Self::McapJson),
+            "spice-ck" => Ok(Self::SpiceCk),
             other => Err(AdaptError::Refused(format!(
                 "unsupported adapter format {other}"
             ))),
@@ -73,6 +82,9 @@ struct RosSample {
     w: f64,
 }
 
+pub use mcap::encode_mcap_json_poses;
+pub use spice::encode_ck_type3;
+
 pub fn adapt(
     format: AdapterFormat,
     source: &[u8],
@@ -82,6 +94,8 @@ pub fn adapt(
         AdapterFormat::IdsJason1 => adapt_ids_jason1(source, version),
         AdapterFormat::RosJson => adapt_ros_json(source, version),
         AdapterFormat::TubinStr => adapt_tubin_str(source, version),
+        AdapterFormat::McapJson => mcap::adapt_mcap(source, version),
+        AdapterFormat::SpiceCk => spice::adapt_spice_ck(source, version),
     }
 }
 
@@ -380,5 +394,52 @@ mod tests {
         assert_eq!(v["sample_count"], 16);
         assert!(out.csv.lines().count() > 16);
         assert!(out.manifest.contains("angular_velocity"));
+    }
+
+    #[test]
+    fn mcap_json_roundtrip_has_no_result() {
+        let bytes = encode_mcap_json_poses(
+            "base",
+            "map",
+            &[(0.0, 0.0, 0.0, 0.0, 1.0), (1.0, 0.0, 0.0, 0.0, 1.0)],
+        );
+        let out = adapt(AdapterFormat::McapJson, &bytes, "0.1.0").unwrap();
+        let v: serde_json::Value = serde_json::from_str(&out.provenance).unwrap();
+        assert!(v.get("result").is_none());
+        assert_eq!(v["format"], "mcap-json");
+        assert_eq!(v["sample_count"], 2);
+        assert!(out.manifest.contains("\"component_order\":\"xyzw\""));
+    }
+
+    #[test]
+    fn mcap_refuses_compressed_chunks() {
+        let mut bytes = encode_mcap_json_poses("base", "map", &[(0.0, 0.0, 0.0, 0.0, 1.0)]);
+        bytes[0] = 0x00;
+        assert!(adapt(AdapterFormat::McapJson, &bytes, "0.1.0").is_err());
+    }
+
+    #[test]
+    fn spice_ck_type3_roundtrip_declares_naif_ids() {
+        let bytes = encode_ck_type3(
+            -82_000,
+            1,
+            &[
+                (0.0, 1.0, 0.0, 0.0, 0.0),
+                (
+                    1.0,
+                    std::f64::consts::FRAC_1_SQRT_2,
+                    0.0,
+                    0.0,
+                    std::f64::consts::FRAC_1_SQRT_2,
+                ),
+            ],
+        );
+        let out = adapt(AdapterFormat::SpiceCk, &bytes, "0.1.0").unwrap();
+        let v: serde_json::Value = serde_json::from_str(&out.provenance).unwrap();
+        assert!(v.get("result").is_none());
+        assert_eq!(v["format"], "spice-ck");
+        assert!(out.manifest.contains("CK--82000"));
+        assert!(out.manifest.contains("NAIF-1"));
+        assert_eq!(v["sample_count"], 2);
     }
 }
