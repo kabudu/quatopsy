@@ -20,4 +20,5 @@ Probability and impact use low, medium, or high. The owner is a role until named
 | R14 | Dependency or release supply chain is compromised | Low | High | Security | Audit alert or digest mismatch | Minimal locked dependencies, audit, reproducible artefacts | Revoke artefacts, rotate credentials, issue advisory |
 | R15 | Optional external validation is accidentally made release-blocking | Low | Medium | Product | Roadmap or release gate requires outsider action | Explicit optional policy in ADR, validation, and release docs | Correct gate before milestone review |
 | R16 | Full brand work implies maturity before evidence | Medium | Medium | Brand | Polished assets appear before productisation approval | Restrained research identity and claims scan | Withdraw assets and revert to research presentation |
-
+| R17 | Policy typo or malformed override silently weakens adoption enforcement | Low | High | Engineering | Unknown rule or invalid timestamp is accepted | Closed-rule validation and canonical UTC parsing before output creation | Refuse policy document and preserve findings exit |
+| R18 | Multi-file output failure leaves a misleading partial job | Low | High | Engineering | Any requested output cannot stage or commit | Unique sibling staging, race-safe link commit, backups, rollback, and directory sync | Remove new outputs and restore replaced files |

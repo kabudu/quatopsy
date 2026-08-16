@@ -17,7 +17,7 @@ Tests invoke the released CLI against files, inspect exit status and canonical r
 | E2E-07 | Duplicate/decreasing time | Refusal, never pass | Integer timestamp oracle |
 | E2E-08 | Huge, hostile, or malformed input | Bounded error/refusal and cleanup | Resource and filesystem assertions |
 | E2E-09 | Cancelled repair write | Original intact, no committed partial output | Filesystem snapshot |
-| E2E-10 | Unknown report major version | Viewer refusal with actionable message | Protocol fixture |
+| E2E-10 | Unknown report major version | Viewer bundle with actionable message and refusal exit 2 | Protocol fixture |
 
 ## Determinism and portability
 
@@ -29,11 +29,11 @@ Mutation tests alter each rule comparison, sign branch, aggregator precedence, t
 
 ## Adoption lifecycle
 
-Test install, upgrade, supported downgrade, rollback, report compatibility, clean analysis, and complete uninstall. `INT-3` policy modes and expiring overrides are covered by CLI lifecycle tests. Adapters are tested as conversion lifecycles with canonical provenance, then analysed by the core; they are not alternative rule engines.
+Test local binary copy/installation and removal, repeated-analysis compatibility, clean analysis, and unknown-major refusal. Cross-version executable upgrade, downgrade, and rollback testing begins when a second supported binary version exists. `INT-3` policy modes, strict rule names, and canonical expiring overrides are covered by CLI lifecycle tests. Adapters are tested as conversion lifecycles with canonical provenance, then analysed by the core; they are not alternative rule engines.
 
 ## Privacy sinks
 
-Capture stdout, stderr, reports, logs, crash diagnostics, temporary files, browser storage, and network activity. Default operation must emit no sample values to logs beyond bounded evidence in the user-requested report and must make no network requests. CLI tests assert default stderr does not echo CSV payload rows.
+Automated tests capture stdout, stderr, reports, and temporary files. Default operation must not echo CSV payload rows to stderr and the generated viewer must contain a deny-by-default CSP, no remote URLs, and no network or storage APIs. Browser execution verifies the static bundle requests only its three local files. Crash-diagnostic capture remains outside V1 because the CLI installs no crash reporter or persistent logger.
 
 ## Chaos and hostile cases
 
@@ -42,4 +42,3 @@ Inject permission failure, cancellation, malformed UTF-8, CSV formula text, path
 ## Flake policy
 
 Deterministic tests have zero retry allowance. Browser tests may retry only a separately diagnosed environment startup, never a semantic assertion. Any intermittent semantic result is release-blocking until explained and fixed.
-

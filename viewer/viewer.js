@@ -41,6 +41,8 @@
   var timeline = document.getElementById("timeline");
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var selected = 0;
+  var findingLinks = Array.isArray(view.finding_links) ? view.finding_links : [];
+  var maxRenderedFindings = 2000;
 
   if (!report || schemaMajor(report.schema) !== "quatopsy.report/1") {
     var unknown = report && report.schema ? String(report.schema) : "missing schema";
@@ -254,7 +256,8 @@
 
   function renderLists() {
     findingsEl.textContent = "";
-    (report.findings || []).forEach(function (finding, idx) {
+    var reportFindings = report.findings || [];
+    reportFindings.slice(0, maxRenderedFindings).forEach(function (finding, idx) {
       var li = document.createElement("li");
       li.className = "findings-item";
       li.tabIndex = 0;
@@ -272,12 +275,12 @@
           finding.repair_disposition
       );
       li.addEventListener("click", function () {
-        selectByRow(finding.source_row_start);
+        selectFinding(finding);
       });
       li.addEventListener("keydown", function (event) {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          selectByRow(finding.source_row_start);
+          selectFinding(finding);
         }
       });
       findingsEl.appendChild(li);
@@ -285,6 +288,15 @@
         selectByRow(finding.source_row_start);
       }
     });
+    if (reportFindings.length > maxRenderedFindings) {
+      var truncated = document.createElement("li");
+      text(
+        truncated,
+        String(reportFindings.length - maxRenderedFindings) +
+          " additional findings remain in the canonical report and were omitted from the DOM rendering bound."
+      );
+      findingsEl.appendChild(truncated);
+    }
     repairsEl.textContent = "";
     (report.repairs || []).forEach(function (repair) {
       var li = document.createElement("li");
@@ -319,6 +331,17 @@
       }
     });
     setSelected(best);
+  }
+
+  function selectFinding(finding) {
+    var link = findingLinks.find(function (candidate) {
+      return candidate.finding_id === finding.id;
+    });
+    selectByRow(
+      link && typeof link.geometry_source_row === "number"
+        ? link.geometry_source_row
+        : finding.source_row_start
+    );
   }
 
   function setSelected(idx) {

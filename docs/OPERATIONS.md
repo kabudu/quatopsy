@@ -12,13 +12,13 @@ Quatopsy V1 is a local command-line binary and static local viewer. It has no da
 4. Parse into validated canonical samples or refuse.
 5. Evaluate the closed rule registry with cancellation checks.
 6. Generate repair proposals and bounded evidence.
-7. Serialize into a temporary sibling output.
-8. Flush, verify digest, and atomically commit.
-9. Remove temporary state on cancellation or failure.
+7. Serialize every requested output into unique temporary sibling files.
+8. Flush all staged files, commit them as one rollback-capable output set, and sync parent directories.
+9. Restore overwritten files and remove new or temporary files on commit failure.
 
 ## Concurrency and backpressure
 
-One job runs by default. Batch concurrency is explicit and bounded by jobs, memory budget, and open-file limit. Findings are capped per rule with a truncation record that prevents `pass`. Viewer geometry is downsampled offline with important intervals pinned.
+One job runs by default. Batch concurrency is explicit and bounded by jobs, memory budget, and open-file limit. Findings are capped per rule with a truncation record that prevents `pass`, and repro export refuses above 1,024 per-finding slices before staging. Viewer geometry is downsampled offline with extrema pinned; every canonical finding retains a bounded navigation link even when all finding endpoints cannot fit in the geometry budget. Browser DOM rendering is capped separately while the canonical report remains intact.
 
 ## Cache
 
@@ -26,7 +26,7 @@ No cache is required initially. A future cache is content-addressed by the full 
 
 ## Observability
 
-Structured local logs contain job phase, durations, counts, limits, versions, and reason codes. Sample payloads and full paths are absent by default. Terminal output separates user findings from operational diagnostics. Exit codes match the report protocol.
+The CLI emits a concise terminal summary with result, analysis identity, sample count, per-rule states, repairs, and the diagnostic reason. It has no persistent or verbose logger. Sample payload rows are absent from default diagnostics; explicit paths may appear in filesystem errors. Exit codes match the report protocol.
 
 ## Recovery
 
@@ -43,4 +43,3 @@ Correctness incidents freeze affected public claims and releases, identify rule 
 ## Privacy and retention
 
 Quatopsy has no server-side retention. Users own inputs, reports, repairs, and optional local logs. Removal documentation names every local path. Future telemetry or hosted operation requires a new architecture, privacy analysis, and explicit authorization.
-

@@ -24,7 +24,16 @@ pub struct ViewPayload {
     pub projection: String,
     pub projection_warning: String,
     pub downsample: DownsampleInfo,
+    pub finding_links: Vec<ViewFindingLink>,
     pub samples: Vec<ViewSample>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ViewFindingLink {
+    pub finding_id: String,
+    pub source_row_start: u64,
+    pub source_row_end: u64,
+    pub geometry_source_row: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -70,7 +79,23 @@ pub fn build_view(
         select_indices(series.len(), max_points as usize, &extrema, &finding_pins)
             .into_iter()
             .collect();
-    let retained_findings = finding_pins.iter().all(|idx| selected.contains(idx));
+    let selected_rows = selected
+        .iter()
+        .map(|idx| samples[*idx].source_row)
+        .collect::<Vec<_>>();
+    let finding_links = findings
+        .iter()
+        .map(|finding| ViewFindingLink {
+            finding_id: finding.id.clone(),
+            source_row_start: finding.source_row_start,
+            source_row_end: finding.source_row_end,
+            geometry_source_row: nearest_selected_row(&selected_rows, finding.source_row_start),
+        })
+        .collect::<Vec<_>>();
+    let retained_findings = finding_links.len() == findings.len()
+        && finding_links
+            .iter()
+            .all(|link| link.geometry_source_row.is_some());
     let retained_extrema = extrema.iter().all(|idx| selected.contains(idx));
     let mut emitted = Vec::with_capacity(selected.len());
     for idx in &selected {
@@ -95,7 +120,25 @@ pub fn build_view(
             retained_findings,
             retained_extrema,
         },
+        finding_links,
         samples: emitted,
+    }
+}
+
+fn nearest_selected_row(rows: &[u64], target: u64) -> Option<u64> {
+    match rows.binary_search(&target) {
+        Ok(index) => rows.get(index).copied(),
+        Err(0) => rows.first().copied(),
+        Err(index) if index >= rows.len() => rows.last().copied(),
+        Err(index) => {
+            let before = rows[index - 1];
+            let after = rows[index];
+            Some(if before.abs_diff(target) <= after.abs_diff(target) {
+                before
+            } else {
+                after
+            })
+        }
     }
 }
 
@@ -116,6 +159,7 @@ pub fn empty_view(analysis_id: &str) -> ViewPayload {
             retained_findings: true,
             retained_extrema: true,
         },
+        finding_links: Vec::new(),
         samples: Vec::new(),
     }
 }
@@ -410,5 +454,33 @@ mod tests {
     fn empty_input_is_empty_view() {
         let view = build_view(&[], &[], "id", None, VIEW_MAX_POINTS);
         assert!(view.samples.is_empty());
+    }
+
+    #[test]
+    fn finding_links_remain_complete_when_geometry_pin_budget_is_exceeded() {
+        let samples = (0..100_u64)
+            .map(|i| Sample {
+                source_row: i + 2,
+                timestamp_ns: i as i64,
+                raw: Quaternion::new(1.0, 0.0, 0.0, 0.0),
+                commanded: None,
+                omega: None,
+                rotation_matrix: None,
+                timestamp_finite: true,
+                timestamp_overflow: false,
+            })
+            .collect::<Vec<_>>();
+        let findings = (0..50_u64)
+            .map(|i| finding(i + 2, i + 2))
+            .collect::<Vec<_>>();
+        let view = build_view(&samples, &findings, "id", None, 8);
+        assert_eq!(view.samples.len(), 8);
+        assert_eq!(view.finding_links.len(), findings.len());
+        assert!(view.downsample.retained_findings);
+        assert!(
+            view.finding_links
+                .iter()
+                .all(|link| link.geometry_source_row.is_some())
+        );
     }
 }

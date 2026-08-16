@@ -4,6 +4,7 @@
 
 ### Added
 
+- Forensic gap closure for strict adoption-policy validation, canonical UTC overrides, unknown-major refusal exits, transactionally committed output sets, per-finding reproducers, and bounded viewer finding navigation.
 - `QAT-CONV-001` matrix comparison and `QAT-OMEGA-001` body-rate comparison.
 - `quatopsy adapt` for `ids-jason1`, `ros-json`, `tubin-str`, uncompressed `mcap-json`, and `spice-ck` type 3, with provenance that never contains `result`.
 - Adoption policy `--policy` / `--fail-on` / `--override-file` (exit only).
@@ -31,7 +32,7 @@ M5 completes the private research release policy for `0.1.0`. It does not open t
 - Frozen spacecraft CSV profile `quatopsy.spacecraft-csv/1` with synthetic representative fixtures.
 - `QAT-UNWIND-001` commanded-path comparison against the quotient-shortest baseline.
 - One-million-sample release budget check and local checksum packaging via `scripts/package-local.sh`.
-- Install, upgrade, rollback, removal, and report-compatibility lifecycle tests.
+- Local binary copy/install, repeated-analysis compatibility, removal, and report-version lifecycle tests.
 
 ### Claims
 

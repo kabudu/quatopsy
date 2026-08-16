@@ -294,6 +294,72 @@ fn expired_override_is_refused() {
     assert_eq!(status.code(), Some(2));
 }
 
+#[test]
+fn selective_policy_rejects_unknown_fail_on_before_writing_report() {
+    let root = workspace_root();
+    let tmp = tempfile_dir();
+    let report = tmp.join("report.json");
+    let status = Command::new(bin())
+        .args([
+            "analyze",
+            "--input",
+            root.join("fixtures/conformance/sign_alternating/input.csv")
+                .to_str()
+                .unwrap(),
+            "--manifest",
+            root.join("fixtures/conformance/sign_alternating/manifest.json")
+                .to_str()
+                .unwrap(),
+            "--report",
+            report.to_str().unwrap(),
+            "--policy",
+            "selective",
+            "--fail-on",
+            "QAT-SGIN-001",
+        ])
+        .status()
+        .unwrap();
+    assert_eq!(status.code(), Some(64));
+    assert!(!report.exists());
+}
+
+#[test]
+fn malformed_override_timestamp_is_refused_before_writing_report() {
+    let root = workspace_root();
+    let tmp = tempfile_dir();
+    let report = tmp.join("report.json");
+    let overrides = tmp.join("overrides.json");
+    fs::write(
+        &overrides,
+        r#"{"schema":"quatopsy.override/1","overrides":[{"rule":"QAT-SIGN-001","authority":"test","reason":"test","created":"not-a-date","expires":"zzzz"}]}"#,
+    )
+    .unwrap();
+    let status = Command::new(bin())
+        .args([
+            "analyze",
+            "--input",
+            root.join("fixtures/conformance/sign_alternating/input.csv")
+                .to_str()
+                .unwrap(),
+            "--manifest",
+            root.join("fixtures/conformance/sign_alternating/manifest.json")
+                .to_str()
+                .unwrap(),
+            "--report",
+            report.to_str().unwrap(),
+            "--policy",
+            "selective",
+            "--fail-on",
+            "QAT-SIGN-001",
+            "--override-file",
+            overrides.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    assert_eq!(status.code(), Some(2));
+    assert!(!report.exists());
+}
+
 fn adapt_then_analyze(format: &str, source: &[u8]) {
     let tmp = tempfile_dir();
     let input = tmp.join("source.bin");
