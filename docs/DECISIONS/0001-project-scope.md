@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted for planning on 2026-08-14.
+Accepted for planning on 2026-08-14. Amended by `0002-offline-candidate-plan.md` on 2026-08-17: a bounded offline candidate generator is in-repo; a general trajectory optimiser and controller remain out of scope.
 
 ## Context
 

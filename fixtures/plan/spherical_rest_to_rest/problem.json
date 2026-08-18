@@ -1,0 +1,19 @@
+{
+  "schema": "quatopsy.plan-problem/1",
+  "component_order": "wxyz",
+  "rotation_sense": "active",
+  "frame_from": "BODY",
+  "frame_to": "J2000",
+  "time_unit": "s",
+  "q_initial": [1.0, 0.0, 0.0, 0.0],
+  "q_final": [0.7071067811865476, 0.7071067811865476, 0.0, 0.0],
+  "omega_initial": [0.0, 0.0, 0.0],
+  "omega_final": [0.0, 0.0, 0.0],
+  "inertia": {
+    "model": "spherical",
+    "j": 1.0
+  },
+  "torque_limit_nm": 0.05,
+  "sample_count": 321,
+  "objective": "minimum-time"
+}

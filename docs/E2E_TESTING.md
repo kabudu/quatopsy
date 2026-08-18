@@ -18,6 +18,8 @@ Tests invoke the released CLI against files, inspect exit status and canonical r
 | E2E-08 | Huge, hostile, or malformed input | Bounded error/refusal and cleanup | Resource and filesystem assertions |
 | E2E-09 | Cancelled repair write | Original intact, no committed partial output | Filesystem snapshot |
 | E2E-10 | Unknown report major version | Viewer bundle with actionable message and refusal exit 2 | Protocol fixture |
+| E2E-11 | Plan then analyze | Candidate files with no `result`; kernel `pass` including `omega-consistent` | Independent plan residual oracle |
+| E2E-12 | Wheel rest-to-rest plan then analyze | `multiple-shooting-lm` candidate; kernel `pass`; no plan `result` | Independent Euler residual with stored momentum |
 
 ## Determinism and portability
 

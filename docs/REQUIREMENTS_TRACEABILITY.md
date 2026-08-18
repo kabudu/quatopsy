@@ -17,6 +17,7 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 | INT-1 | Support canonical CSV plus explicit manifest without credentials | Ingest | Public workflow E2E | Install/use evidence | verified |
 | INT-2 | Keep adapters outside semantic verdict ownership | Adapter contract | Contract tests | Adapter conformance report | verified |
 | INT-3 | Support advisory, selective, and required adoption with strict rule names and scoped canonical-time overrides | CLI policy | Lifecycle and malformed-policy E2E | Adoption evidence | verified |
+| INT-4 | Keep the candidate planner outside semantic verdict ownership | Plan contract | Plan-then-analyze E2E | Plan protocol tests | verified |
 | PERF-1 | Analyse one million samples under registered time and memory targets | Kernel/CLI | Frozen benchmark | Benchmark report | verified |
 | REL-1 | Run repository-owned local CI as the authoritative private-repo gate | Maintainers | `./scripts/ci-local.sh` | Recorded PR result | verified |
 | REL-2 | Require explicit user approval before hosted CI activation | Owner | Repository audit | Release checklist | planned |

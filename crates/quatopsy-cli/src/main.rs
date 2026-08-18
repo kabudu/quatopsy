@@ -130,6 +130,15 @@ enum Commands {
         #[arg(long, default_value_t = false)]
         overwrite: bool,
     },
+    /// Generate a candidate reference trajectory. Never assigns a report result.
+    Plan {
+        #[arg(long)]
+        problem: PathBuf,
+        #[arg(long)]
+        output_dir: PathBuf,
+        #[arg(long, default_value_t = false)]
+        overwrite: bool,
+    },
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -252,6 +261,16 @@ fn main() -> ExitCode {
             overwrite,
         } => {
             if let Err(code) = run_adapt(format, input, output_dir, overwrite) {
+                return code;
+            }
+            ExitCode::SUCCESS
+        }
+        Commands::Plan {
+            problem,
+            output_dir,
+            overwrite,
+        } => {
+            if let Err(code) = run_plan(problem, output_dir, overwrite, &cancelled) {
                 return code;
             }
             ExitCode::SUCCESS
@@ -436,6 +455,63 @@ fn run_adapt(
         ExitCode::from(3)
     })?;
     println!("adapter: {}", output_dir.display());
+    Ok(())
+}
+
+fn run_plan(
+    problem: PathBuf,
+    output_dir: PathBuf,
+    overwrite: bool,
+    cancelled: &AtomicBool,
+) -> Result<(), ExitCode> {
+    guard_path(&problem, false)?;
+    if output_dir.exists() && !output_dir.is_dir() {
+        eprintln!("error: planner output must be a directory");
+        return Err(ExitCode::from(USAGE_EXIT));
+    }
+    let csv_path = output_dir.join("input.csv");
+    let manifest_path = output_dir.join("manifest.json");
+    let plan_path = output_dir.join("plan.json");
+    for path in [&csv_path, &manifest_path, &plan_path] {
+        refuse_if_exists(path, overwrite)?;
+        guard_output_path(path)?;
+    }
+    let bytes = read_bounded(&problem, SAFE_MAX_INPUT_BYTES)?;
+    if cancelled.load(Ordering::SeqCst) {
+        eprintln!("error: planner was cancelled");
+        return Err(ExitCode::from(3));
+    }
+    let out = match quatopsy_plan::plan(&bytes, env!("CARGO_PKG_VERSION")) {
+        Ok(out) => out,
+        Err(quatopsy_plan::PlanError::Infeasible(reason)) => {
+            eprintln!("error: infeasible: {reason}");
+            return Err(ExitCode::from(2));
+        }
+        Err(err) => {
+            eprintln!("error: {err}");
+            return Err(ExitCode::from(2));
+        }
+    };
+    if cancelled.load(Ordering::SeqCst) {
+        eprintln!("error: planner was cancelled");
+        return Err(ExitCode::from(3));
+    }
+    fs::create_dir_all(&output_dir).map_err(|err| {
+        eprintln!("error: could not create {}: {err}", output_dir.display());
+        ExitCode::from(3)
+    })?;
+    let mut temps = TempGuard::default();
+    let mut outputs = [
+        PendingOutput::new(csv_path, out.csv.into_bytes(), overwrite),
+        PendingOutput::new(manifest_path, out.manifest.into_bytes(), overwrite),
+        PendingOutput::new(plan_path, out.plan.into_bytes(), overwrite),
+    ];
+    commit_outputs(&mut outputs, &mut temps).map_err(|err| {
+        eprintln!("error: could not commit planner output: {err}");
+        ExitCode::from(3)
+    })?;
+    temps.disarm();
+    println!("planner: {}", output_dir.display());
     Ok(())
 }
 
