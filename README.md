@@ -52,6 +52,14 @@ cargo run --bin quatopsy -- plan \
 
 `quatopsy plan` writes a candidate CSV, declared manifest, and `plan.json`. Residuals are checked by an independent oracle. The planner never assigns a report `result`. Run `analyze` on the generated files to obtain the only verdict.
 
+```bash
+cargo run --bin quatopsy -- control \
+  --problem fixtures/control/so3_rest_to_rest/problem.json \
+  --output-dir /tmp/quatopsy-control
+```
+
+`quatopsy control` writes a closed-loop CSV, declared manifest, and `control.json`. `execution` may be software-in-the-loop, host-CPU processor-in-the-loop, or loopback hardware-in-the-loop. An independent oracle monitor inhibits commands. The controller never assigns a report `result` and never opens a physical actuator. The systems-safety programme is [Control safety](docs/CONTROL_SAFETY.md).
+
 `quatopsy analyze --repro-dir <dir>` writes one context-bounded subdirectory per finding when a report has multiple findings. Each contains `slice.csv`, `manifest.json`, and `provenance.json`; a single finding uses those filenames directly in the requested directory. Export refuses above the compiled 1,024-slice disk-work limit without committing any requested output.
 
 Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
@@ -65,6 +73,8 @@ Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 - [Soundness case](docs/SOUNDNESS_CASE.md)
 - [Report protocol](docs/REPORT_PROTOCOL.md)
 - [Plan protocol](docs/PLAN_PROTOCOL.md)
+- [Control protocol](docs/CONTROL_PROTOCOL.md)
+- [Control safety](docs/CONTROL_SAFETY.md)
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
 - [Novelty and prior art](docs/NOVELTY.md)
 - [Validation](docs/VALIDATION.md)

@@ -6,7 +6,7 @@ Orientation samples can be physically equivalent while differing as four-compone
 
 ## Users and first vertical
 
-The first user is a spacecraft guidance, navigation, and control engineer analysing a planned or recorded attitude sequence offline. Secondary future users are robotics, simulation, computer-graphics, and animation engineers. Quatopsy is advisory and never commands an actuator.
+The first user is a spacecraft guidance, navigation, and control engineer analysing a planned or recorded attitude sequence offline. Secondary future users are robotics, simulation, computer-graphics, and animation engineers. Quatopsy is advisory. Hardware actuator command remains refused.
 
 ## Input profile V1
 
@@ -14,7 +14,7 @@ A UTF-8 CSV file plus an explicit `quatopsy.manifest/1` document provides monoto
 
 Unsupported ambiguity is refused. Quatopsy must not guess component order, reference frames, units, or active/passive semantics. Numeric profile `quatopsy.numeric/1` uses absolute unit tolerance `1e-6`, near-zero refusal below `1e-12`, and near-pi lift ties when `|p · q| <= 1e-12` after unit normalisation.
 
-The M1 CLI is `quatopsy analyze --input <csv> --manifest <json> --report <json>`. It writes compact canonical JSON atomically and does not overwrite an existing report unless `--overwrite` is passed. `quatopsy view --report <json> --output <dir>` writes a static local viewer bundle. Optional `--input` and `--manifest` bind derived geometry to the same digests as the report. `quatopsy plan --problem <json> --output-dir <dir>` writes a candidate trajectory for later analysis.
+The M1 CLI is `quatopsy analyze --input <csv> --manifest <json> --report <json>`. It writes compact canonical JSON atomically and does not overwrite an existing report unless `--overwrite` is passed. `quatopsy view --report <json> --output <dir>` writes a static local viewer bundle. Optional `--input` and `--manifest` bind derived geometry to the same digests as the report. `quatopsy plan --problem <json> --output-dir <dir>` writes a candidate trajectory for later analysis. `quatopsy control --problem <json> --output-dir <dir>` writes a closed-loop trajectory for later analysis. Software-in-the-loop, host-CPU processor-in-the-loop, and loopback hardware-in-the-loop are supported.
 
 ## Outputs
 
@@ -58,6 +58,8 @@ V1 succeeds when a hand-audited conformance suite proves deterministic detection
 
 ## Non-goals
 
-Quatopsy V1 is not a controller, general trajectory optimiser, simulator, sensor-fusion filter, collision planner, certification tool, live mission-control system, proof of safe motion, energy estimator without a supplied dynamics model, or quaternion learning laboratory. Viewer interaction is bound to report evidence, retained sample identity, and separately labelled repair candidates; it does not provide free-form quaternion construction or tutorial exercises.
+Quatopsy V1 is not a general trajectory optimiser, hardware controller, simulator of unstated plants, sensor-fusion filter, collision planner, certification tool, live mission-control system, proof of safe motion, energy estimator without a supplied dynamics model, or quaternion learning laboratory. Viewer interaction is bound to report evidence, retained sample identity, and separately labelled repair candidates; it does not provide free-form quaternion construction or tutorial exercises.
 
-M6 adds `quatopsy plan`, an offline candidate generator for a torque-limited rest-to-rest rigid body. Algorithms are eigenaxis bang-coast-bang and bounded multiple shooting. The command writes CSV, a declared manifest, and `quatopsy.plan/1`. Residuals are computed by an independent oracle. It never writes `quatopsy.report/1` `result`. A controller remains out of V1.
+M6 adds `quatopsy plan`, an offline candidate generator for a torque-limited rest-to-rest rigid body. Algorithms are eigenaxis bang-coast-bang and bounded multiple shooting. The command writes CSV, a declared manifest, and `quatopsy.plan/1`. Residuals are computed by an independent oracle. It never writes `quatopsy.report/1` `result`.
+
+M7 adds `quatopsy control`, a geometric PD controller on SO(3). Independent oracle inhibition, estimator freshness contracts, fail-closed safe fallback, host-CPU PIL, and loopback HIL are in-repo. It never writes `quatopsy.report/1` `result`, never opens a physical actuator, and is not a hard-real-time or flight controller. The systems-safety programme cannot qualify hardware.

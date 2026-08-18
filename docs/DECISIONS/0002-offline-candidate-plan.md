@@ -14,7 +14,7 @@ Add `quatopsy plan` in this repository as an M6 increment. The first algorithm i
 
 The planner emits canonical CSV, a declared manifest, and `quatopsy.plan/1`. Body-rate columns are declared for the kernel. Torque columns are present for an independent residual oracle and are not declared in the analysis manifest. Residual checks use `quatopsy-oracle` rotation-matrix kinematics and Euler's equation; they do not share the planner generator. The planner never writes `quatopsy.report/1` or a `result` field. The diagnostic kernel remains the only verdict owner.
 
-Wheels, thrusters, CMGs, keep-out zones, weighted objectives, multiple shooting, and model-uncertainty campaigns are in-repo candidate-generation features. They do not assign a report result. Any controller remains out of scope. Global optimality is not claimed.
+Wheels, thrusters, CMGs, keep-out zones, weighted objectives, multiple shooting, and model-uncertainty campaigns are in-repo candidate-generation features. They do not assign a report result. Global optimality is not claimed. A geometric PD controller is a later increment (`0003-sil-controller.md`); physical hardware command remains out of scope.
 
 ## Consequences
 

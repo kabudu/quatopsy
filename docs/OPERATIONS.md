@@ -2,7 +2,7 @@
 
 ## Deployment model
 
-Quatopsy V1 is a local command-line binary and static local viewer. It has no daemon, hosted control plane, account, database, or required network. The Rust CLI owns the job lifecycle. `quatopsy plan` is a separate candidate-generation job; it does not evaluate rules. Infeasible or refused problems leave no output directory.
+Quatopsy V1 is a local command-line binary and static local viewer. It has no daemon, hosted control plane, account, database, or required network. The Rust CLI owns the job lifecycle. `quatopsy plan` is a separate candidate-generation job; it does not evaluate rules. `quatopsy control` is a separate closed-loop job; it does not evaluate rules or open a physical actuator. Infeasible or refused problems leave no output directory.
 
 ## Job lifecycle
 

@@ -20,7 +20,7 @@ allowed = {
     "Unlicense/MIT",
     "Zlib OR Apache-2.0 OR MIT",
 }
-workspace = {"quatopsy-adapt", "quatopsy-cli", "quatopsy-core", "quatopsy-oracle", "quatopsy-plan", "quatopsy-schema"}
+workspace = {"quatopsy-adapt", "quatopsy-cli", "quatopsy-control", "quatopsy-core", "quatopsy-oracle", "quatopsy-plan", "quatopsy-schema"}
 proc = subprocess.run(
     ["cargo", "metadata", "--format-version", "1", "--locked", "--offline", "--manifest-path", str(root / "Cargo.toml")],
     check=True,

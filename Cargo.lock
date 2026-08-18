@@ -314,11 +314,25 @@ dependencies = [
  "clap",
  "ctrlc",
  "quatopsy-adapt",
+ "quatopsy-control",
  "quatopsy-core",
  "quatopsy-plan",
  "quatopsy-schema",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "quatopsy-control"
+version = "0.1.0"
+dependencies = [
+ "libm",
+ "quatopsy-oracle",
+ "quatopsy-schema",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
 ]
 
 [[package]]

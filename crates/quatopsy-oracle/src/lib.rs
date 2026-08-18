@@ -1,11 +1,17 @@
 //! Independently encoded reference oracles.
 //!
 //! This crate must not depend on `quatopsy-core`. Production verdicts never
-//! call these functions. The candidate planner may use the plan residual
-//! oracle; that path still cannot assign a report `result`.
+//! call these functions. The candidate planner and SIL controller may use
+//! residual and monitor oracles; those paths still cannot assign a report
+//! `result`.
 
+mod control;
 mod plan;
 
+pub use control::{
+    CONTROL_FRESHNESS_TOLERANCE, CONTROL_TORQUE_TOLERANCE, MonitorDecision, MonitorEnvelope,
+    MonitorSample, monitor_command, rigid_body_step, so3_attitude_error,
+};
 pub use plan::{
     KeepOutCone, PLAN_BOUNDARY_TOLERANCE, PLAN_EULER_TOLERANCE, PLAN_KEEP_OUT_TOLERANCE,
     PLAN_KINEMATICS_TOLERANCE, PLAN_TORQUE_EXCESS_TOLERANCE, PlanDynamics, PlanResiduals,
