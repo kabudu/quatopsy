@@ -58,7 +58,7 @@ cargo run --bin quatopsy -- control \
   --output-dir /tmp/quatopsy-control
 ```
 
-`quatopsy control` writes a closed-loop CSV, declared manifest, and `control.json`. `execution` may be software-in-the-loop, host-CPU processor-in-the-loop, or loopback hardware-in-the-loop. An independent oracle monitor inhibits commands. The controller never assigns a report `result` and never opens a physical actuator. The systems-safety programme is [Control safety](docs/CONTROL_SAFETY.md).
+`quatopsy control` writes a closed-loop CSV, declared manifest, and `control.json`. `execution` may be software-in-the-loop, host-CPU processor-in-the-loop, or loopback hardware-in-the-loop. Optional declared plant models add command-to-torque lag, residual dipole, gravity-gradient, gyro ARW, and star-tracker delay. An independent oracle monitor inhibits commands. The controller never assigns a report `result` and never opens a physical actuator. The systems-safety programme is [Control safety](docs/CONTROL_SAFETY.md).
 
 `quatopsy analyze --repro-dir <dir>` writes one context-bounded subdirectory per finding when a report has multiple findings. Each contains `slice.csv`, `manifest.json`, and `provenance.json`; a single finding uses those filenames directly in the requested directory. Export refuses above the compiled 1,024-slice disk-work limit without committing any requested output.
 

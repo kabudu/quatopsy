@@ -52,20 +52,33 @@ pub fn so3_attitude_error(q: RefQuat, q_desired: RefQuat) -> [f64; 3] {
     vee_skew_minus_transpose(rel)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AppliedTorque {
+    /// Enters Euler's equation. Motor plus environmental torque.
+    pub body: [f64; 3],
+    /// Updates stored wheel momentum when `wheels` is true. Must not include
+    /// environmental torque.
+    pub motor: [f64; 3],
+}
+
 /// Independent Euler step for software-in-the-loop truth.
+///
+/// `torque.body` enters Euler's equation. `torque.motor` updates stored wheel
+/// momentum when `wheels` is true. Environmental torque must not be passed as
+/// motor torque.
 pub fn rigid_body_step(
     inertia: [[f64; 3]; 3],
     q: RefQuat,
     omega: [f64; 3],
     h: [f64; 3],
-    torque: [f64; 3],
+    torque: AppliedTorque,
     dt: f64,
     wheels: bool,
 ) -> Result<(RefQuat, [f64; 3], [f64; 3]), &'static str> {
     if dt <= 0.0 || !dt.is_finite() {
         return Err("control oracle step dt is invalid");
     }
-    if !finite3(omega) || !finite3(h) || !finite3(torque) {
+    if !finite3(omega) || !finite3(h) || !finite3(torque.body) || !finite3(torque.motor) {
         return Err("control oracle step state is not finite");
     }
     let jinv = invert_spd(inertia)?;
@@ -74,9 +87,9 @@ pub fn rigid_body_step(
     let w_dot = apply_tensor(
         jinv,
         [
-            torque[0] - gyro[0],
-            torque[1] - gyro[1],
-            torque[2] - gyro[2],
+            torque.body[0] - gyro[0],
+            torque.body[1] - gyro[1],
+            torque.body[2] - gyro[2],
         ],
     );
     let w_next = [
@@ -93,14 +106,83 @@ pub fn rigid_body_step(
     let q_next = quat_normalize(q_next)?;
     let h_next = if wheels {
         [
-            h[0] - torque[0] * dt,
-            h[1] - torque[1] * dt,
-            h[2] - torque[2] * dt,
+            h[0] - torque.motor[0] * dt,
+            h[1] - torque.motor[1] * dt,
+            h[2] - torque.motor[2] * dt,
         ]
     } else {
         h
     };
     Ok((q_next, w_next, h_next))
+}
+
+/// Discrete first-order lag `y ← e^{-dt/τ} y + (1 - e^{-dt/τ}) u`.
+///
+/// `τ = 0` applies the command immediately.
+pub fn first_order_lag(
+    state: [f64; 3],
+    command: [f64; 3],
+    dt: f64,
+    tau: f64,
+) -> Result<[f64; 3], &'static str> {
+    if dt <= 0.0 || !dt.is_finite() || !tau.is_finite() || tau < 0.0 {
+        return Err("control oracle lag parameters are invalid");
+    }
+    if !finite3(state) || !finite3(command) {
+        return Err("control oracle lag state is not finite");
+    }
+    if tau == 0.0 {
+        return Ok(command);
+    }
+    let alpha = (-dt / tau).exp();
+    Ok([
+        alpha * state[0] + (1.0 - alpha) * command[0],
+        alpha * state[1] + (1.0 - alpha) * command[1],
+        alpha * state[2] + (1.0 - alpha) * command[2],
+    ])
+}
+
+/// Residual dipole torque `m × R^T B` in the body frame.
+pub fn magnetic_residual_torque(
+    q: RefQuat,
+    dipole_am2: [f64; 3],
+    field_t: [f64; 3],
+) -> Result<[f64; 3], &'static str> {
+    if !finite3(dipole_am2) || !finite3(field_t) {
+        return Err("control oracle magnetic residual is not finite");
+    }
+    let r = rotation_matrix(q);
+    let b_body = apply_tensor(transpose(r), field_t);
+    Ok(cross(dipole_am2, b_body))
+}
+
+/// Gravity-gradient torque `3 n^2 û × J û` with nadir expressed in the body frame.
+pub fn gravity_gradient_torque(
+    q: RefQuat,
+    inertia: [[f64; 3]; 3],
+    orbital_rate_rad_s: f64,
+    nadir_inertial: [f64; 3],
+) -> Result<[f64; 3], &'static str> {
+    if !orbital_rate_rad_s.is_finite() || orbital_rate_rad_s < 0.0 {
+        return Err("control oracle orbital rate is invalid");
+    }
+    if !finite3(nadir_inertial) {
+        return Err("control oracle nadir is not finite");
+    }
+    if orbital_rate_rad_s == 0.0 {
+        return Ok([0.0; 3]);
+    }
+    let n = norm3(nadir_inertial);
+    if n < 1.0e-12 {
+        return Err("control oracle nadir is near zero");
+    }
+    let r = rotation_matrix(q);
+    let u = apply_tensor(transpose(r), scale3(nadir_inertial, 1.0 / n));
+    let ju = apply_tensor(inertia, u);
+    Ok(scale3(
+        cross(u, ju),
+        3.0 * orbital_rate_rad_s * orbital_rate_rad_s,
+    ))
 }
 
 /// Independent envelope and freshness checks. The PD law cannot override this.
@@ -402,7 +484,10 @@ mod tests {
             identity(),
             [0.0; 3],
             [0.0; 3],
-            [0.0; 3],
+            AppliedTorque {
+                body: [0.0; 3],
+                motor: [0.0; 3],
+            },
             0.01,
             false,
         )
@@ -410,5 +495,76 @@ mod tests {
         assert!(geodesic_angle(q, identity()) < 1e-15);
         assert!(norm3(w) < 1e-15);
         assert!(norm3(h) < 1e-15);
+    }
+
+    #[test]
+    fn first_order_lag_is_identity_at_zero_tau() {
+        let cmd = [1.0, -2.0, 0.5];
+        assert_eq!(first_order_lag([0.0; 3], cmd, 0.01, 0.0).unwrap(), cmd);
+    }
+
+    #[test]
+    fn first_order_lag_matches_exact_discrete_update() {
+        let dt = 0.01;
+        let tau = 1.0;
+        let got = first_order_lag([0.0; 3], [1.0, 0.0, 0.0], dt, tau).unwrap();
+        let expected = 1.0 - (-dt / tau).exp();
+        assert!((got[0] - expected).abs() < 1e-15);
+        assert_eq!(got[1], 0.0);
+        assert_eq!(got[2], 0.0);
+    }
+
+    #[test]
+    fn environmental_torque_does_not_change_wheel_momentum() {
+        let inertia = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
+        let (_, w, h) = rigid_body_step(
+            inertia,
+            identity(),
+            [0.0; 3],
+            [0.0; 3],
+            AppliedTorque {
+                body: [0.0, 0.0, 1.0],
+                motor: [0.0; 3],
+            },
+            0.01,
+            true,
+        )
+        .unwrap();
+        assert!((w[2] - 0.01).abs() < 1e-12);
+        assert!(norm3(h) < 1e-15);
+    }
+
+    #[test]
+    fn magnetic_residual_matches_body_cross_product_at_identity() {
+        let tau = magnetic_residual_torque(identity(), [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]).unwrap();
+        assert!((tau[0]).abs() < 1e-15);
+        assert!((tau[1]).abs() < 1e-15);
+        assert!((tau[2] - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn magnetic_residual_is_not_the_inertial_cross_at_a_rotated_attitude() {
+        let q = RefQuat {
+            w: std::f64::consts::FRAC_1_SQRT_2,
+            x: 0.0,
+            y: 0.0,
+            z: std::f64::consts::FRAC_1_SQRT_2,
+        };
+        let tau = magnetic_residual_torque(q, [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]).unwrap();
+        assert!(
+            tau.iter().all(|item| item.abs() < 1e-12),
+            "identity m×B would be [0,0,1]; rotated residual was {tau:?}"
+        );
+    }
+
+    #[test]
+    fn gravity_gradient_matches_principal_axis_formula() {
+        let inertia = [[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 3.0]];
+        let a = std::f64::consts::FRAC_1_SQRT_2;
+        let tau = gravity_gradient_torque(identity(), inertia, 0.1, [a, a, 0.0]).unwrap();
+        let expected = 3.0 * 0.01 * (a * a);
+        assert!(tau[0].abs() < 1e-12);
+        assert!(tau[1].abs() < 1e-12);
+        assert!((tau[2] - expected).abs() < 1e-12);
     }
 }

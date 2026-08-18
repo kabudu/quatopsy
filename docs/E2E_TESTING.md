@@ -22,7 +22,7 @@ Tests invoke the released CLI against files, inspect exit status and canonical r
 | E2E-12 | Wheel rest-to-rest plan then analyze | `multiple-shooting-lm` candidate; kernel `pass`; no plan `result` | Independent Euler residual with stored momentum |
 | E2E-13 | SO(3) rest-to-rest control then analyze | `geometric-pd-so3` SIL candidate; kernel `pass`; no control `result` | Independent SO(3) error and command monitor |
 | E2E-14 | Host-CPU PIL then analyze | Isolated controller process; kernel `pass`; no control `result` | Independent SO(3) error and command monitor |
-| E2E-15 | Loopback HIL then analyze | Loopback actuator emulator; physical class refused; kernel `pass` | Independent SO(3) error and command monitor |
+| E2E-16 | Declared-plant loopback HIL then analyze | Command-to-torque lag, residual dipole, gravity-gradient, gyro ARW; kernel `pass`; no control `result` | Independent lag, magnetic, and gravity-gradient oracles; motor vs environmental `h` |
 
 ## Determinism and portability
 

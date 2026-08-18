@@ -9,8 +9,9 @@ mod control;
 mod plan;
 
 pub use control::{
-    CONTROL_FRESHNESS_TOLERANCE, CONTROL_TORQUE_TOLERANCE, MonitorDecision, MonitorEnvelope,
-    MonitorSample, monitor_command, rigid_body_step, so3_attitude_error,
+    AppliedTorque, CONTROL_FRESHNESS_TOLERANCE, CONTROL_TORQUE_TOLERANCE, MonitorDecision,
+    MonitorEnvelope, MonitorSample, first_order_lag, gravity_gradient_torque,
+    magnetic_residual_torque, monitor_command, rigid_body_step, so3_attitude_error,
 };
 pub use plan::{
     KeepOutCone, PLAN_BOUNDARY_TOLERANCE, PLAN_EULER_TOLERANCE, PLAN_KEEP_OUT_TOLERANCE,

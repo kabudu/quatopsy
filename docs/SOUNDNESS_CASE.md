@@ -33,6 +33,7 @@ A sign-only repair must satisfy `R(q_raw) = R(q_repaired)` within the independen
 | SIL controller | Emit a declared closed-loop path under geometric PD | Must not import report result types or open hardware |
 | Host-CPU PIL | Isolate the cycle law from the plant process | Host CPU only; not a qualified flight processor |
 | Loopback HIL | Isolate the plant emulator behind a command bus | Must not open a physical actuator |
+| Declared plant models | Optional command-to-torque lag, magnetic residual, gravity-gradient, gyro ARW, star-tracker delay | Independent oracles; frozen inertial field and nadir; must not be presented as hardware |
 | Control safety programme | Hazard analysis and fail-closed hardware-use gate | Absent qualification record cannot authorize hardware |
 | Control monitor oracle | Envelope, freshness, and keep-out inhibition | Must not share the PD law |
 

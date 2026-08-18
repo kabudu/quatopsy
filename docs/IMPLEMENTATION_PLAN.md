@@ -104,8 +104,9 @@ Exit: local CI plus the spherical rest-to-rest fixture. Open boxes are not shipp
 - [x] Processor-in-the-loop with an isolated controller process on the host CPU. Target flight processors are not claimed.
 - [x] Hardware-in-the-loop command bus against a loopback actuator emulator. Physical actuators are refused.
 - [x] Systems-safety programme and fail-closed hardware-use gate. Hardware is not qualified.
+- [x] Add declared higher-fidelity software plant models: first-order command-to-torque lag, gyro ARW, star-tracker delay, magnetic residual, and gravity-gradient.
 
-Exit: local CI plus the SO(3) rest-to-rest SIL, PIL, and loopback HIL fixtures. Open boxes are not shipped.
+Exit: local CI plus the SO(3) rest-to-rest SIL, PIL, loopback HIL, and declared-plant fixtures. Open boxes are not shipped.
 
 ## Optional post-release evidence track
 
