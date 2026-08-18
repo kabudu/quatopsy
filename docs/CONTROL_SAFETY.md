@@ -33,6 +33,7 @@ Physical actuators, target flight processors, hard real-time operating systems, 
 | H9 | Hard-real-time claim | `latency_class` refusal | Refuse |
 | H10 | Report-result impersonation | Serializer guard against a `result` field | Refuse |
 | H11 | Declared plant models treated as hardware | Protocol copy; loopback-only class | Keep software boundary |
+| H12 | Environmental torque stored as wheel momentum | Motor torque updates `h`; magnetic and gravity-gradient enter Euler only | Keep the split; wheels-plus-magnetic tests |
 
 ## Independence
 

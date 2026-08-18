@@ -13,8 +13,8 @@ use crate::law::{BodyState, Gains, LawState, Reference, geometric_pd};
 use crate::modes::{Mode, arbitrate, hold_metrics};
 use crate::{ControlError, KD_SAFE};
 use quatopsy_oracle::{
-    KeepOutCone, MonitorEnvelope, MonitorSample, first_order_lag, gravity_gradient_torque,
-    magnetic_residual_torque, monitor_command, rigid_body_step,
+    AppliedTorque, KeepOutCone, MonitorEnvelope, MonitorSample, first_order_lag,
+    gravity_gradient_torque, magnetic_residual_torque, monitor_command, rigid_body_step,
 };
 use serde::{Deserialize, Serialize};
 
@@ -70,6 +70,7 @@ pub struct PlantConfig {
     pub q: [f64; 4],
     pub omega: [f64; 3],
     pub h: [f64; 3],
+    /// Command-to-torque first-order lag. Not wheel-speed dynamics.
     #[serde(default)]
     pub wheel_lag_s: f64,
     #[serde(default)]
@@ -94,6 +95,7 @@ pub struct PlantSample {
     pub q: [f64; 4],
     pub omega: [f64; 3],
     pub h: [f64; 3],
+    pub torque: [f64; 3],
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -254,14 +256,10 @@ impl PlantEngine {
                 self.q.as_ref(),
                 self.config.inertia,
                 self.config.orbital_rate_rad_s,
-                if self.config.nadir_inertial == [0.0; 3] {
-                    [0.0, 0.0, 1.0]
-                } else {
-                    self.config.nadir_inertial
-                },
+                self.config.nadir_inertial,
             )
             .map_err(|err| ControlError::Refused(err.to_string()))?;
-            let torque = [
+            let body_torque = [
                 self.tau_act[0] + magnetic[0] + gravity[0],
                 self.tau_act[1] + magnetic[1] + gravity[1],
                 self.tau_act[2] + magnetic[2] + gravity[2],
@@ -271,7 +269,10 @@ impl PlantEngine {
                 self.q.as_ref(),
                 self.omega,
                 self.h,
-                torque,
+                AppliedTorque {
+                    body: body_torque,
+                    motor: self.tau_act,
+                },
                 input.dt_sub,
                 self.config.wheels,
             )
@@ -283,6 +284,7 @@ impl PlantEngine {
                 q: [self.q.w, self.q.x, self.q.y, self.q.z],
                 omega: self.omega,
                 h: self.h,
+                torque: body_torque,
             });
         }
         Ok(PlantOut { samples })
@@ -518,25 +520,110 @@ mod tests {
     }
 
     #[test]
-    fn wheel_lag_reduces_the_first_applied_rate() {
+    fn wheel_lag_matches_exact_discrete_torque() {
         let input = PlantIn {
             torque: [1.0, 0.0, 0.0],
             dt_sub: 0.01,
             substeps: 1,
         };
-        let instant = PlantEngine::new(rest_plant(0.0))
-            .unwrap()
-            .step(input)
-            .unwrap();
         let lagged = PlantEngine::new(rest_plant(1.0))
             .unwrap()
             .step(input)
             .unwrap();
+        let expected = 1.0 - (-0.01_f64).exp();
+        assert!((lagged.samples[0].torque[0] - expected).abs() < 1e-12);
+        assert!((lagged.samples[0].omega[0] - expected * 0.01).abs() < 1e-9);
+        let instant = PlantEngine::new(rest_plant(0.0))
+            .unwrap()
+            .step(input)
+            .unwrap();
+        assert!((instant.samples[0].torque[0] - 1.0).abs() < 1e-15);
+        assert!(lagged.samples[0].omega[0].abs() < instant.samples[0].omega[0].abs());
+    }
+
+    #[test]
+    fn magnetic_residual_at_rest_produces_the_oracle_rate() {
+        let mut cfg = rest_plant(0.0);
+        cfg.magnetic_dipole_am2 = [1.0, 0.0, 0.0];
+        cfg.magnetic_field_t = [0.0, 1.0, 0.0];
+        let out = PlantEngine::new(cfg)
+            .unwrap()
+            .step(PlantIn {
+                torque: [0.0; 3],
+                dt_sub: 0.01,
+                substeps: 1,
+            })
+            .unwrap();
+        assert!((out.samples[0].torque[2] - 1.0).abs() < 1e-12);
+        assert!((out.samples[0].omega[2] - 0.01).abs() < 1e-9);
+        assert!(out.samples[0].h.iter().all(|item| item.abs() < 1e-15));
+    }
+
+    #[test]
+    fn wheels_store_motor_momentum_not_environmental_torque() {
+        let mut cfg = rest_plant(0.0);
+        cfg.wheels = true;
+        cfg.magnetic_dipole_am2 = [1.0, 0.0, 0.0];
+        cfg.magnetic_field_t = [0.0, 1.0, 0.0];
+        let out = PlantEngine::new(cfg)
+            .unwrap()
+            .step(PlantIn {
+                torque: [0.0; 3],
+                dt_sub: 0.01,
+                substeps: 1,
+            })
+            .unwrap();
+        assert!((out.samples[0].omega[2] - 0.01).abs() < 1e-9);
         assert!(
-            lagged.samples[0].omega[0].abs() < instant.samples[0].omega[0].abs(),
-            "lagged {} instant {}",
-            lagged.samples[0].omega[0],
-            instant.samples[0].omega[0]
+            out.samples[0].h.iter().all(|item| item.abs() < 1e-15),
+            "environmental torque leaked into h: {:?}",
+            out.samples[0].h
+        );
+    }
+
+    #[test]
+    fn gravity_gradient_at_rest_matches_the_principal_axis_formula() {
+        let a = std::f64::consts::FRAC_1_SQRT_2;
+        let mut cfg = rest_plant(0.0);
+        cfg.inertia = [[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 3.0]];
+        cfg.orbital_rate_rad_s = 0.1;
+        cfg.nadir_inertial = [a, a, 0.0];
+        let out = PlantEngine::new(cfg)
+            .unwrap()
+            .step(PlantIn {
+                torque: [0.0; 3],
+                dt_sub: 0.01,
+                substeps: 1,
+            })
+            .unwrap();
+        let expected = 3.0 * 0.01 * (a * a);
+        assert!((out.samples[0].torque[2] - expected).abs() < 1e-12);
+        assert!(out.samples[0].torque[2].abs() > 1e-6);
+    }
+
+    #[test]
+    fn magnetic_residual_at_rotated_attitude_is_not_the_identity_cross() {
+        let mut cfg = rest_plant(0.0);
+        cfg.q = [
+            std::f64::consts::FRAC_1_SQRT_2,
+            0.0,
+            0.0,
+            std::f64::consts::FRAC_1_SQRT_2,
+        ];
+        cfg.magnetic_dipole_am2 = [1.0, 0.0, 0.0];
+        cfg.magnetic_field_t = [0.0, 1.0, 0.0];
+        let out = PlantEngine::new(cfg)
+            .unwrap()
+            .step(PlantIn {
+                torque: [0.0; 3],
+                dt_sub: 0.01,
+                substeps: 1,
+            })
+            .unwrap();
+        assert!(
+            out.samples[0].torque.iter().all(|item| item.abs() < 1e-12),
+            "identity m×B would be [0,0,1]; plant torque was {:?}",
+            out.samples[0].torque
         );
     }
 }

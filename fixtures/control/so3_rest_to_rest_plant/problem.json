@@ -11,8 +11,10 @@
   "q_desired": [0.7071067811865476, 0.7071067811865476, 0.0, 0.0],
   "omega_initial": [0.0, 0.0, 0.0],
   "inertia": {
-    "model": "spherical",
-    "j": 1.0
+    "model": "diagonal",
+    "jxx": 1.0,
+    "jyy": 1.2,
+    "jzz": 1.5
   },
   "torque_limit_nm": 1.0,
   "slew_rate_limit_rad_s": 2.0,
@@ -27,7 +29,7 @@
     "ki": 0.0
   },
   "actuators": {
-    "wheels": false,
+    "wheels": true,
     "momentum_dump_gain": 0.5
   },
   "sensor": {
@@ -46,7 +48,7 @@
     },
     "gravity_gradient": {
       "orbital_rate_rad_s": 0.001,
-      "nadir_inertial": [0.0, 0.0, 1.0]
+      "nadir_inertial": [0.7071067811865476, 0.7071067811865476, 0.0]
     }
   },
   "hardware": {

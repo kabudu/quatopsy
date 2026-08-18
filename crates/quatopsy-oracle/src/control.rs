@@ -52,20 +52,33 @@ pub fn so3_attitude_error(q: RefQuat, q_desired: RefQuat) -> [f64; 3] {
     vee_skew_minus_transpose(rel)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AppliedTorque {
+    /// Enters Euler's equation. Motor plus environmental torque.
+    pub body: [f64; 3],
+    /// Updates stored wheel momentum when `wheels` is true. Must not include
+    /// environmental torque.
+    pub motor: [f64; 3],
+}
+
 /// Independent Euler step for software-in-the-loop truth.
+///
+/// `torque.body` enters Euler's equation. `torque.motor` updates stored wheel
+/// momentum when `wheels` is true. Environmental torque must not be passed as
+/// motor torque.
 pub fn rigid_body_step(
     inertia: [[f64; 3]; 3],
     q: RefQuat,
     omega: [f64; 3],
     h: [f64; 3],
-    torque: [f64; 3],
+    torque: AppliedTorque,
     dt: f64,
     wheels: bool,
 ) -> Result<(RefQuat, [f64; 3], [f64; 3]), &'static str> {
     if dt <= 0.0 || !dt.is_finite() {
         return Err("control oracle step dt is invalid");
     }
-    if !finite3(omega) || !finite3(h) || !finite3(torque) {
+    if !finite3(omega) || !finite3(h) || !finite3(torque.body) || !finite3(torque.motor) {
         return Err("control oracle step state is not finite");
     }
     let jinv = invert_spd(inertia)?;
@@ -74,9 +87,9 @@ pub fn rigid_body_step(
     let w_dot = apply_tensor(
         jinv,
         [
-            torque[0] - gyro[0],
-            torque[1] - gyro[1],
-            torque[2] - gyro[2],
+            torque.body[0] - gyro[0],
+            torque.body[1] - gyro[1],
+            torque.body[2] - gyro[2],
         ],
     );
     let w_next = [
@@ -93,9 +106,9 @@ pub fn rigid_body_step(
     let q_next = quat_normalize(q_next)?;
     let h_next = if wheels {
         [
-            h[0] - torque[0] * dt,
-            h[1] - torque[1] * dt,
-            h[2] - torque[2] * dt,
+            h[0] - torque.motor[0] * dt,
+            h[1] - torque.motor[1] * dt,
+            h[2] - torque.motor[2] * dt,
         ]
     } else {
         h
@@ -471,7 +484,10 @@ mod tests {
             identity(),
             [0.0; 3],
             [0.0; 3],
-            [0.0; 3],
+            AppliedTorque {
+                body: [0.0; 3],
+                motor: [0.0; 3],
+            },
             0.01,
             false,
         )
@@ -488,11 +504,57 @@ mod tests {
     }
 
     #[test]
+    fn first_order_lag_matches_exact_discrete_update() {
+        let dt = 0.01;
+        let tau = 1.0;
+        let got = first_order_lag([0.0; 3], [1.0, 0.0, 0.0], dt, tau).unwrap();
+        let expected = 1.0 - (-dt / tau).exp();
+        assert!((got[0] - expected).abs() < 1e-15);
+        assert_eq!(got[1], 0.0);
+        assert_eq!(got[2], 0.0);
+    }
+
+    #[test]
+    fn environmental_torque_does_not_change_wheel_momentum() {
+        let inertia = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
+        let (_, w, h) = rigid_body_step(
+            inertia,
+            identity(),
+            [0.0; 3],
+            [0.0; 3],
+            AppliedTorque {
+                body: [0.0, 0.0, 1.0],
+                motor: [0.0; 3],
+            },
+            0.01,
+            true,
+        )
+        .unwrap();
+        assert!((w[2] - 0.01).abs() < 1e-12);
+        assert!(norm3(h) < 1e-15);
+    }
+
+    #[test]
     fn magnetic_residual_matches_body_cross_product_at_identity() {
         let tau = magnetic_residual_torque(identity(), [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]).unwrap();
         assert!((tau[0]).abs() < 1e-15);
         assert!((tau[1]).abs() < 1e-15);
         assert!((tau[2] - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn magnetic_residual_is_not_the_inertial_cross_at_a_rotated_attitude() {
+        let q = RefQuat {
+            w: std::f64::consts::FRAC_1_SQRT_2,
+            x: 0.0,
+            y: 0.0,
+            z: std::f64::consts::FRAC_1_SQRT_2,
+        };
+        let tau = magnetic_residual_torque(q, [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]).unwrap();
+        assert!(
+            tau.iter().all(|item| item.abs() < 1e-12),
+            "identity m×B would be [0,0,1]; rotated residual was {tau:?}"
+        );
     }
 
     #[test]

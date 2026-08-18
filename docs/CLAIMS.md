@@ -19,7 +19,7 @@ Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research reposito
 
 ## Unreleased M7
 
-- `quatopsy control` runs a geometric PD controller on SO(3) plus `quatopsy.control/1`. Attitude error is the rotation-matrix vee map. An independent oracle monitor inhibits commands. Estimator freshness, saturation, anti-windup, momentum dump, modes, deterministic SIL campaigns, and declared software plant models (wheel lag, gyro ARW, star-tracker delay, magnetic residual, gravity-gradient) never assign report `result`. `execution` may be `sil`, host-CPU `pil`, or loopback `hil`. Hard real-time, physical actuators, qualified processors, and hardware command are refused.
+- `quatopsy control` runs a geometric PD controller on SO(3) plus `quatopsy.control/1`. Attitude error is the rotation-matrix vee map. An independent oracle monitor inhibits commands. Estimator freshness, saturation, anti-windup, momentum dump, modes, deterministic SIL campaigns, and declared software plant models (command-to-torque lag, gyro ARW, star-tracker delay, magnetic residual, gravity-gradient) never assign report `result`. `execution` may be `sil`, host-CPU `pil`, or loopback `hil`. Hard real-time, physical actuators, qualified processors, and hardware command are refused.
 
 ## Required non-claims
 

@@ -13,6 +13,12 @@
 - Adoption policy `--policy` / `--fail-on` / `--override-file` (exit only).
 - CC BY 4.0 TUBIN star-tracker excerpt and mutation/fuzz/privacy/permission E2E coverage.
 
+### Fixed
+
+- Control plant applies magnetic residual and gravity-gradient torque to Euler's equation only. Stored wheel momentum follows motor torque.
+- Logged control CSV torque is the plant-applied body torque after command-to-torque lag and declared environmental models. The initial sample is zero.
+- `star_tracker_delay_s: 0` is zero attitude delay. It does not fall back to gyro `delay_s`.
+
 ### Claims
 
 These close the previously deferred V1 gaps. They do not claim flight safety, TUBIN reconstruction, novelty, or independent external validation. The unreleased planner is a candidate generator, not a certified or globally optimal trajectory. The unreleased controller is not flight software, not hard real-time, not a qualified processor, and not actuator permission.

@@ -24,17 +24,19 @@ The plant is a rigid body with a symmetric positive-definite inertia tensor and 
 
 ## Estimator contract
 
-Each cycle requires an attitude estimate with timestamp, body rate, frame names, and covariance trace. Estimates older than `max_estimate_age_s`, from the future, with mismatched frames, non-finite values, or covariance above the envelope are inhibited. The SIL sensor is a delayed, optionally noisy plant measurement. Optional `star_tracker_delay_s` delays attitude independently of gyro `delay_s`. Optional `gyro_arw_rad_s_sqrt_s` adds a discrete angular-random-walk bias to the rate measurement. It is not a flight Kalman filter.
+Each cycle requires an attitude estimate with timestamp, body rate, frame names, and covariance trace. Estimates older than `max_estimate_age_s`, from the future, with mismatched frames, non-finite values, or covariance above the envelope are inhibited. The SIL sensor is a delayed, optionally noisy plant measurement. `delay_s` is gyro delay. `star_tracker_delay_s` is attitude delay. Zero in either field means zero; star-tracker delay does not fall back to gyro delay. Campaign `delay_s` delays both. Optional `gyro_arw_rad_s_sqrt_s` adds a discrete angular-random-walk bias to the rate measurement. It is not a flight Kalman filter.
 
 ## Declared plant models
 
 Optional `plant` fields are software models on the same loopback bus used by SIL, PIL, and HIL. They do not open a device.
 
-- `wheel_lag_s`: first-order lag from commanded torque to applied torque. Zero is instantaneous.
-- `magnetic_residual.dipole_am2` and `field_t`: body dipole crossed with the inertial field expressed in the body frame, `m × R^T B`.
-- `gravity_gradient.orbital_rate_rad_s` and `nadir_inertial`: `3 n^2 û × J û` with nadir in the body frame.
+- `wheel_lag_s`: first-order command-to-torque lag. Zero is instantaneous. This is not wheel-speed dynamics.
+- `magnetic_residual.dipole_am2` and `field_t`: body dipole crossed with a declared frozen inertial field expressed in the body frame, `m × R^T B`. The field is a constant, not an orbit.
+- `gravity_gradient.orbital_rate_rad_s` and `nadir_inertial`: `3 n^2 û × J û` with a declared frozen inertial nadir expressed in the body frame. Nadir is a constant, not an orbit.
 
 Independent oracle functions compute lag, magnetic residual, and gravity-gradient torque. Unknown plant fields are refused. These models are not hardware, not a disturbance catalogue, and not a flight-environment certificate.
+
+Motor torque (the lagged command) updates stored wheel momentum `h`. Magnetic residual and gravity-gradient torque enter Euler's equation only.
 
 ## Modes and inhibition
 
@@ -44,4 +46,4 @@ Modes are idle, track, hold, inhibit, and safe. Safe rate-damping is the fail-cl
 
 `status` is `tracked-candidate` when the run stays inside the envelope and meets the compiled rest tolerance. `inhibited-candidate` records a monitor trip. `open-loop-candidate` means the run finished without inhibition but missed the rest tolerance. None of these is a report result. `execution`, `isolation`, and `hardware_class` record the class that actually ran. Optional `campaign` records deterministic SIL trials under inertia error, sensor noise, delay, disturbance, actuator failure, and numerical faults. It is not a robustness certificate.
 
-The kernel manifest declares quaternion and angular-velocity columns; torque and optional momentum columns are present for inspection and ignored by analysis. Control-cycle torque is zero-order held. Logged sample density is raised so interval kinematics stay within the kernel omega tolerance.
+The kernel manifest declares quaternion and angular-velocity columns; torque and optional momentum columns are present for inspection and ignored by analysis. Logged `tx,ty,tz` is the plant-applied body torque after command-to-torque lag and declared environmental models. The initial sample is zero because no plant step has run yet. The control cycle still holds the PD command constant across plant substeps. Logged sample density is raised so interval kinematics stay within the kernel omega tolerance.
