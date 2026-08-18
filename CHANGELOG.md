@@ -5,7 +5,7 @@
 ### Added
 
 - Responsive forensic investigation console with synchronized trajectory playback, timeline scrubbing, evidence navigation, sample telemetry, and richer offline canvas rendering.
-- `quatopsy control` for a geometric PD controller on SO(3), with independent command inhibition, estimator freshness contracts, saturation and safe fallback, host-CPU processor-in-the-loop, loopback hardware-in-the-loop, a fail-closed hardware-use gate, deterministic robustness trials, no physical actuator I/O, and no report `result`.
+- `quatopsy control` for a geometric PD controller on SO(3), with independent command inhibition, estimator freshness contracts, saturation and safe fallback, host-CPU processor-in-the-loop, loopback hardware-in-the-loop, declared software plant models, a fail-closed hardware-use gate, deterministic robustness trials, no physical actuator I/O, and no report `result`.
 - `quatopsy plan` for a torque-limited rest-to-rest candidate, with independent Euler/kinematics residuals, body-rate columns, actuator and keep-out models, weighted objectives, bounded multiple shooting, perturbation campaigns, infeasibility on constraint violation, and no report `result`.
 - Forensic gap closure for strict adoption-policy validation, canonical UTC overrides, unknown-major refusal exits, transactionally committed output sets, per-finding reproducers, and bounded viewer finding navigation.
 - `QAT-CONV-001` matrix comparison and `QAT-OMEGA-001` body-rate comparison.

@@ -103,6 +103,75 @@ pub fn rigid_body_step(
     Ok((q_next, w_next, h_next))
 }
 
+/// Discrete first-order lag `y ← e^{-dt/τ} y + (1 - e^{-dt/τ}) u`.
+///
+/// `τ = 0` applies the command immediately.
+pub fn first_order_lag(
+    state: [f64; 3],
+    command: [f64; 3],
+    dt: f64,
+    tau: f64,
+) -> Result<[f64; 3], &'static str> {
+    if dt <= 0.0 || !dt.is_finite() || !tau.is_finite() || tau < 0.0 {
+        return Err("control oracle lag parameters are invalid");
+    }
+    if !finite3(state) || !finite3(command) {
+        return Err("control oracle lag state is not finite");
+    }
+    if tau == 0.0 {
+        return Ok(command);
+    }
+    let alpha = (-dt / tau).exp();
+    Ok([
+        alpha * state[0] + (1.0 - alpha) * command[0],
+        alpha * state[1] + (1.0 - alpha) * command[1],
+        alpha * state[2] + (1.0 - alpha) * command[2],
+    ])
+}
+
+/// Residual dipole torque `m × R^T B` in the body frame.
+pub fn magnetic_residual_torque(
+    q: RefQuat,
+    dipole_am2: [f64; 3],
+    field_t: [f64; 3],
+) -> Result<[f64; 3], &'static str> {
+    if !finite3(dipole_am2) || !finite3(field_t) {
+        return Err("control oracle magnetic residual is not finite");
+    }
+    let r = rotation_matrix(q);
+    let b_body = apply_tensor(transpose(r), field_t);
+    Ok(cross(dipole_am2, b_body))
+}
+
+/// Gravity-gradient torque `3 n^2 û × J û` with nadir expressed in the body frame.
+pub fn gravity_gradient_torque(
+    q: RefQuat,
+    inertia: [[f64; 3]; 3],
+    orbital_rate_rad_s: f64,
+    nadir_inertial: [f64; 3],
+) -> Result<[f64; 3], &'static str> {
+    if !orbital_rate_rad_s.is_finite() || orbital_rate_rad_s < 0.0 {
+        return Err("control oracle orbital rate is invalid");
+    }
+    if !finite3(nadir_inertial) {
+        return Err("control oracle nadir is not finite");
+    }
+    if orbital_rate_rad_s == 0.0 {
+        return Ok([0.0; 3]);
+    }
+    let n = norm3(nadir_inertial);
+    if n < 1.0e-12 {
+        return Err("control oracle nadir is near zero");
+    }
+    let r = rotation_matrix(q);
+    let u = apply_tensor(transpose(r), scale3(nadir_inertial, 1.0 / n));
+    let ju = apply_tensor(inertia, u);
+    Ok(scale3(
+        cross(u, ju),
+        3.0 * orbital_rate_rad_s * orbital_rate_rad_s,
+    ))
+}
+
 /// Independent envelope and freshness checks. The PD law cannot override this.
 pub fn monitor_command(
     envelope: MonitorEnvelope,
@@ -410,5 +479,30 @@ mod tests {
         assert!(geodesic_angle(q, identity()) < 1e-15);
         assert!(norm3(w) < 1e-15);
         assert!(norm3(h) < 1e-15);
+    }
+
+    #[test]
+    fn first_order_lag_is_identity_at_zero_tau() {
+        let cmd = [1.0, -2.0, 0.5];
+        assert_eq!(first_order_lag([0.0; 3], cmd, 0.01, 0.0).unwrap(), cmd);
+    }
+
+    #[test]
+    fn magnetic_residual_matches_body_cross_product_at_identity() {
+        let tau = magnetic_residual_torque(identity(), [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]).unwrap();
+        assert!((tau[0]).abs() < 1e-15);
+        assert!((tau[1]).abs() < 1e-15);
+        assert!((tau[2] - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn gravity_gradient_matches_principal_axis_formula() {
+        let inertia = [[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 3.0]];
+        let a = std::f64::consts::FRAC_1_SQRT_2;
+        let tau = gravity_gradient_torque(identity(), inertia, 0.1, [a, a, 0.0]).unwrap();
+        let expected = 3.0 * 0.01 * (a * a);
+        assert!(tau[0].abs() < 1e-12);
+        assert!(tau[1].abs() < 1e-12);
+        assert!((tau[2] - expected).abs() < 1e-12);
     }
 }

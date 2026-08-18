@@ -32,6 +32,7 @@ Physical actuators, target flight processors, hard real-time operating systems, 
 | H8 | Physical actuator or flight-board command | `hardware.class` and unknown-field refusal | Refuse before any output directory |
 | H9 | Hard-real-time claim | `latency_class` refusal | Refuse |
 | H10 | Report-result impersonation | Serializer guard against a `result` field | Refuse |
+| H11 | Declared plant models treated as hardware | Protocol copy; loopback-only class | Keep software boundary |
 
 ## Independence
 

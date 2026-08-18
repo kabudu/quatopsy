@@ -150,3 +150,12 @@ fn physical_hardware_does_not_create_output_directory() {
     assert_eq!(status.code(), Some(2));
     assert!(!out.exists());
 }
+
+#[test]
+fn declared_plant_hil_then_analyze_keeps_verdict_ownership() {
+    closed_loop_then_analyze(
+        "fixtures/control/so3_rest_to_rest_plant/problem.json",
+        "\"execution\":\"hil\"",
+        "loopback-actuator-emulator",
+    );
+}

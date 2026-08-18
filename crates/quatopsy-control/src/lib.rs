@@ -87,6 +87,8 @@ struct ProblemDocument {
     campaign: Option<CampaignSpec>,
     #[serde(default)]
     hardware: Hardware,
+    #[serde(default)]
+    plant: PlantModels,
 }
 
 #[derive(Debug, Deserialize, Clone, Copy)]
@@ -117,6 +119,39 @@ enum HardwareClass {
     #[default]
     LoopbackEmulator,
     Physical,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+#[serde(deny_unknown_fields)]
+struct PlantModels {
+    #[serde(default)]
+    wheel_lag_s: f64,
+    #[serde(default)]
+    magnetic_residual: MagneticResidual,
+    #[serde(default)]
+    gravity_gradient: GravityGradient,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+#[serde(deny_unknown_fields)]
+struct MagneticResidual {
+    #[serde(default)]
+    dipole_am2: [f64; 3],
+    #[serde(default)]
+    field_t: [f64; 3],
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+#[serde(deny_unknown_fields)]
+struct GravityGradient {
+    #[serde(default)]
+    orbital_rate_rad_s: f64,
+    #[serde(default = "default_nadir")]
+    nadir_inertial: [f64; 3],
+}
+
+fn default_nadir() -> [f64; 3] {
+    [0.0, 0.0, 1.0]
 }
 
 #[derive(Debug, Deserialize)]
@@ -259,6 +294,10 @@ struct Sensor {
     quat_noise: f64,
     #[serde(default)]
     rate_noise: f64,
+    #[serde(default)]
+    star_tracker_delay_s: f64,
+    #[serde(default)]
+    gyro_arw_rad_s_sqrt_s: f64,
     #[serde(default = "default_cov")]
     covariance_trace: f64,
 }
@@ -269,6 +308,8 @@ impl Default for Sensor {
             delay_s: 0.0,
             quat_noise: 0.0,
             rate_noise: 0.0,
+            star_tracker_delay_s: 0.0,
+            gyro_arw_rad_s_sqrt_s: 0.0,
             covariance_trace: default_cov(),
         }
     }
@@ -334,6 +375,7 @@ struct Prepared {
     substeps: usize,
     dt_sub: f64,
     execution: Execution,
+    plant: PlantModels,
 }
 
 struct Faults {
@@ -567,11 +609,59 @@ fn prepare(problem: &ProblemDocument) -> Result<Prepared, ControlError> {
         || problem.sensor.quat_noise < 0.0
         || !problem.sensor.rate_noise.is_finite()
         || problem.sensor.rate_noise < 0.0
+        || !problem.sensor.star_tracker_delay_s.is_finite()
+        || problem.sensor.star_tracker_delay_s < 0.0
+        || problem.sensor.star_tracker_delay_s > 1.0
+        || !problem.sensor.gyro_arw_rad_s_sqrt_s.is_finite()
+        || problem.sensor.gyro_arw_rad_s_sqrt_s < 0.0
+        || problem.sensor.gyro_arw_rad_s_sqrt_s > 1.0
         || !problem.sensor.covariance_trace.is_finite()
         || problem.sensor.covariance_trace < 0.0
     {
         return Err(ControlError::Refused(
-            "sensor delay, noise, and covariance must be finite and non-negative".to_string(),
+            "sensor delay, noise, star-tracker delay, gyro ARW, and covariance must be finite and non-negative within compiled bounds"
+                .to_string(),
+        ));
+    }
+    if !problem.plant.wheel_lag_s.is_finite()
+        || problem.plant.wheel_lag_s < 0.0
+        || problem.plant.wheel_lag_s > 10.0
+        || !problem
+            .plant
+            .magnetic_residual
+            .dipole_am2
+            .iter()
+            .all(|item| item.is_finite())
+        || !problem
+            .plant
+            .magnetic_residual
+            .field_t
+            .iter()
+            .all(|item| item.is_finite())
+        || !problem
+            .plant
+            .gravity_gradient
+            .orbital_rate_rad_s
+            .is_finite()
+        || problem.plant.gravity_gradient.orbital_rate_rad_s < 0.0
+        || problem.plant.gravity_gradient.orbital_rate_rad_s > 0.1
+        || !problem
+            .plant
+            .gravity_gradient
+            .nadir_inertial
+            .iter()
+            .all(|item| item.is_finite())
+    {
+        return Err(ControlError::Refused(
+            "declared plant models must be finite and inside compiled bounds".to_string(),
+        ));
+    }
+    if problem.plant.gravity_gradient.orbital_rate_rad_s > 0.0
+        && norm3(problem.plant.gravity_gradient.nadir_inertial) < 1.0e-12
+    {
+        return Err(ControlError::Refused(
+            "gravity-gradient nadir_inertial must be non-zero when orbital_rate_rad_s is positive"
+                .to_string(),
         ));
     }
     if let Some(slew) = problem.slew_rate_limit_rad_s
@@ -610,6 +700,7 @@ fn prepare(problem: &ProblemDocument) -> Result<Prepared, ControlError> {
         substeps: substeps as usize,
         dt_sub: problem.cycle_dt_s / substeps as f64,
         execution: problem.execution,
+        plant: problem.plant,
     })
 }
 
@@ -669,6 +760,11 @@ fn plant_config(prepared: &Prepared, faults: &Faults) -> PlantConfig {
         q: [prepared.q0.w, prepared.q0.x, prepared.q0.y, prepared.q0.z],
         omega: prepared.omega0,
         h: [0.0; 3],
+        wheel_lag_s: prepared.plant.wheel_lag_s,
+        magnetic_dipole_am2: prepared.plant.magnetic_residual.dipole_am2,
+        magnetic_field_t: prepared.plant.magnetic_residual.field_t,
+        orbital_rate_rad_s: prepared.plant.gravity_gradient.orbital_rate_rad_s,
+        nadir_inertial: prepared.plant.gravity_gradient.nadir_inertial,
     }
 }
 
@@ -696,11 +792,18 @@ fn run_closed_loop(
     let mut last_reason: Option<String> = None;
     let mut last_mode = "idle";
     let mut rows = Vec::with_capacity(prepared.steps);
+    let mut arw_bias = [0.0; 3];
+    let quat_delay = if prepared.sensor.star_tracker_delay_s > 0.0 {
+        prepared.sensor.star_tracker_delay_s
+    } else {
+        faults.delay_s
+    };
     for i in 0..prepared.steps.saturating_sub(1) {
         let mut t = prepared.dt * i as f64;
         history.push((t, q, w));
-        let delayed = delayed_state(&history, t, faults.delay_s);
-        let mut meas_q = delayed.1;
+        let delayed_q = delayed_state(&history, t, quat_delay);
+        let delayed_w = delayed_state(&history, t, faults.delay_s);
+        let mut meas_q = delayed_q.1;
         if faults.quat_noise > 0.0 {
             meas_q = meas_q
                 .mul(geom::exp_so3([
@@ -710,7 +813,7 @@ fn run_closed_loop(
                 ]))
                 .normalized()?;
         }
-        let mut meas_w = delayed.2;
+        let mut meas_w = delayed_w.2;
         if faults.rate_noise > 0.0 {
             meas_w = add3(
                 meas_w,
@@ -721,11 +824,23 @@ fn run_closed_loop(
                 ],
             );
         }
+        if prepared.sensor.gyro_arw_rad_s_sqrt_s > 0.0 {
+            let step = prepared.sensor.gyro_arw_rad_s_sqrt_s * prepared.dt.sqrt();
+            arw_bias = add3(
+                arw_bias,
+                [
+                    step * unit_noise(faults.seed, 4000 + i as u32),
+                    step * unit_noise(faults.seed, 5000 + i as u32),
+                    step * unit_noise(faults.seed, 6000 + i as u32),
+                ],
+            );
+            meas_w = add3(meas_w, arw_bias);
+        }
         if faults.nan_step == Some(i) {
             meas_q.w = f64::NAN;
         }
         let estimate = estimator.ingest(Measurement {
-            t_s: delayed.0,
+            t_s: delayed_q.0,
             q: meas_q,
             omega: meas_w,
             covariance_trace: prepared.sensor.covariance_trace,
@@ -1041,6 +1156,40 @@ mod tests {
         let mut value = example_problem();
         value["flight_board"] = serde_json::json!(true);
         assert!(run(&value).is_err());
+    }
+
+    #[test]
+    fn star_tracker_delay_produces_an_inhibited_candidate() {
+        let mut value = example_problem();
+        value["sensor"]["star_tracker_delay_s"] = serde_json::json!(0.2);
+        value["max_estimate_age_s"] = serde_json::json!(0.02);
+        value["duration_s"] = serde_json::json!(1.0);
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert_eq!(doc["status"], "inhibited-candidate");
+        assert!(doc.get("result").is_none());
+    }
+
+    #[test]
+    fn declared_plant_models_remain_software_and_can_track() {
+        let mut value = example_problem();
+        value["plant"] = serde_json::json!({
+            "wheel_lag_s": 0.05,
+            "magnetic_residual": {
+                "dipole_am2": [0.02, 0.0, 0.0],
+                "field_t": [0.0, 0.0, 3.0e-5]
+            },
+            "gravity_gradient": {
+                "orbital_rate_rad_s": 0.001,
+                "nadir_inertial": [0.0, 0.0, 1.0]
+            }
+        });
+        value["sensor"]["gyro_arw_rad_s_sqrt_s"] = serde_json::json!(1.0e-4);
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert!(doc.get("result").is_none());
+        assert_eq!(doc["status"], "tracked-candidate");
+        assert_eq!(doc["hardware_class"], "loopback-emulator");
     }
 
     #[test]

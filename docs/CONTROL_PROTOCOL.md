@@ -8,11 +8,11 @@ The controller does not assign `pass`, `findings`, `refused`, or `error`. Those 
 
 ## Problem document
 
-Required fields: `schema`, `component_order`, `rotation_sense`, `frame_from`, `frame_to`, `time_unit`, `execution`, `latency_class`, `q_initial`, `q_desired`, `omega_initial`, `inertia`, `torque_limit_nm`, `cycle_dt_s`, `duration_s`, `max_estimate_age_s`, `max_covariance_trace`, `gains`. Optional `slew_rate_limit_rad_s`, `momentum_limit_nms`, `actuators`, `sensor`, `keep_out_zones`, `campaign`, and `hardware`.
+Required fields: `schema`, `component_order`, `rotation_sense`, `frame_from`, `frame_to`, `time_unit`, `execution`, `latency_class`, `q_initial`, `q_desired`, `omega_initial`, `inertia`, `torque_limit_nm`, `cycle_dt_s`, `duration_s`, `max_estimate_age_s`, `max_covariance_trace`, `gains`. Optional `slew_rate_limit_rad_s`, `momentum_limit_nms`, `actuators`, `sensor`, `keep_out_zones`, `campaign`, `hardware`, and `plant`.
 
 Unknown fields are refused. Supported `rotation_sense` is `active` and `time_unit` is `s`. Initial rate must be rest. `execution` may be `sil`, `pil`, or `hil`. `latency_class` must be `bounded-software`. `hard-real-time` is refused; this crate is not an RTOS. `hardware.class` defaults to `loopback-emulator`. `physical` is refused by the systems-safety programme; there is no qualification record that can authorize hardware use. See `docs/CONTROL_SAFETY.md`.
 
-The plant is a rigid body with a symmetric positive-definite inertia tensor and a torque box. That pair is the operating envelope together with optional slew, momentum, freshness, covariance, and keep-out cones.
+The plant is a rigid body with a symmetric positive-definite inertia tensor and a torque box. Optional declared models add first-order torque lag, residual dipole torque, and gravity-gradient torque. That pair plus the optional models is the operating envelope together with optional slew, momentum, freshness, covariance, and keep-out cones.
 
 ## Execution classes
 
@@ -24,7 +24,17 @@ The plant is a rigid body with a symmetric positive-definite inertia tensor and 
 
 ## Estimator contract
 
-Each cycle requires an attitude estimate with timestamp, body rate, frame names, and covariance trace. Estimates older than `max_estimate_age_s`, from the future, with mismatched frames, non-finite values, or covariance above the envelope are inhibited. The SIL sensor is a delayed, optionally noisy plant measurement. It is not a flight Kalman filter.
+Each cycle requires an attitude estimate with timestamp, body rate, frame names, and covariance trace. Estimates older than `max_estimate_age_s`, from the future, with mismatched frames, non-finite values, or covariance above the envelope are inhibited. The SIL sensor is a delayed, optionally noisy plant measurement. Optional `star_tracker_delay_s` delays attitude independently of gyro `delay_s`. Optional `gyro_arw_rad_s_sqrt_s` adds a discrete angular-random-walk bias to the rate measurement. It is not a flight Kalman filter.
+
+## Declared plant models
+
+Optional `plant` fields are software models on the same loopback bus used by SIL, PIL, and HIL. They do not open a device.
+
+- `wheel_lag_s`: first-order lag from commanded torque to applied torque. Zero is instantaneous.
+- `magnetic_residual.dipole_am2` and `field_t`: body dipole crossed with the inertial field expressed in the body frame, `m × R^T B`.
+- `gravity_gradient.orbital_rate_rad_s` and `nadir_inertial`: `3 n^2 û × J û` with nadir in the body frame.
+
+Independent oracle functions compute lag, magnetic residual, and gravity-gradient torque. Unknown plant fields are refused. These models are not hardware, not a disturbance catalogue, and not a flight-environment certificate.
 
 ## Modes and inhibition
 
