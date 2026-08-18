@@ -25,7 +25,7 @@ The project combines the trajectory linter and visual debugger, targets spacecra
 
 ## Simplicity decisions
 
-Use one Rust workspace rather than services or polyglot control planes. Use CSV plus manifest and open JSON before ROS/SPICE-native parsing. Keep rules closed and compiled before considering plug-ins. Avoid persistence and cache until measured need. Keep dynamics-dependent energy and controller safety claims outside V1. The M6 planner is a candidate generator under an explicit torque-limited rigid-body model and cannot assign a report result.
+Use one Rust workspace rather than services or polyglot control planes. Use CSV plus manifest and open JSON before ROS/SPICE-native parsing. Keep rules closed and compiled before considering plug-ins. Avoid persistence and cache until measured need. Keep dynamics-dependent energy and controller safety claims outside V1. The M6 planner is a candidate generator under an explicit torque-limited rigid-body model and cannot assign a report result. The M7 controller is inhibited by an independent oracle, supports SIL, host-CPU PIL, and loopback HIL, and cannot assign a report result or open a physical actuator.
 
 ## Soundness and security summary
 

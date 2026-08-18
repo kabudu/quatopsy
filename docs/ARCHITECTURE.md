@@ -15,6 +15,7 @@ Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core
 7. `viewer`: local static forensic console for linked physical attitude, projected `S^3`, timeline, canonical evidence, and proposed-repair views. Playback and canvas navigation only change the selected retained sample; they never recompute rules or alter the report.
 8. `adapters`: converters into the canonical input contract, outside the semantic core (`ids-jason1`, `ros-json`, `tubin-str`, `mcap-json`, `spice-ck`).
 9. `plan`: offline candidate generator for a declared torque-limited rest-to-rest rigid body. It emits CSV, manifest, and `quatopsy.plan/1`, checks residuals through `quatopsy-oracle`, and cannot assign a report result. Algorithms are eigenaxis bang-coast-bang and bounded multiple shooting.
+10. `control`: geometric PD on SO(3). It emits CSV, manifest, and `quatopsy.control/1`, is inhibited by an independent oracle monitor, and cannot assign a report result or open a physical actuator. `sil` is in-process. `pil` isolates the cycle on the host CPU. `hil` uses a loopback actuator emulator.
 
 ## Data flow
 
@@ -44,7 +45,7 @@ The CLI defaults to 1 GiB input bytes, 10 million samples, 512 MiB working memor
 
 ## Trust boundaries
 
-The mathematical kernel and canonical schema are the logical trusted computing base. Parsers, CLI orchestration, repair writer, and viewer are security-relevant but cannot redefine result semantics. External adapters, ROS/MCAP/SPICE readers, the candidate planner, CI presentation, and future hosted integrations are outside the logical trust boundary and must emit canonical inputs with provenance.
+The mathematical kernel and canonical schema are the logical trusted computing base. Parsers, CLI orchestration, repair writer, and viewer are security-relevant but cannot redefine result semantics. External adapters, ROS/MCAP/SPICE readers, the candidate planner, the controller, CI presentation, and future hosted integrations are outside the logical trust boundary and must emit canonical inputs with provenance.
 
 ## Compatibility
 

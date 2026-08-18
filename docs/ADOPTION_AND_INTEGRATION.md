@@ -30,6 +30,7 @@ Adapters produce the canonical CSV and manifest plus provenance. They cannot ass
 | TUBIN STR CSV | Public star-tracker telemetry | Offline `tubin-str` converter | Shipped |
 | IDS Jason-1 ASCII | Published qbody layout | Offline `ids-jason1` converter | Shipped |
 | Offline plan JSON | Torque-limited rest-to-rest candidate | `quatopsy plan` then kernel analyze | Shipped |
+| Offline control JSON | Geometric PD closed-loop candidate, including host-CPU PIL and loopback HIL | `quatopsy control` then kernel analyze | Shipped |
 | Foxglove | 3D pose and plots | Report/marker export, no verdict reinterpretation | Candidate |
 | Basilisk | Simulation and Vizard | Fixture/report adapter | Candidate |
 | SciPy / NumPy | Rotation analysis | Reference-oracle and import helpers | Candidate |

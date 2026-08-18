@@ -139,6 +139,22 @@ enum Commands {
         #[arg(long, default_value_t = false)]
         overwrite: bool,
     },
+    /// Run a software-in-the-loop, isolated-process, or loopback controller.
+    /// Never assigns a report result or opens a physical actuator.
+    Control {
+        #[arg(long)]
+        problem: PathBuf,
+        #[arg(long)]
+        output_dir: PathBuf,
+        #[arg(long, default_value_t = false)]
+        overwrite: bool,
+    },
+    /// Isolated control-cycle worker used by processor-in-the-loop.
+    #[command(name = "control-cycle-worker", hide = true)]
+    ControlCycleWorker,
+    /// Loopback actuator-emulator worker used by hardware-in-the-loop.
+    #[command(name = "control-loopback-worker", hide = true)]
+    ControlLoopbackWorker,
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -275,6 +291,30 @@ fn main() -> ExitCode {
             }
             ExitCode::SUCCESS
         }
+        Commands::Control {
+            problem,
+            output_dir,
+            overwrite,
+        } => {
+            if let Err(code) = run_control(problem, output_dir, overwrite, &cancelled) {
+                return code;
+            }
+            ExitCode::SUCCESS
+        }
+        Commands::ControlCycleWorker => match quatopsy_control::run_cycle_worker() {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(err) => {
+                eprintln!("error: {err}");
+                ExitCode::from(2)
+            }
+        },
+        Commands::ControlLoopbackWorker => match quatopsy_control::run_loopback_worker() {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(err) => {
+                eprintln!("error: {err}");
+                ExitCode::from(2)
+            }
+        },
     }
 }
 
@@ -512,6 +552,65 @@ fn run_plan(
     })?;
     temps.disarm();
     println!("planner: {}", output_dir.display());
+    Ok(())
+}
+
+fn run_control(
+    problem: PathBuf,
+    output_dir: PathBuf,
+    overwrite: bool,
+    cancelled: &AtomicBool,
+) -> Result<(), ExitCode> {
+    guard_path(&problem, false)?;
+    if output_dir.exists() && !output_dir.is_dir() {
+        eprintln!("error: controller output must be a directory");
+        return Err(ExitCode::from(USAGE_EXIT));
+    }
+    let csv_path = output_dir.join("input.csv");
+    let manifest_path = output_dir.join("manifest.json");
+    let control_path = output_dir.join("control.json");
+    for path in [&csv_path, &manifest_path, &control_path] {
+        refuse_if_exists(path, overwrite)?;
+        guard_output_path(path)?;
+    }
+    let bytes = read_bounded(&problem, SAFE_MAX_INPUT_BYTES)?;
+    if cancelled.load(Ordering::SeqCst) {
+        eprintln!("error: controller was cancelled");
+        return Err(ExitCode::from(3));
+    }
+    let exe = std::env::current_exe().map_err(|err| {
+        eprintln!("error: could not locate this executable for isolation: {err}");
+        ExitCode::from(3)
+    })?;
+    let out =
+        match quatopsy_control::control_with_workers(&bytes, env!("CARGO_PKG_VERSION"), Some(&exe))
+        {
+            Ok(out) => out,
+            Err(err) => {
+                eprintln!("error: {err}");
+                return Err(ExitCode::from(2));
+            }
+        };
+    if cancelled.load(Ordering::SeqCst) {
+        eprintln!("error: controller was cancelled");
+        return Err(ExitCode::from(3));
+    }
+    fs::create_dir_all(&output_dir).map_err(|err| {
+        eprintln!("error: could not create {}: {err}", output_dir.display());
+        ExitCode::from(3)
+    })?;
+    let mut temps = TempGuard::default();
+    let mut outputs = [
+        PendingOutput::new(csv_path, out.csv.into_bytes(), overwrite),
+        PendingOutput::new(manifest_path, out.manifest.into_bytes(), overwrite),
+        PendingOutput::new(control_path, out.control.into_bytes(), overwrite),
+    ];
+    commit_outputs(&mut outputs, &mut temps).map_err(|err| {
+        eprintln!("error: could not commit controller output: {err}");
+        ExitCode::from(3)
+    })?;
+    temps.disarm();
+    println!("controller: {}", output_dir.display());
     Ok(())
 }
 

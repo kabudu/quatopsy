@@ -89,9 +89,23 @@ Exit: local CI plus the named fixtures and CLI tests.
 - [x] Add weighted objectives beyond minimum-time rest-to-rest.
 - [x] Add a bounded collocation, multiple-shooting, or sequential-convexification solver.
 - [x] Add simulation campaigns under model uncertainty and actuator saturation.
-- [ ] Add a controller. Candidate generation remains first.
 
 Exit: local CI plus the spherical rest-to-rest fixture. Open boxes are not shipped.
+
+## M7: Software-in-the-loop attitude controller
+
+- [x] Ship `quatopsy control` for SIL geometric PD on SO(3) under a declared plant and envelope.
+- [x] Use rotation-matrix attitude error so antipodal quaternions do not unwind.
+- [x] Enforce estimator contracts for frame, timestamp, covariance, and freshness.
+- [x] Add saturation, anti-windup, momentum dump, mode transitions, arbitration, and safe fallback.
+- [x] Inhibit commands with an independent oracle monitor outside the PD law.
+- [x] Run deterministic SIL campaigns under noise, delay, inertia error, disturbance, actuator failure, and numerical faults.
+- [x] Refuse hard real-time and physical actuator command. Hardware use remains fail-closed without a qualification record.
+- [x] Processor-in-the-loop with an isolated controller process on the host CPU. Target flight processors are not claimed.
+- [x] Hardware-in-the-loop command bus against a loopback actuator emulator. Physical actuators are refused.
+- [x] Systems-safety programme and fail-closed hardware-use gate. Hardware is not qualified.
+
+Exit: local CI plus the SO(3) rest-to-rest SIL, PIL, and loopback HIL fixtures. Open boxes are not shipped.
 
 ## Optional post-release evidence track
 

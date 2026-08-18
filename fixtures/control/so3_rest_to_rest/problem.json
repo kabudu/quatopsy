@@ -1,0 +1,39 @@
+{
+  "schema": "quatopsy.control-problem/1",
+  "component_order": "wxyz",
+  "rotation_sense": "active",
+  "frame_from": "BODY",
+  "frame_to": "J2000",
+  "time_unit": "s",
+  "execution": "sil",
+  "latency_class": "bounded-software",
+  "q_initial": [1.0, 0.0, 0.0, 0.0],
+  "q_desired": [0.7071067811865476, 0.7071067811865476, 0.0, 0.0],
+  "omega_initial": [0.0, 0.0, 0.0],
+  "inertia": {
+    "model": "spherical",
+    "j": 1.0
+  },
+  "torque_limit_nm": 1.0,
+  "slew_rate_limit_rad_s": 2.0,
+  "momentum_limit_nms": 4.0,
+  "cycle_dt_s": 0.02,
+  "duration_s": 8.0,
+  "max_estimate_age_s": 0.05,
+  "max_covariance_trace": 1.0,
+  "gains": {
+    "kp": 4.0,
+    "kd": 4.0,
+    "ki": 0.0
+  },
+  "actuators": {
+    "wheels": false,
+    "momentum_dump_gain": 0.5
+  },
+  "sensor": {
+    "delay_s": 0.0,
+    "quat_noise": 0.0,
+    "rate_noise": 0.0,
+    "covariance_trace": 1e-6
+  }
+}
