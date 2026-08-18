@@ -17,7 +17,7 @@ The initial assurance claim is limited: for supported declared inputs and enable
 
 For non-zero quaternion `q`, normalisation is `q / ||q||`. Physical distance between unit quaternions `p` and `q` is `2 acos(clamp(abs(dot(p,q)), 0, 1))`. The deterministic lift chooses the sign of each next sample that maximises the dot product with the previously lifted sample. At an exact or tolerance-defined tie (`|p · q| <= 1e-12` in `quatopsy.numeric/1`), it retains the raw sign and emits near-pi ambiguity rather than claiming a unique lift. `QAT-SIGN-001` reports raw consecutive unit samples with negative dot product, which is independent of whether the already-lifted predecessor still required a flip.
 
-A sign-only repair must satisfy `R(q_raw) = R(q_repaired)` within the independent matrix oracle tolerance at every repaired sample. Derived angular rate for interval `dt > 0` is quotient angle divided by `dt`. Dynamic interpretation beyond this kinematic quantity requires an explicitly supplied model. `quatopsy plan` may emit a candidate under a declared torque-limited rigid-body model; that candidate is not a safety, optimality, or energy claim. `quatopsy control` may emit a closed-loop trajectory under a declared plant and envelope; that trajectory is not a hardware command, hard-real-time proof, qualified processor, or flight approval.
+A sign-only repair must satisfy `R(q_raw) = R(q_repaired)` within the independent matrix oracle tolerance at every repaired sample. Derived angular rate for interval `dt > 0` is quotient angle divided by `dt`. Dynamic interpretation beyond this kinematic quantity requires an explicitly supplied model. `quatopsy plan` may emit a candidate under a declared torque-limited rigid-body model; that candidate is not a safety, optimality, or energy claim. `quatopsy control` may emit a closed-loop trajectory under a declared plant and envelope; that trajectory is not a hardware command, hard-real-time proof, qualified processor, or flight approval. Optional MEKF/UKF and guidance profiles are software audits, not a navigation solution.
 
 ## Trusted computing base ledger
 
@@ -36,10 +36,14 @@ A sign-only repair must satisfy `R(q_raw) = R(q_repaired)` within the independen
 | Declared plant models | Optional command-to-torque lag, magnetic residual, gravity-gradient, gyro ARW, star-tracker delay | Independent oracles; frozen inertial field and nadir; must not be presented as hardware |
 | Control safety programme | Hazard analysis and fail-closed hardware-use gate | Absent qualification record cannot authorize hardware |
 | Control monitor oracle | Envelope, freshness, and keep-out inhibition | Must not share the PD law |
+| Software navigator | 6-state MEKF/UKF attitude and gyro-bias estimate | Must not share the NIS/NEES oracle or assign report result |
+| Guidance profile | Time-tagged reference `(t, q, ω, α)` | Must not assign report result or command hardware |
+| Wheel allocator | Map body torque to declared reaction wheels | Independent residual oracle; not a CMG gimbal model |
+| Declared two-body geometry | Nadir, sun, eclipse, dipole `B(t)` | Propagated Kepler state, not orbit determination |
 
 The viewer is not an oracle. Visual agreement is supporting evidence only.
 
 ## Unsupported cases
 
-Zero quaternions, missing convention declarations, unordered time, non-finite values, discontinuous clock domains, intentionally multi-turn commands without a declared command path, and dynamics-dependent cost claims without a model are refused or bounded to narrower kinematic findings. A feasible plan is not a pass. A tracked closed-loop candidate is not a pass.
+Zero quaternions, missing convention declarations, unordered time, non-finite values, discontinuous clock domains, intentionally multi-turn commands without a declared command path, and dynamics-dependent cost claims without a model are refused or bounded to narrower kinematic findings. A feasible plan is not a pass. A tracked closed-loop candidate is not a pass. A finite NIS is not a navigation solution.
 

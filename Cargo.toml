@@ -6,6 +6,8 @@ members = [
     "crates/quatopsy-oracle",
     "crates/quatopsy-adapt",
     "crates/quatopsy-plan",
+    "crates/quatopsy-nav",
+    "crates/quatopsy-guidance",
     "crates/quatopsy-control",
     "crates/quatopsy-cli",
 ]
@@ -13,7 +15,7 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.97"
 license = "Apache-2.0"
 repository = "https://github.com/kabudu/quatopsy"
 publish = false
@@ -27,6 +29,8 @@ quatopsy-adapt = { path = "crates/quatopsy-adapt" }
 quatopsy-core = { path = "crates/quatopsy-core" }
 quatopsy-oracle = { path = "crates/quatopsy-oracle" }
 quatopsy-plan = { path = "crates/quatopsy-plan" }
+quatopsy-nav = { path = "crates/quatopsy-nav" }
+quatopsy-guidance = { path = "crates/quatopsy-guidance" }
 quatopsy-control = { path = "crates/quatopsy-control" }
 quatopsy-schema = { path = "crates/quatopsy-schema" }
 serde = { version = "1.0.228", features = ["derive"] }

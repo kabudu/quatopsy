@@ -23,6 +23,10 @@ pub(crate) struct CampaignSpec {
     pub actuator_fail_axis: Option<u8>,
     #[serde(default)]
     pub numerical_fault: bool,
+    #[serde(default)]
+    pub sensor_fault: bool,
+    #[serde(default)]
+    pub dt_jitter_s: f64,
     #[serde(default = "default_seed")]
     pub seed: u64,
 }
@@ -55,6 +59,7 @@ pub(crate) fn validate(spec: &CampaignSpec) -> Result<(), crate::ControlError> {
         ("rate_noise", spec.rate_noise, 0.5),
         ("delay_s", spec.delay_s, 1.0),
         ("disturbance_nm", spec.disturbance_nm, 1.0),
+        ("dt_jitter_s", spec.dt_jitter_s, 0.05),
     ] {
         if !value.is_finite() || value < 0.0 || value > max {
             return Err(crate::ControlError::Refused(format!(

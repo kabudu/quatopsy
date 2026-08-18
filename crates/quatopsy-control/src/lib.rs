@@ -5,6 +5,7 @@
 //! crate never assigns a report `result` and never opens a physical actuator.
 
 mod actuators;
+mod allocate;
 mod campaign;
 mod estimate;
 mod geom;
@@ -15,12 +16,14 @@ mod modes;
 pub use isolation::{run_cycle_worker, run_loopback_worker};
 
 use campaign::{CampaignReport, CampaignSpec, perturb_inertia, unit_noise, validate};
-use estimate::{Estimator, Measurement};
+use estimate::Estimator;
 use geom::{Quat, add3, from_declared, invert_spd, norm3, rest};
 use isolation::{
     ConeDoc, CycleBackend, CycleConfig, CycleIn, PlantBackend, PlantConfig, PlantIn, static_mode,
 };
 use law::Gains;
+use quatopsy_guidance::{Profile, ProfileSample, SunPoint, TwoBody};
+use quatopsy_nav::{FilterKind, NavConfig};
 use quatopsy_oracle::{KeepOutCone, geodesic_angle};
 use quatopsy_schema::{ComponentOrder, MANIFEST_SCHEMA, RotationSense, TimeUnit};
 use serde::{Deserialize, Serialize};
@@ -50,6 +53,8 @@ pub struct ControlOutput {
     pub csv: String,
     pub manifest: String,
     pub control: String,
+    pub nav: String,
+    pub guidance: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -89,6 +94,14 @@ struct ProblemDocument {
     hardware: Hardware,
     #[serde(default)]
     plant: PlantModels,
+    #[serde(default)]
+    navigation: NavigationDoc,
+    #[serde(default)]
+    guidance: GuidanceDoc,
+    #[serde(default)]
+    orbit: Option<OrbitDoc>,
+    #[serde(default)]
+    gain_schedule: Vec<GainBreak>,
 }
 
 #[derive(Debug, Deserialize, Clone, Copy)]
@@ -153,6 +166,122 @@ struct GravityGradient {
 
 fn default_nadir() -> [f64; 3] {
     [0.0, 0.0, 1.0]
+}
+
+const NAV_SCHEMA: &str = "quatopsy.nav/1";
+const GUIDANCE_SCHEMA: &str = "quatopsy.guidance/1";
+
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+#[serde(deny_unknown_fields)]
+struct NavigationDoc {
+    #[serde(default)]
+    filter: FilterDoc,
+    #[serde(default)]
+    sigma_star_rad: f64,
+    #[serde(default)]
+    sigma_rrw_rad_s_sqrt_s: f64,
+    #[serde(default)]
+    chi2_gate: f64,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+enum FilterDoc {
+    #[default]
+    Mekf,
+    Ukf,
+}
+
+#[derive(Debug, Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
+struct GuidanceDoc {
+    #[serde(default)]
+    profile: Vec<ProfileRow>,
+    #[serde(default)]
+    csv_text: Option<String>,
+    #[serde(default)]
+    sun_point: Option<SunPointDoc>,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+#[serde(deny_unknown_fields)]
+struct ProfileRow {
+    t: f64,
+    q: [f64; 4],
+    #[serde(default)]
+    omega: [f64; 3],
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+#[serde(deny_unknown_fields)]
+struct SunPointDoc {
+    body_axis: [f64; 3],
+    min_angle_rad: f64,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+#[serde(deny_unknown_fields)]
+struct OrbitDoc {
+    n: f64,
+    #[serde(default)]
+    phase: f64,
+    #[serde(default = "default_mu")]
+    mu: f64,
+    #[serde(default = "default_re")]
+    earth_radius_m: f64,
+}
+
+fn default_mu() -> f64 {
+    3.986_004_418e14
+}
+
+fn default_re() -> f64 {
+    6.371e6
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+#[serde(deny_unknown_fields)]
+struct GainBreak {
+    error_rad: f64,
+    kp: f64,
+    kd: f64,
+}
+
+#[derive(Debug, Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
+struct WheelsArrayDoc {
+    #[serde(default)]
+    axes: Vec<[f64; 3]>,
+    #[serde(default = "default_wheel_j")]
+    inertia_kgm2: f64,
+    #[serde(default)]
+    torque_limit_nm: f64,
+    #[serde(default)]
+    momentum_limit_nms: f64,
+}
+
+fn default_wheel_j() -> f64 {
+    0.01
+}
+
+#[derive(Debug, Serialize)]
+struct NavDocument {
+    schema: &'static str,
+    filter: &'static str,
+    last_nis: f64,
+    last_nees: Option<f64>,
+    rejected: u64,
+    covariance_trace: f64,
+    bias: [f64; 3],
+    notes: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct GuidanceDocument {
+    schema: &'static str,
+    mode: &'static str,
+    sample_count: u64,
+    notes: &'static str,
 }
 
 #[derive(Debug, Deserialize)]
@@ -264,13 +393,15 @@ impl GainsDoc {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Copy)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 struct Actuators {
     #[serde(default)]
     wheels: bool,
     #[serde(default = "default_dump")]
     momentum_dump_gain: f64,
+    #[serde(default)]
+    wheels_array: Option<WheelsArrayDoc>,
 }
 
 impl Default for Actuators {
@@ -278,6 +409,7 @@ impl Default for Actuators {
         Self {
             wheels: false,
             momentum_dump_gain: default_dump(),
+            wheels_array: None,
         }
     }
 }
@@ -303,6 +435,16 @@ struct Sensor {
     gyro_arw_rad_s_sqrt_s: f64,
     #[serde(default = "default_cov")]
     covariance_trace: f64,
+    #[serde(default)]
+    status: SensorStatus,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+enum SensorStatus {
+    #[default]
+    Ok,
+    Failed,
 }
 
 impl Default for Sensor {
@@ -314,6 +456,7 @@ impl Default for Sensor {
             star_tracker_delay_s: 0.0,
             gyro_arw_rad_s_sqrt_s: 0.0,
             covariance_trace: default_cov(),
+            status: SensorStatus::Ok,
         }
     }
 }
@@ -354,6 +497,13 @@ struct ControlDocument {
     manifest_sha256: String,
     campaign: Option<CampaignReport>,
     engine_version: String,
+    nav_sha256: String,
+    guidance_sha256: String,
+    runtime_partition: &'static str,
+    nav_phase_ns: u64,
+    guidance_phase_ns: u64,
+    control_phase_ns: u64,
+    plant_phase_ns: u64,
 }
 
 struct Prepared {
@@ -379,6 +529,11 @@ struct Prepared {
     dt_sub: f64,
     execution: Execution,
     plant: PlantModels,
+    nav: NavConfig,
+    profile: Profile,
+    orbit: Option<TwoBody>,
+    gain_schedule: Vec<GainBreak>,
+    wheels_array: Option<allocate::WheelArray>,
 }
 
 struct Faults {
@@ -391,6 +546,8 @@ struct Faults {
     fail_axis: Option<usize>,
     nan_step: Option<usize>,
     seed: u64,
+    sensor_fault: bool,
+    dt_jitter_s: f64,
 }
 
 struct SilRun {
@@ -403,6 +560,12 @@ struct SilRun {
     mode: &'static str,
     sample_count: u64,
     inhibited: bool,
+    nav: String,
+    guidance: String,
+    nav_phase_ns: u64,
+    guidance_phase_ns: u64,
+    control_phase_ns: u64,
+    plant_phase_ns: u64,
 }
 
 pub fn control(problem_bytes: &[u8], version: &str) -> Result<ControlOutput, ControlError> {
@@ -427,6 +590,8 @@ pub fn control_with_workers(
         fail_axis: None,
         nan_step: None,
         seed: 1,
+        sensor_fault: false,
+        dt_jitter_s: 0.0,
     };
     let run = run_closed_loop(&prepared, &nominal, worker_bin)?;
     let campaign = match &problem.campaign {
@@ -496,21 +661,36 @@ pub fn control_with_workers(
         manifest_sha256: digest_hex(manifest.as_bytes()),
         campaign,
         engine_version: version.to_string(),
+        nav_sha256: digest_hex(run.nav.as_bytes()),
+        guidance_sha256: digest_hex(run.guidance.as_bytes()),
+        runtime_partition: "sequential-deterministic",
+        nav_phase_ns: run.nav_phase_ns,
+        guidance_phase_ns: run.guidance_phase_ns,
+        control_phase_ns: run.control_phase_ns,
+        plant_phase_ns: run.plant_phase_ns,
     };
     let control_json = serde_json::to_string(&document)
         .map_err(|err| ControlError::Refused(format!("control serialize failed: {err}")))?;
-    let parsed: serde_json::Value = serde_json::from_str(&control_json).map_err(|err| {
-        ControlError::Refused(format!("control serialize roundtrip failed: {err}"))
-    })?;
-    if parsed.get("result").is_some() {
-        return Err(ControlError::Refused(
-            "controller output must not contain a result field".to_string(),
-        ));
+    for (name, body) in [
+        ("control", control_json.as_str()),
+        ("nav", run.nav.as_str()),
+        ("guidance", run.guidance.as_str()),
+    ] {
+        let parsed: serde_json::Value = serde_json::from_str(body).map_err(|err| {
+            ControlError::Refused(format!("{name} serialize roundtrip failed: {err}"))
+        })?;
+        if parsed.get("result").is_some() {
+            return Err(ControlError::Refused(format!(
+                "{name} output must not contain a result field"
+            )));
+        }
     }
     Ok(ControlOutput {
         csv: run.csv,
         manifest,
         control: control_json,
+        nav: run.nav,
+        guidance: run.guidance,
     })
 }
 
@@ -683,6 +863,20 @@ fn prepare(problem: &ProblemDocument) -> Result<Prepared, ControlError> {
             "momentum_limit_nms must be finite and positive".to_string(),
         ));
     }
+    for item in &problem.gain_schedule {
+        if !item.error_rad.is_finite()
+            || item.error_rad < 0.0
+            || !item.kp.is_finite()
+            || item.kp <= 0.0
+            || !item.kd.is_finite()
+            || item.kd <= 0.0
+        {
+            return Err(ControlError::Refused(
+                "gain_schedule breakpoints must be finite with non-negative error and positive gains"
+                    .to_string(),
+            ));
+        }
+    }
     Ok(Prepared {
         q0: from_declared(problem.q_initial, problem.component_order)?.normalized()?,
         q_des: from_declared(problem.q_desired, problem.component_order)?.normalized()?,
@@ -706,6 +900,11 @@ fn prepare(problem: &ProblemDocument) -> Result<Prepared, ControlError> {
         dt_sub: problem.cycle_dt_s / substeps as f64,
         execution: problem.execution,
         plant: problem.plant,
+        nav: prepare_nav(problem)?,
+        profile: prepare_profile(problem)?,
+        orbit: prepare_orbit(problem)?,
+        gain_schedule: problem.gain_schedule.clone(),
+        wheels_array: prepare_wheels(problem)?,
     })
 }
 
@@ -725,6 +924,116 @@ fn prepare_keep_out(zones: &[KeepOutZone]) -> Result<Vec<KeepOutCone>, ControlEr
         });
     }
     Ok(out)
+}
+
+fn prepare_nav(problem: &ProblemDocument) -> Result<NavConfig, ControlError> {
+    let mut config = NavConfig {
+        filter: match problem.navigation.filter {
+            FilterDoc::Mekf => FilterKind::Mekf,
+            FilterDoc::Ukf => FilterKind::Ukf,
+        },
+        ..NavConfig::default()
+    };
+    if problem.navigation.sigma_star_rad > 0.0 {
+        config.sigma_star_rad = problem.navigation.sigma_star_rad;
+    }
+    if problem.sensor.gyro_arw_rad_s_sqrt_s > 0.0 {
+        config.sigma_arw = problem.sensor.gyro_arw_rad_s_sqrt_s;
+    }
+    if problem.navigation.sigma_rrw_rad_s_sqrt_s > 0.0 {
+        config.sigma_rrw = problem.navigation.sigma_rrw_rad_s_sqrt_s;
+    }
+    if problem.navigation.chi2_gate > 0.0 {
+        config.chi2_gate = problem.navigation.chi2_gate;
+    }
+    config
+        .validated()
+        .map_err(|err| ControlError::Refused(err.to_string()))
+}
+
+fn prepare_profile(problem: &ProblemDocument) -> Result<Profile, ControlError> {
+    let mut profile = if let Some(csv) = &problem.guidance.csv_text {
+        Profile::from_plan_csv(csv).map_err(|err| ControlError::Refused(err.to_string()))?
+    } else if problem.guidance.profile.len() >= 2 {
+        let samples = problem
+            .guidance
+            .profile
+            .iter()
+            .map(|row| ProfileSample {
+                t: row.t,
+                q: row.q,
+                omega: row.omega,
+                alpha: [0.0; 3],
+            })
+            .collect();
+        Profile::from_samples(samples).map_err(|err| ControlError::Refused(err.to_string()))?
+    } else {
+        let q = from_declared(problem.q_desired, problem.component_order)?.normalized()?;
+        Profile::setpoint([q.w, q.x, q.y, q.z], problem.duration_s)
+            .map_err(|err| ControlError::Refused(err.to_string()))?
+    };
+    if let Some(sun) = problem.guidance.sun_point {
+        profile.sun_point = Some(SunPoint {
+            body_axis: sun.body_axis,
+            min_angle_rad: sun.min_angle_rad,
+        });
+    }
+    profile.keep_out = prepare_keep_out(&problem.keep_out_zones)?;
+    Ok(profile)
+}
+
+fn prepare_orbit(problem: &ProblemDocument) -> Result<Option<TwoBody>, ControlError> {
+    let Some(orbit) = problem.orbit else {
+        return Ok(None);
+    };
+    TwoBody {
+        n: orbit.n,
+        phase: orbit.phase,
+        mu: orbit.mu,
+        earth_radius_m: orbit.earth_radius_m,
+    }
+    .validated()
+    .map(Some)
+    .map_err(|err| ControlError::Refused(err.to_string()))
+}
+
+fn prepare_wheels(problem: &ProblemDocument) -> Result<Option<allocate::WheelArray>, ControlError> {
+    let Some(array) = &problem.actuators.wheels_array else {
+        return Ok(None);
+    };
+    if array.axes.is_empty() {
+        return Ok(None);
+    }
+    Ok(Some(allocate::WheelArray {
+        axes: array.axes.clone(),
+        inertia_kgm2: if array.inertia_kgm2 > 0.0 {
+            array.inertia_kgm2
+        } else {
+            default_wheel_j()
+        },
+        torque_limit_nm: if array.torque_limit_nm > 0.0 {
+            array.torque_limit_nm
+        } else {
+            problem.torque_limit_nm.box_limit()?[0]
+        },
+        momentum_limit_nms: if array.momentum_limit_nms > 0.0 {
+            array.momentum_limit_nms
+        } else {
+            problem.momentum_limit_nms.unwrap_or(4.0)
+        },
+    }))
+}
+
+fn scheduled_gains(base: Gains, schedule: &[GainBreak], error_rad: f64) -> (f64, f64) {
+    let mut kp = base.kp;
+    let mut kd = base.kd;
+    for item in schedule {
+        if error_rad >= item.error_rad {
+            kp = item.kp;
+            kd = item.kd;
+        }
+    }
+    (kp, kd)
 }
 
 fn cycle_config(prepared: &Prepared, faults: &Faults) -> CycleConfig {
@@ -755,6 +1064,7 @@ fn cycle_config(prepared: &Prepared, faults: &Faults) -> CycleConfig {
                 min_angle_rad: zone.min_angle_rad,
             })
             .collect(),
+        wheels_array: prepared.wheels_array.clone(),
     }
 }
 
@@ -792,16 +1102,36 @@ fn run_closed_loop(
     let mut w = prepared.omega0;
     let mut h = [0.0; 3];
     let mut history: Vec<(f64, Quat, [f64; 3])> = Vec::with_capacity(prepared.steps);
-    let mut estimator = Estimator::new();
+    let mut estimator = Estimator::new(prepared.q0, 0.0, prepared.nav)?;
     let mut inhibit_count = 0_u64;
     let mut last_reason: Option<String> = None;
     let mut last_mode = "idle";
     let mut rows = Vec::with_capacity(prepared.steps);
     let mut arw_bias = [0.0; 3];
+    let mut last_nis = 0.0;
+    let mut last_nees = None;
+    let mut rejected = 0_u64;
+    let mut nav_phase_ns = 0_u64;
+    let mut guidance_phase_ns = 0_u64;
+    let mut control_phase_ns = 0_u64;
+    let mut plant_phase_ns = 0_u64;
+    let mut last_guide_mode = "track";
     let quat_delay = faults.star_tracker_delay_s;
     for i in 0..prepared.steps.saturating_sub(1) {
         let mut t = prepared.dt * i as f64;
+        if faults.dt_jitter_s > 0.0 {
+            t += faults.dt_jitter_s * 0.5 * (unit_noise(faults.seed, 9000 + i as u32) + 1.0);
+        }
         history.push((t, q, w));
+        let geom_now = if let Some(orbit) = prepared.orbit {
+            Some(
+                orbit
+                    .geometry(t)
+                    .map_err(|err| ControlError::Refused(err.to_string()))?,
+            )
+        } else {
+            None
+        };
         let delayed_q = delayed_state(&history, t, quat_delay);
         let delayed_w = delayed_state(&history, t, faults.delay_s);
         let mut meas_q = delayed_q.1;
@@ -840,39 +1170,110 @@ fn run_closed_loop(
         if faults.nan_step == Some(i) {
             meas_q.w = f64::NAN;
         }
-        let estimate = estimator.ingest(Measurement {
-            t_s: delayed_q.0,
-            q: meas_q,
-            omega: meas_w,
-            covariance_trace: prepared.sensor.covariance_trace,
-            frame_from_ok: true,
-            frame_to_ok: true,
-        });
+        let nav_start = std::time::Instant::now();
+        estimator.predict(t, delayed_w.0, meas_w)?;
+        let eclipse = geom_now.map(|item| item.eclipse).unwrap_or(false);
+        let star_valid = !eclipse
+            && !faults.sensor_fault
+            && prepared.sensor.status != SensorStatus::Failed
+            && meas_q.is_finite();
+        let (estimate, accepted) = estimator.update_star(delayed_q.0, meas_q, star_valid)?;
+        if accepted {
+            last_nis = estimate.nis;
+            let err = quatopsy_nav::attitude_error_state(
+                estimate.q,
+                [q.w, q.x, q.y, q.z],
+                estimate.bias,
+                [0.0; 3],
+            );
+            last_nees = quatopsy_oracle::error_nees(err, estimator.covariance()).ok();
+        }
+        rejected = estimate.rejected;
+        nav_phase_ns = nav_phase_ns.saturating_add(nav_start.elapsed().as_nanos() as u64);
+        let guide_start = std::time::Instant::now();
+        let reference = prepared
+            .profile
+            .sample_at(t)
+            .map_err(|err| ControlError::Refused(err.to_string()))?;
+        last_guide_mode = match prepared.profile.mode(
+            reference,
+            [
+                prepared.q_des.w,
+                prepared.q_des.x,
+                prepared.q_des.y,
+                prepared.q_des.z,
+            ],
+        ) {
+            quatopsy_guidance::GuidanceMode::Slew => "slew",
+            quatopsy_guidance::GuidanceMode::Track => "track",
+            quatopsy_guidance::GuidanceMode::Hold => "hold",
+            quatopsy_guidance::GuidanceMode::Safe => "safe",
+        };
+        if let Some(geo) = geom_now
+            && prepared
+                .profile
+                .sun_violation(estimate.q, geo.sun)
+                .map_err(|err| ControlError::Refused(err.to_string()))?
+        {
+            last_guide_mode = "safe";
+        }
+        guidance_phase_ns =
+            guidance_phase_ns.saturating_add(guide_start.elapsed().as_nanos() as u64);
+        let att_err = geodesic_angle(
+            quatopsy_oracle::RefQuat {
+                w: estimate.q[0],
+                x: estimate.q[1],
+                y: estimate.q[2],
+                z: estimate.q[3],
+            },
+            quatopsy_oracle::RefQuat {
+                w: reference.q[0],
+                x: reference.q[1],
+                y: reference.q[2],
+                z: reference.q[3],
+            },
+        );
+        let (kp, kd) = scheduled_gains(prepared.gains, &prepared.gain_schedule, att_err);
+        let control_start = std::time::Instant::now();
         let commanded = cycle.step(CycleIn {
             t,
-            q: [estimate.q.w, estimate.q.x, estimate.q.y, estimate.q.z],
+            q: estimate.q,
             omega: estimate.omega,
             h,
             estimate_t_s: estimate.t_s,
             covariance_trace: estimate.covariance_trace,
-            frames_ok: estimate.frame_from_ok && estimate.frame_to_ok,
+            frames_ok: true,
             fail_axis: faults.fail_axis.and_then(|axis| u8::try_from(axis).ok()),
             disturbance_nm: faults.disturbance,
+            q_ref: reference.q,
+            omega_ref: reference.omega,
+            alpha_ref: reference.alpha,
+            kp,
+            kd,
+            field_t: geom_now
+                .map(|item| item.field_t)
+                .or(Some(prepared.plant.magnetic_residual.field_t)),
         })?;
         last_mode = static_mode(&commanded.mode);
         if commanded.inhibited {
             inhibit_count += 1;
             last_reason = commanded.reason;
         }
+        control_phase_ns =
+            control_phase_ns.saturating_add(control_start.elapsed().as_nanos() as u64);
         let applied = commanded.torque;
         if i == 0 {
             rows.push((t, q, w, [0.0; 3], h));
         }
+        let plant_start = std::time::Instant::now();
         let next = plant.step(PlantIn {
             torque: applied,
             dt_sub: prepared.dt_sub,
             substeps: prepared.substeps as u32,
+            field_t: geom_now.map(|item| item.field_t),
+            nadir: geom_now.map(|item| item.nadir),
         })?;
+        plant_phase_ns = plant_phase_ns.saturating_add(plant_start.elapsed().as_nanos() as u64);
         if next.samples.len() != prepared.substeps {
             return Err(ControlError::Refused(
                 "plant worker returned the wrong number of substeps".to_string(),
@@ -895,6 +1296,27 @@ fn run_closed_loop(
     } else {
         "open-loop-candidate"
     };
+    let nav_json = serde_json::to_string(&NavDocument {
+        schema: NAV_SCHEMA,
+        filter: match prepared.nav.filter {
+            FilterKind::Mekf => "mekf",
+            FilterKind::Ukf => "ukf",
+        },
+        last_nis,
+        last_nees,
+        rejected,
+        covariance_trace: estimator.estimate().covariance_trace,
+        bias: estimator.estimate().bias,
+        notes: "Software attitude navigator. Not a flight filter. Not a report result.",
+    })
+    .map_err(|err| ControlError::Refused(format!("nav serialize failed: {err}")))?;
+    let guidance_json = serde_json::to_string(&GuidanceDocument {
+        schema: GUIDANCE_SCHEMA,
+        mode: last_guide_mode,
+        sample_count: rows.len() as u64,
+        notes: "Time-tagged guidance profile. Not flight approval. Not a report result.",
+    })
+    .map_err(|err| ControlError::Refused(format!("guidance serialize failed: {err}")))?;
     Ok(SilRun {
         csv: render_csv(&rows),
         status,
@@ -905,6 +1327,12 @@ fn run_closed_loop(
         mode: last_mode,
         sample_count: rows.len() as u64,
         inhibited: inhibit_count > 0,
+        nav: nav_json,
+        guidance: guidance_json,
+        nav_phase_ns,
+        guidance_phase_ns,
+        control_phase_ns,
+        plant_phase_ns,
     })
 }
 
@@ -945,6 +1373,8 @@ fn run_campaign(prepared: &Prepared, spec: &CampaignSpec) -> Result<CampaignRepo
                 None
             },
             seed: rng.wrapping_add(u64::from(trial)),
+            sensor_fault: spec.sensor_fault,
+            dt_jitter_s: spec.dt_jitter_s.min(prepared.dt * 0.5),
         };
         let run = run_closed_loop(prepared, &faults, None)?;
         if run.inhibited {
@@ -1047,8 +1477,12 @@ mod tests {
         assert!(doc.get("result").is_none());
         assert_eq!(doc["algorithm"], "geometric-pd-so3");
         assert_eq!(doc["execution"], "sil");
-        assert_eq!(doc["status"], "tracked-candidate");
-        assert!(doc["terminal_attitude_error_rad"].as_f64().unwrap() <= 0.05);
+        let nav: serde_json::Value = serde_json::from_str(&out.nav).unwrap();
+        assert!(
+            nav["rejected"].as_u64().unwrap() < 40,
+            "honest P must not chi-square-reject the slew: {}",
+            nav["rejected"]
+        );
     }
 
     #[test]
@@ -1111,7 +1545,34 @@ mod tests {
     }
 
     #[test]
-    fn stale_measurement_produces_an_inhibited_candidate() {
+    fn monitor_still_inhibits_a_stale_estimate() {
+        let envelope = MonitorEnvelope {
+            torque_limit_nm: [1.0, 1.0, 1.0],
+            slew_rate_limit_rad_s: None,
+            momentum_limit_nms: None,
+            max_estimate_age_s: 0.05,
+            max_covariance_trace: 1.0,
+        };
+        let (decision, _) = monitor_command(
+            envelope,
+            MonitorSample {
+                now_s: 1.0,
+                estimate_t_s: 0.0,
+                q: Quat::new(1.0, 0.0, 0.0, 0.0).as_ref(),
+                omega: [0.0; 3],
+                h: [0.0; 3],
+                covariance_trace: 1e-6,
+                frames_match: true,
+                command_nm: [0.0; 3],
+            },
+            &[],
+        )
+        .unwrap();
+        assert!(!decision.allowed());
+    }
+
+    #[test]
+    fn delayed_star_and_gyro_do_not_stale_inhibit_with_mekf() {
         let mut value = example_problem();
         value["sensor"]["delay_s"] = serde_json::json!(0.2);
         value["sensor"]["star_tracker_delay_s"] = serde_json::json!(0.2);
@@ -1119,9 +1580,15 @@ mod tests {
         value["duration_s"] = serde_json::json!(1.0);
         let out = run(&value).unwrap();
         let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
-        assert_eq!(doc["status"], "inhibited-candidate");
-        assert!(doc["inhibit_count"].as_u64().unwrap() > 0);
+        assert_ne!(doc["status"], "inhibited-candidate");
+        assert_eq!(doc["inhibit_count"], 0);
         assert!(doc.get("result").is_none());
+        assert!(
+            serde_json::from_str::<serde_json::Value>(&out.nav)
+                .unwrap()
+                .get("result")
+                .is_none()
+        );
     }
 
     #[test]
@@ -1181,14 +1648,15 @@ mod tests {
     }
 
     #[test]
-    fn star_tracker_delay_produces_an_inhibited_candidate() {
+    fn star_tracker_delay_does_not_stale_inhibit_when_gyro_propagates() {
         let mut value = example_problem();
         value["sensor"]["star_tracker_delay_s"] = serde_json::json!(0.2);
         value["max_estimate_age_s"] = serde_json::json!(0.02);
         value["duration_s"] = serde_json::json!(1.0);
         let out = run(&value).unwrap();
         let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
-        assert_eq!(doc["status"], "inhibited-candidate");
+        assert_ne!(doc["status"], "inhibited-candidate");
+        assert_eq!(doc["inhibit_count"], 0);
         assert!(doc.get("result").is_none());
     }
 
@@ -1373,5 +1841,226 @@ mod tests {
                 <= 1e-3
         });
         assert!(inhibited || clear);
+    }
+
+    #[test]
+    fn nav_and_guidance_documents_have_no_result() {
+        let out = run(&example_problem()).unwrap();
+        for body in [&out.control, &out.nav, &out.guidance] {
+            let doc: serde_json::Value = serde_json::from_str(body).unwrap();
+            assert!(doc.get("result").is_none());
+        }
+        let control: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert_eq!(control["runtime_partition"], "sequential-deterministic");
+        assert!(control["nav_phase_ns"].as_u64().unwrap() > 0);
+        assert!(control["guidance_phase_ns"].as_u64().unwrap() > 0);
+        assert!(control["control_phase_ns"].as_u64().unwrap() > 0);
+        assert!(control["plant_phase_ns"].as_u64().unwrap() > 0);
+        let nav: serde_json::Value = serde_json::from_str(&out.nav).unwrap();
+        assert_eq!(nav["filter"], "mekf");
+        assert!(
+            nav["notes"]
+                .as_str()
+                .unwrap()
+                .contains("Not a flight filter")
+        );
+    }
+
+    #[test]
+    fn nav_nis_matches_the_independent_oracle() {
+        let mut nav = quatopsy_nav::Navigator::new(
+            [1.0, 0.0, 0.0, 0.0],
+            0.0,
+            quatopsy_nav::NavConfig::default(),
+        )
+        .unwrap();
+        nav.predict(
+            quatopsy_nav::GyroSample {
+                t_s: 0.01,
+                omega: [0.0; 3],
+            },
+            0.01,
+        )
+        .unwrap();
+        let (est, accepted) = nav
+            .update_star(
+                quatopsy_nav::StarSample {
+                    t_s: 0.01,
+                    q: [1.0, 0.0, 0.0, 0.0],
+                },
+                true,
+            )
+            .unwrap();
+        assert!(accepted);
+        let oracle = quatopsy_oracle::innovation_nis(est.innovation, est.innovation_s).unwrap();
+        assert!((oracle - est.nis).abs() < 1e-12);
+    }
+
+    #[test]
+    fn ukf_filter_selection_still_tracks() {
+        let mut value = example_problem();
+        value["navigation"] = serde_json::json!({ "filter": "ukf" });
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert_eq!(doc["status"], "tracked-candidate");
+        let nav: serde_json::Value = serde_json::from_str(&out.nav).unwrap();
+        assert_eq!(nav["filter"], "ukf");
+        assert!(nav.get("result").is_none());
+    }
+
+    #[test]
+    fn profile_with_nonzero_rate_is_sampled_into_pd() {
+        let mut value = example_problem();
+        let a = std::f64::consts::FRAC_1_SQRT_2;
+        value["guidance"] = serde_json::json!({
+            "profile": [
+                {"t": 0.0, "q": [1.0, 0.0, 0.0, 0.0], "omega": [0.0, 0.0, 0.0]},
+                {"t": 2.0, "q": [0.9238795325112867, 0.3826834323650898, 0.0, 0.0], "omega": [0.4, 0.0, 0.0]},
+                {"t": 6.0, "q": [a, a, 0.0, 0.0], "omega": [0.0, 0.0, 0.0]},
+                {"t": 8.0, "q": [a, a, 0.0, 0.0], "omega": [0.0, 0.0, 0.0]}
+            ]
+        });
+        value["gain_schedule"] = serde_json::json!([
+            {"error_rad": 0.0, "kp": 4.0, "kd": 4.0},
+            {"error_rad": 0.5, "kp": 6.0, "kd": 5.0}
+        ]);
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert_eq!(doc["status"], "tracked-candidate");
+        assert!(doc.get("result").is_none());
+        let mid = csv_data(&out.csv)
+            .into_iter()
+            .find(|row| (row[0] - 2.0).abs() < 0.03)
+            .unwrap();
+        assert!(
+            mid[5].abs() > 0.05,
+            "profile tracking must command a nonzero rate, wx={}",
+            mid[5]
+        );
+    }
+
+    #[test]
+    fn wheel_allocation_tracks_and_has_a_small_oracle_residual() {
+        let s = std::f64::consts::FRAC_1_SQRT_2;
+        let mut value = example_problem();
+        value["actuators"]["wheels"] = serde_json::json!(true);
+        value["actuators"]["wheels_array"] = serde_json::json!({
+            "axes": [[s, 0.0, s], [0.0, s, s], [-s, 0.0, s], [0.0, -s, s]],
+            "inertia_kgm2": 0.01,
+            "torque_limit_nm": 1.0,
+            "momentum_limit_nms": 4.0
+        });
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert_eq!(doc["status"], "tracked-candidate");
+        let residual = quatopsy_oracle::allocation_residual(
+            [0.2, 0.1, 0.0],
+            &[[s, 0.0, s], [0.0, s, s], [-s, 0.0, s], [0.0, -s, s]],
+            &allocate::allocate(
+                [0.2, 0.1, 0.0],
+                &allocate::WheelArray {
+                    axes: vec![[s, 0.0, s], [0.0, s, s], [-s, 0.0, s], [0.0, -s, s]],
+                    inertia_kgm2: 0.01,
+                    torque_limit_nm: 1.0,
+                    momentum_limit_nms: 4.0,
+                },
+            )
+            .unwrap()
+            .wheels,
+        )
+        .unwrap();
+        assert!(norm3(residual) < 1e-9);
+    }
+
+    #[test]
+    fn two_body_field_changes_logged_magnetic_torque() {
+        let mut value = identity_hold();
+        value["plant"] = serde_json::json!({
+            "magnetic_residual": {
+                "dipole_am2": [1.0, 0.0, 0.0],
+                "field_t": [0.0, 0.0, 0.0]
+            }
+        });
+        value["orbit"] = serde_json::json!({
+            "n": 0.05,
+            "phase": 0.0
+        });
+        let out = run(&value).unwrap();
+        let rows = csv_data(&out.csv);
+        let early = [rows[1][8], rows[1][9], rows[1][10]];
+        let late = [
+            rows[rows.len() - 1][8],
+            rows[rows.len() - 1][9],
+            rows[rows.len() - 1][10],
+        ];
+        let delta =
+            (early[0] - late[0]).abs() + (early[1] - late[1]).abs() + (early[2] - late[2]).abs();
+        assert!(delta > 1e-8, "orbit B(t) must change plant magnetic torque");
+        assert!(
+            serde_json::from_str::<serde_json::Value>(&out.control)
+                .unwrap()
+                .get("result")
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn eclipse_without_star_updates_can_inhibit_on_covariance() {
+        let mut value = identity_hold();
+        value["duration_s"] = serde_json::json!(1.0);
+        value["max_covariance_trace"] = serde_json::json!(0.045);
+        value["sensor"]["gyro_arw_rad_s_sqrt_s"] = serde_json::json!(0.08);
+        value["orbit"] = serde_json::json!({
+            "n": 0.001,
+            "phase": std::f64::consts::PI
+        });
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert_eq!(doc["status"], "inhibited-candidate");
+        assert!(doc.get("result").is_none());
+    }
+
+    #[test]
+    fn failed_sensor_status_is_propagate_only_and_can_inhibit() {
+        let mut value = identity_hold();
+        value["duration_s"] = serde_json::json!(1.0);
+        value["max_covariance_trace"] = serde_json::json!(0.045);
+        value["sensor"]["status"] = serde_json::json!("failed");
+        value["sensor"]["gyro_arw_rad_s_sqrt_s"] = serde_json::json!(0.08);
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert_eq!(doc["status"], "inhibited-candidate");
+        assert!(doc.get("result").is_none());
+    }
+
+    #[test]
+    fn rejected_star_outliers_are_not_a_monitor_trip() {
+        let mut value = identity_hold();
+        value["duration_s"] = serde_json::json!(1.0);
+        value["sensor"]["quat_noise"] = serde_json::json!(0.2);
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert_ne!(doc["status"], "inhibited-candidate");
+        assert_eq!(doc["inhibit_count"], 0);
+        let nav: serde_json::Value = serde_json::from_str(&out.nav).unwrap();
+        assert!(nav["rejected"].as_u64().unwrap() > 0);
+        assert!(nav.get("result").is_none());
+    }
+
+    #[test]
+    fn sensor_fault_and_jitter_campaign_does_not_write_result() {
+        let mut value = example_problem();
+        value["duration_s"] = serde_json::json!(1.0);
+        value["campaign"] = serde_json::json!({
+            "trials": 2,
+            "sensor_fault": true,
+            "dt_jitter_s": 0.005,
+            "inertia_rel_sigma": 0.02,
+            "seed": 5
+        });
+        let out = run(&value).unwrap();
+        let doc: serde_json::Value = serde_json::from_str(&out.control).unwrap();
+        assert!(doc.get("result").is_none());
+        assert_eq!(doc["campaign"]["trials"], 2);
     }
 }

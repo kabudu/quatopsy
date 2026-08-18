@@ -58,8 +58,10 @@ V1 succeeds when a hand-audited conformance suite proves deterministic detection
 
 ## Non-goals
 
-Quatopsy V1 is not a general trajectory optimiser, hardware controller, simulator of unstated plants, sensor-fusion filter, collision planner, certification tool, live mission-control system, proof of safe motion, energy estimator without a supplied dynamics model, or quaternion learning laboratory. Viewer interaction is bound to report evidence, retained sample identity, and separately labelled repair candidates; it does not provide free-form quaternion construction or tutorial exercises.
+Quatopsy V1 is not a general trajectory optimiser, hardware controller, simulator of unstated plants, collision planner, certification tool, live mission-control system, proof of safe motion, energy estimator without a supplied dynamics model, or quaternion learning laboratory. Viewer interaction is bound to report evidence, retained sample identity, and separately labelled repair candidates; it does not provide free-form quaternion construction or tutorial exercises.
 
 M6 adds `quatopsy plan`, an offline candidate generator for a torque-limited rest-to-rest rigid body. Algorithms are eigenaxis bang-coast-bang and bounded multiple shooting. The command writes CSV, a declared manifest, and `quatopsy.plan/1`. Residuals are computed by an independent oracle. It never writes `quatopsy.report/1` `result`.
 
 M7 adds `quatopsy control`, a geometric PD controller on SO(3). Independent oracle inhibition, estimator freshness contracts, fail-closed safe fallback, host-CPU PIL, loopback HIL, and declared software plant models are in-repo. It never writes `quatopsy.report/1` `result`, never opens a physical actuator, and is not a hard-real-time or flight controller. The systems-safety programme cannot qualify hardware.
+
+M8 adds a software GN&C plane: MEKF/UKF attitude navigation with NIS/NEES audit, time-tagged guidance, reference tracking, reaction-wheel allocation, and declared two-body geometry. It is not orbit determination, not a certified estimator, and not permission to command hardware.

@@ -186,12 +186,12 @@ pub(crate) fn solve(
                 "collocation net body torque exceeds the declared box".to_string(),
             ));
         }
-        if let Some(limit) = problem.slew {
-            if norm3(*omega) > limit + 1.0e-9 {
-                return Err(PlanError::Infeasible(
-                    "collocation body rate exceeds the slew limit".to_string(),
-                ));
-            }
+        if let Some(limit) = problem.slew
+            && norm3(*omega) > limit + 1.0e-9
+        {
+            return Err(PlanError::Infeasible(
+                "collocation body rate exceeds the slew limit".to_string(),
+            ));
         }
         if problem.actuators.momentum_excess(*h) > 1.0e-9 {
             return Err(PlanError::Infeasible(

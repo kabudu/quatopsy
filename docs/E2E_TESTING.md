@@ -23,6 +23,7 @@ Tests invoke the released CLI against files, inspect exit status and canonical r
 | E2E-13 | SO(3) rest-to-rest control then analyze | `geometric-pd-so3` SIL candidate; kernel `pass`; no control `result` | Independent SO(3) error and command monitor |
 | E2E-14 | Host-CPU PIL then analyze | Isolated controller process; kernel `pass`; no control `result` | Independent SO(3) error and command monitor |
 | E2E-16 | Declared-plant loopback HIL then analyze | Command-to-torque lag, residual dipole, gravity-gradient, gyro ARW; kernel `pass`; no control `result` | Independent lag, magnetic, and gravity-gradient oracles; motor vs environmental `h` |
+| E2E-17 | Profile-track control then analyze | Time-varying `ω_d`; MEKF audit; kernel `pass`; no `result` on control/nav/guidance | Independent reference kinematics, NIS, and allocation oracles |
 
 ## Determinism and portability
 

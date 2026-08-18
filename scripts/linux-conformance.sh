@@ -2,7 +2,7 @@
 # Optional Linux-like reproduction. Not part of the offline local CI gate.
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-image="${QUATOPSY_LINUX_IMAGE:-rust:1.85-bookworm}"
+image="${QUATOPSY_LINUX_IMAGE:-rust:1.97.1-bookworm}"
 if ! command -v docker >/dev/null 2>&1; then
   echo "linux-conformance: docker is not available; skip" >&2
   exit 0

@@ -6,6 +6,7 @@
 //! `result`.
 
 mod control;
+mod nav;
 mod plan;
 
 pub use control::{
@@ -13,6 +14,7 @@ pub use control::{
     MonitorEnvelope, MonitorSample, first_order_lag, gravity_gradient_torque,
     magnetic_residual_torque, monitor_command, rigid_body_step, so3_attitude_error,
 };
+pub use nav::{allocation_residual, error_nees, innovation_nis, reference_rate_residual};
 pub use plan::{
     KeepOutCone, PLAN_BOUNDARY_TOLERANCE, PLAN_EULER_TOLERANCE, PLAN_KEEP_OUT_TOLERANCE,
     PLAN_KINEMATICS_TOLERANCE, PLAN_TORQUE_EXCESS_TOLERANCE, PlanDynamics, PlanResiduals,

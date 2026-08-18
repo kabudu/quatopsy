@@ -34,6 +34,9 @@ Physical actuators, target flight processors, hard real-time operating systems, 
 | H10 | Report-result impersonation | Serializer guard against a `result` field | Refuse |
 | H11 | Declared plant models treated as hardware | Protocol copy; loopback-only class | Keep software boundary |
 | H12 | Environmental torque stored as wheel momentum | Motor torque updates `h`; magnetic and gravity-gradient enter Euler only | Keep the split; wheels-plus-magnetic tests |
+| H13 | Pass-through estimate treated as a navigation solution | MEKF/UKF with independent NIS; χ² reject is not a monitor trip; `nav.json` has no `result` | Keep filter-vs-shim and reject-vs-inhibit tests |
+| H14 | Guidance profile treated as flight approval | `guidance.json` has no `result`; plan CSV is a candidate | Keep kernel-owned analyze |
+| H15 | Two-body geometry treated as orbit determination | Protocol copy; propagated Kepler only | Keep not-OD wording |
 
 ## Independence
 

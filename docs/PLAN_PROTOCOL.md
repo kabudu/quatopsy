@@ -26,4 +26,4 @@ Actuators may declare reaction wheels (axis, torque, momentum, optional power), 
 
 The kernel manifest declares quaternion and angular-velocity columns; torque and optional momentum columns are present for the oracle and ignored by analysis. `sample_count` is a lower bound; density is raised when needed so interval kinematics stay within the kernel omega tolerance.
 
-This is not a controller. It does not command actuators.
+This is not a controller. It does not command actuators. Optional `quatopsy control` `guidance.csv_text` may replay the emitted CSV as a time-tagged reference. That ingest does not make the plan a guidance solution or a report result.

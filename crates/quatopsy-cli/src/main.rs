@@ -569,7 +569,15 @@ fn run_control(
     let csv_path = output_dir.join("input.csv");
     let manifest_path = output_dir.join("manifest.json");
     let control_path = output_dir.join("control.json");
-    for path in [&csv_path, &manifest_path, &control_path] {
+    let nav_path = output_dir.join("nav.json");
+    let guidance_path = output_dir.join("guidance.json");
+    for path in [
+        &csv_path,
+        &manifest_path,
+        &control_path,
+        &nav_path,
+        &guidance_path,
+    ] {
         refuse_if_exists(path, overwrite)?;
         guard_output_path(path)?;
     }
@@ -604,6 +612,8 @@ fn run_control(
         PendingOutput::new(csv_path, out.csv.into_bytes(), overwrite),
         PendingOutput::new(manifest_path, out.manifest.into_bytes(), overwrite),
         PendingOutput::new(control_path, out.control.into_bytes(), overwrite),
+        PendingOutput::new(nav_path, out.nav.into_bytes(), overwrite),
+        PendingOutput::new(guidance_path, out.guidance.into_bytes(), overwrite),
     ];
     commit_outputs(&mut outputs, &mut temps).map_err(|err| {
         eprintln!("error: could not commit controller output: {err}");

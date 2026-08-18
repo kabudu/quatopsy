@@ -95,12 +95,12 @@ impl Actuators {
                     "wheel max_momentum_nms must be finite and positive".to_string(),
                 ));
             }
-            if let Some(power) = wheel.max_power_w {
-                if !power.is_finite() || power <= 0.0 {
-                    return Err(PlanError::Refused(
-                        "wheel max_power_w must be finite and positive when declared".to_string(),
-                    ));
-                }
+            if let Some(power) = wheel.max_power_w
+                && (!power.is_finite() || power <= 0.0)
+            {
+                return Err(PlanError::Refused(
+                    "wheel max_power_w must be finite and positive when declared".to_string(),
+                ));
             }
             wheels.push(PreparedWheel {
                 axis: unit3(wheel.axis)?,
@@ -375,34 +375,35 @@ pub(crate) fn allocate_body_torque(
         u[2] = ut[2];
         return Ok(u);
     }
-    if let Some(cmg) = &map.cmgs {
-        if map.wheels.is_empty() && map.thrusters.is_empty() {
-            let a = pyramid_a(cmg.skew_rad, [0.0; 4]);
-            let aat = [
-                [
-                    a[0][0] * a[0][0] + a[0][1] * a[0][1] + a[0][2] * a[0][2] + a[0][3] * a[0][3],
-                    a[0][0] * a[1][0] + a[0][1] * a[1][1] + a[0][2] * a[1][2] + a[0][3] * a[1][3],
-                    a[0][0] * a[2][0] + a[0][1] * a[2][1] + a[0][2] * a[2][2] + a[0][3] * a[2][3],
-                ],
-                [
-                    a[1][0] * a[0][0] + a[1][1] * a[0][1] + a[1][2] * a[0][2] + a[1][3] * a[0][3],
-                    a[1][0] * a[1][0] + a[1][1] * a[1][1] + a[1][2] * a[1][2] + a[1][3] * a[1][3],
-                    a[1][0] * a[2][0] + a[1][1] * a[2][1] + a[1][2] * a[2][2] + a[1][3] * a[2][3],
-                ],
-                [
-                    a[2][0] * a[0][0] + a[2][1] * a[0][1] + a[2][2] * a[0][2] + a[2][3] * a[0][3],
-                    a[2][0] * a[1][0] + a[2][1] * a[1][1] + a[2][2] * a[1][2] + a[2][3] * a[1][3],
-                    a[2][0] * a[2][0] + a[2][1] * a[2][1] + a[2][2] * a[2][2] + a[2][3] * a[2][3],
-                ],
-            ];
-            let inv = invert3(aat)?;
-            let h0 = cmg.wheel_momentum_nms;
-            let y = apply_tensor(inv, scale3(tau, -1.0 / h0));
-            for (slot, column) in u.iter_mut().take(4).zip(0..4) {
-                *slot = a[0][column] * y[0] + a[1][column] * y[1] + a[2][column] * y[2];
-            }
-            return Ok(u);
+    if let Some(cmg) = &map.cmgs
+        && map.wheels.is_empty()
+        && map.thrusters.is_empty()
+    {
+        let a = pyramid_a(cmg.skew_rad, [0.0; 4]);
+        let aat = [
+            [
+                a[0][0] * a[0][0] + a[0][1] * a[0][1] + a[0][2] * a[0][2] + a[0][3] * a[0][3],
+                a[0][0] * a[1][0] + a[0][1] * a[1][1] + a[0][2] * a[1][2] + a[0][3] * a[1][3],
+                a[0][0] * a[2][0] + a[0][1] * a[2][1] + a[0][2] * a[2][2] + a[0][3] * a[2][3],
+            ],
+            [
+                a[1][0] * a[0][0] + a[1][1] * a[0][1] + a[1][2] * a[0][2] + a[1][3] * a[0][3],
+                a[1][0] * a[1][0] + a[1][1] * a[1][1] + a[1][2] * a[1][2] + a[1][3] * a[1][3],
+                a[1][0] * a[2][0] + a[1][1] * a[2][1] + a[1][2] * a[2][2] + a[1][3] * a[2][3],
+            ],
+            [
+                a[2][0] * a[0][0] + a[2][1] * a[0][1] + a[2][2] * a[0][2] + a[2][3] * a[0][3],
+                a[2][0] * a[1][0] + a[2][1] * a[1][1] + a[2][2] * a[1][2] + a[2][3] * a[1][3],
+                a[2][0] * a[2][0] + a[2][1] * a[2][1] + a[2][2] * a[2][2] + a[2][3] * a[2][3],
+            ],
+        ];
+        let inv = invert3(aat)?;
+        let h0 = cmg.wheel_momentum_nms;
+        let y = apply_tensor(inv, scale3(tau, -1.0 / h0));
+        for (slot, column) in u.iter_mut().take(4).zip(0..4) {
+            *slot = a[0][column] * y[0] + a[1][column] * y[1] + a[2][column] * y[2];
         }
+        return Ok(u);
     }
     Err(PlanError::Refused(
         "planner needs three independent wheels, three thrusters, or a CMG pyramid to allocate torque"
