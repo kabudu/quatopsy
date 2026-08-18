@@ -2,7 +2,7 @@
 
 ## Minimal shape
 
-Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core`), a CLI (`quatopsy`), a schema package (`quatopsy-schema`), and a static browser visualiser compiled to WebAssembly only where shared computations require it. An independent `quatopsy-oracle` crate exists only for conformance tests and is not linked into production verdicts. The browser consumes the same immutable JSON report produced by the CLI. No server, account, database, telemetry collector, plug-in runtime, or network dependency belongs in the first release.
+Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core`), a CLI (`quatopsy`), a schema package (`quatopsy-schema`), and a static browser visualiser compiled to WebAssembly only where shared computations require it. An independent `quatopsy-oracle` crate exists for conformance tests and for candidate-plan residual checks. It is not a production rule engine and cannot assign `quatopsy.report/1` `result`. The browser consumes the same immutable JSON report produced by the CLI. No server, account, database, telemetry collector, plug-in runtime, or network dependency belongs in the first release.
 
 ## Components
 
@@ -14,6 +14,7 @@ Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core
 6. `cli`: public offline workflow, resource limits, exit codes, and atomic output.
 7. `viewer`: local static forensic console for linked physical attitude, projected `S^3`, timeline, canonical evidence, and proposed-repair views. Playback and canvas navigation only change the selected retained sample; they never recompute rules or alter the report.
 8. `adapters`: converters into the canonical input contract, outside the semantic core (`ids-jason1`, `ros-json`, `tubin-str`, `mcap-json`, `spice-ck`).
+9. `plan`: offline candidate generator for a declared torque-limited rest-to-rest rigid body. It emits CSV, manifest, and `quatopsy.plan/1`, checks residuals through `quatopsy-oracle`, and cannot assign a report result. Algorithms are eigenaxis bang-coast-bang and bounded multiple shooting.
 
 ## Data flow
 
@@ -43,7 +44,7 @@ The CLI defaults to 1 GiB input bytes, 10 million samples, 512 MiB working memor
 
 ## Trust boundaries
 
-The mathematical kernel and canonical schema are the logical trusted computing base. Parsers, CLI orchestration, repair writer, and viewer are security-relevant but cannot redefine result semantics. External adapters, ROS/MCAP/SPICE readers, CI presentation, and future hosted integrations are outside the logical trust boundary and must emit canonical inputs with provenance.
+The mathematical kernel and canonical schema are the logical trusted computing base. Parsers, CLI orchestration, repair writer, and viewer are security-relevant but cannot redefine result semantics. External adapters, ROS/MCAP/SPICE readers, the candidate planner, CI presentation, and future hosted integrations are outside the logical trust boundary and must emit canonical inputs with provenance.
 
 ## Compatibility
 

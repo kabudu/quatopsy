@@ -14,7 +14,7 @@ A UTF-8 CSV file plus an explicit `quatopsy.manifest/1` document provides monoto
 
 Unsupported ambiguity is refused. Quatopsy must not guess component order, reference frames, units, or active/passive semantics. Numeric profile `quatopsy.numeric/1` uses absolute unit tolerance `1e-6`, near-zero refusal below `1e-12`, and near-pi lift ties when `|p · q| <= 1e-12` after unit normalisation.
 
-The M1 CLI is `quatopsy analyze --input <csv> --manifest <json> --report <json>`. It writes compact canonical JSON atomically and does not overwrite an existing report unless `--overwrite` is passed. `quatopsy view --report <json> --output <dir>` writes a static local viewer bundle. Optional `--input` and `--manifest` bind derived geometry to the same digests as the report.
+The M1 CLI is `quatopsy analyze --input <csv> --manifest <json> --report <json>`. It writes compact canonical JSON atomically and does not overwrite an existing report unless `--overwrite` is passed. `quatopsy view --report <json> --output <dir>` writes a static local viewer bundle. Optional `--input` and `--manifest` bind derived geometry to the same digests as the report. `quatopsy plan --problem <json> --output-dir <dir>` writes a candidate trajectory for later analysis.
 
 ## Outputs
 
@@ -58,4 +58,6 @@ V1 succeeds when a hand-audited conformance suite proves deterministic detection
 
 ## Non-goals
 
-Quatopsy V1 is not a controller, trajectory optimiser, simulator, sensor-fusion filter, collision planner, certification tool, live mission-control system, proof of safe motion, energy estimator without a supplied dynamics model, or quaternion learning laboratory. Viewer interaction is bound to report evidence, retained sample identity, and separately labelled repair candidates; it does not provide free-form quaternion construction or tutorial exercises.
+Quatopsy V1 is not a controller, general trajectory optimiser, simulator, sensor-fusion filter, collision planner, certification tool, live mission-control system, proof of safe motion, energy estimator without a supplied dynamics model, or quaternion learning laboratory. Viewer interaction is bound to report evidence, retained sample identity, and separately labelled repair candidates; it does not provide free-form quaternion construction or tutorial exercises.
+
+M6 adds `quatopsy plan`, an offline candidate generator for a torque-limited rest-to-rest rigid body. Algorithms are eigenaxis bang-coast-bang and bounded multiple shooting. The command writes CSV, a declared manifest, and `quatopsy.plan/1`. Residuals are computed by an independent oracle. It never writes `quatopsy.report/1` `result`. A controller remains out of V1.

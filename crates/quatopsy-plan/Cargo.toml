@@ -1,0 +1,18 @@
+[package]
+name = "quatopsy-plan"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Offline candidate trajectory generator. The planner never assigns Quatopsy verdicts."
+
+[dependencies]
+libm = { workspace = true }
+quatopsy-schema = { workspace = true }
+quatopsy-oracle = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }

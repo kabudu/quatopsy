@@ -315,6 +315,7 @@ dependencies = [
  "ctrlc",
  "quatopsy-adapt",
  "quatopsy-core",
+ "quatopsy-plan",
  "quatopsy-schema",
  "serde",
  "serde_json",
@@ -338,6 +339,19 @@ dependencies = [
 [[package]]
 name = "quatopsy-oracle"
 version = "0.1.0"
+
+[[package]]
+name = "quatopsy-plan"
+version = "0.1.0"
+dependencies = [
+ "libm",
+ "quatopsy-oracle",
+ "quatopsy-schema",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+]
 
 [[package]]
 name = "quatopsy-schema"

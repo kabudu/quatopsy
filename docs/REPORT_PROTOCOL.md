@@ -2,7 +2,7 @@
 
 ## Versioning
 
-The initial protocol family is `quatopsy.report/1`. The root contains `schema`, `analysis_id`, `tool`, `input`, `declarations`, `limits`, `result`, `rule_results`, `findings`, `repairs`, and `diagnostics`.
+The initial protocol family is `quatopsy.report/1`. The root contains `schema`, `analysis_id`, `tool`, `input`, `declarations`, `limits`, `result`, `rule_results`, `findings`, `repairs`, and `diagnostics`. Candidate trajectories use the separate `quatopsy.plan/1` document described in `docs/PLAN_PROTOCOL.md` and never include `result`.
 
 ## Result aggregation
 

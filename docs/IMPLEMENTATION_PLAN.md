@@ -78,6 +78,21 @@ Exit: release policy passes for a private `0.1.0` GitHub Release. External indep
 
 Exit: local CI plus the named fixtures and CLI tests.
 
+## M6: Offline candidate trajectory generator
+
+- [x] Ship `quatopsy plan` for a spherical torque-limited rest-to-rest rigid body using eigenaxis bang-coast-bang.
+- [x] Emit canonical CSV plus `quatopsy.plan/1` with no report `result`.
+- [x] Keep the diagnostic kernel as the only verdict owner via plan-then-analyze tests.
+- [x] Replace same-crate residual checks with an independent dynamics oracle and mutation coverage.
+- [x] Emit body-rate columns and prove Euler residuals, including switch intervals, against `Jω̇ + ω × Jω = τ`.
+- [x] Add wheels, thrusters, CMGs, keep-out zones, and a general inertia tensor.
+- [x] Add weighted objectives beyond minimum-time rest-to-rest.
+- [x] Add a bounded collocation, multiple-shooting, or sequential-convexification solver.
+- [x] Add simulation campaigns under model uncertainty and actuator saturation.
+- [ ] Add a controller. Candidate generation remains first.
+
+Exit: local CI plus the spherical rest-to-rest fixture. Open boxes are not shipped.
+
 ## Optional post-release evidence track
 
 - [ ] Verify the canonical release page at desktop and narrow widths after an authorised publication.

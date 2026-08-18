@@ -44,6 +44,14 @@ cargo run --bin quatopsy -- adapt \
 
 `quatopsy adapt --format mcap-json` and `--format spice-ck` convert uncompressed MCAP JSON poses and little-endian CK type 3 kernels into the same canonical CSV and manifest. They never assign a report `result`.
 
+```bash
+cargo run --bin quatopsy -- plan \
+  --problem fixtures/plan/spherical_rest_to_rest/problem.json \
+  --output-dir /tmp/quatopsy-plan
+```
+
+`quatopsy plan` writes a candidate CSV, declared manifest, and `plan.json`. Residuals are checked by an independent oracle. The planner never assigns a report `result`. Run `analyze` on the generated files to obtain the only verdict.
+
 `quatopsy analyze --repro-dir <dir>` writes one context-bounded subdirectory per finding when a report has multiple findings. Each contains `slice.csv`, `manifest.json`, and `provenance.json`; a single finding uses those filenames directly in the requested directory. Export refuses above the compiled 1,024-slice disk-work limit without committing any requested output.
 
 Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
@@ -56,6 +64,7 @@ Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 - [Architecture](docs/ARCHITECTURE.md)
 - [Soundness case](docs/SOUNDNESS_CASE.md)
 - [Report protocol](docs/REPORT_PROTOCOL.md)
+- [Plan protocol](docs/PLAN_PROTOCOL.md)
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
 - [Novelty and prior art](docs/NOVELTY.md)
 - [Validation](docs/VALIDATION.md)
