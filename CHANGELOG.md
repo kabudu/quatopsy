@@ -5,7 +5,7 @@
 ### Added
 
 - Responsive forensic investigation console with synchronized trajectory playback, timeline scrubbing, evidence navigation, sample telemetry, and richer offline canvas rendering.
-- `quatopsy control` for a geometric PD controller on SO(3), with independent command inhibition, estimator freshness contracts, saturation and safe fallback, host-CPU processor-in-the-loop, loopback hardware-in-the-loop, declared software plant models, a fail-closed hardware-use gate, deterministic robustness trials, no physical actuator I/O, and no report `result`.
+- `quatopsy control` for a geometric PD controller on SO(3), with independent command inhibition, estimator freshness contracts, saturation and safe fallback, host-CPU processor-in-the-loop, loopback hardware-in-the-loop, declared software plant models, a software GN&C plane (MEKF/UKF, guidance profiles, wheel allocation, declared two-body geometry), a fail-closed hardware-use gate, deterministic robustness trials, no physical actuator I/O, and no report `result`.
 - `quatopsy plan` for a torque-limited rest-to-rest candidate, with independent Euler/kinematics residuals, body-rate columns, actuator and keep-out models, weighted objectives, bounded multiple shooting, perturbation campaigns, infeasibility on constraint violation, and no report `result`.
 - Forensic gap closure for strict adoption-policy validation, canonical UTC overrides, unknown-major refusal exits, transactionally committed output sets, per-finding reproducers, and bounded viewer finding navigation.
 - `QAT-CONV-001` matrix comparison and `QAT-OMEGA-001` body-rate comparison.
@@ -13,11 +13,17 @@
 - Adoption policy `--policy` / `--fail-on` / `--override-file` (exit only).
 - CC BY 4.0 TUBIN star-tracker excerpt and mutation/fuzz/privacy/permission E2E coverage.
 
+### Changed
+
+- Toolchain pin is Rust 1.97.1. Declared MSRV `rust-version` is 1.97, matching current stable rather than the edition-2024 floor. Clippy 1.97.1 let-chain and `is_multiple_of` lints are applied.
+
 ### Fixed
 
 - Control plant applies magnetic residual and gravity-gradient torque to Euler's equation only. Stored wheel momentum follows motor torque.
 - Logged control CSV torque is the plant-applied body torque after command-to-torque lag and declared environmental models. The initial sample is zero.
 - `star_tracker_delay_s: 0` is zero attitude delay. It does not fall back to gyro `delay_s`.
+- Software UKF measurement update uses sigma-point `Pzz`/`Pxz` rather than a copied MEKF Joseph form. Filter covariance is no longer floored at `1e-6`, so propagate-only runs can grow `P` into the envelope.
+- Gyro predict uses trapezoidal rate hold so star innovations during a slew stay inside the χ² gate without a fake covariance floor.
 
 ### Claims
 

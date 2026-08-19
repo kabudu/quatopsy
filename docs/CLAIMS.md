@@ -21,6 +21,10 @@ Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research reposito
 
 - `quatopsy control` runs a geometric PD controller on SO(3) plus `quatopsy.control/1`. Attitude error is the rotation-matrix vee map. An independent oracle monitor inhibits commands. Estimator freshness, saturation, anti-windup, momentum dump, modes, deterministic SIL campaigns, and declared software plant models (command-to-torque lag, gyro ARW, star-tracker delay, magnetic residual, gravity-gradient) never assign report `result`. `execution` may be `sil`, host-CPU `pil`, or loopback `hil`. Hard real-time, physical actuators, qualified processors, and hardware command are refused.
 
+## Unreleased M8
+
+- `quatopsy control` may run a software GN&C plane: a 6-state MEKF or UKF with χ² outlier rejection and NIS/NEES audit, time-tagged guidance profiles, reference-tracking geometric PD, reaction-wheel allocation, and a declared two-body geometry source. `nav.json` and `guidance.json` never assign report `result`. This is not orbit determination, not hard real-time, not physical hardware, and not a certification artefact.
+
 ## Required non-claims
 
 Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, production-ready, complete, optimal, or independently validated. Do not state that a `pass` result is flight approval, actuator permission, or energy optimality. Do not state that a feasible plan or a tracked SIL candidate is globally optimal, dynamically verified under uncertainty, or authorised for command. Do not state that commanded-path findings measure control effort or mission risk. Do not state that the candidate name is a cleared trademark. Do not state that the TUBIN excerpt is a mission reconstruction or that adapters certify source conventions.

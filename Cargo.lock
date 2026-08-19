@@ -327,6 +327,8 @@ name = "quatopsy-control"
 version = "0.1.0"
 dependencies = [
  "libm",
+ "quatopsy-guidance",
+ "quatopsy-nav",
  "quatopsy-oracle",
  "quatopsy-schema",
  "serde",
@@ -347,6 +349,23 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "thiserror",
+]
+
+[[package]]
+name = "quatopsy-guidance"
+version = "0.1.0"
+dependencies = [
+ "libm",
+ "quatopsy-oracle",
+ "thiserror",
+]
+
+[[package]]
+name = "quatopsy-nav"
+version = "0.1.0"
+dependencies = [
+ "libm",
  "thiserror",
 ]
 

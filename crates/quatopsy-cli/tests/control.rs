@@ -49,6 +49,10 @@ fn control_then_analyze_keeps_verdict_ownership_in_the_kernel() {
     assert!(body.contains("tracked-candidate"));
     assert!(body.contains("\"execution\":\"sil\""));
     assert!(body.contains("in-process"));
+    let nav_body = fs::read_to_string(controlled.join("nav.json")).unwrap();
+    assert!(!nav_body.contains("\"result\""));
+    let guidance_body = fs::read_to_string(controlled.join("guidance.json")).unwrap();
+    assert!(!guidance_body.contains("\"result\""));
     let report = tmp.join("report.json");
     let status = Command::new(bin())
         .args([
@@ -158,4 +162,51 @@ fn declared_plant_hil_then_analyze_keeps_verdict_ownership() {
         "\"execution\":\"hil\"",
         "loopback-actuator-emulator",
     );
+}
+
+#[test]
+fn profile_track_then_analyze_keeps_verdict_ownership_in_the_kernel() {
+    let root = workspace_root();
+    let tmp = tempfile_dir();
+    let controlled = tmp.join("controlled");
+    let status = Command::new(bin())
+        .args([
+            "control",
+            "--problem",
+            root.join("fixtures/control/so3_profile_track/problem.json")
+                .to_str()
+                .unwrap(),
+            "--output-dir",
+            controlled.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    assert!(status.success());
+    let body = fs::read_to_string(controlled.join("control.json")).unwrap();
+    assert!(!body.contains("\"result\""));
+    assert!(body.contains("geometric-pd-so3"));
+    assert!(body.contains("tracked-candidate"));
+    assert!(body.contains("sequential-deterministic"));
+    let nav_body = fs::read_to_string(controlled.join("nav.json")).unwrap();
+    assert!(!nav_body.contains("\"result\""));
+    assert!(nav_body.contains("mekf"));
+    let guidance_body = fs::read_to_string(controlled.join("guidance.json")).unwrap();
+    assert!(!guidance_body.contains("\"result\""));
+    let report = tmp.join("report.json");
+    let status = Command::new(bin())
+        .args([
+            "analyze",
+            "--input",
+            controlled.join("input.csv").to_str().unwrap(),
+            "--manifest",
+            controlled.join("manifest.json").to_str().unwrap(),
+            "--report",
+            report.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    assert_eq!(status.code(), Some(0));
+    let report_body = fs::read_to_string(&report).unwrap();
+    assert!(report_body.contains("\"result\":\"pass\""));
+    assert!(report_body.contains("omega-consistent"));
 }

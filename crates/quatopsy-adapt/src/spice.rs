@@ -13,7 +13,7 @@ pub fn adapt_spice_ck(source: &[u8], version: &str) -> Result<AdapterOutput, Ada
             "spice ck is shorter than one DAF record".to_string(),
         ));
     }
-    if source.len() % RECORD != 0 {
+    if !source.len().is_multiple_of(RECORD) {
         return Err(AdaptError::Refused(
             "spice ck is not a multiple of 1024 bytes".to_string(),
         ));
@@ -266,7 +266,7 @@ pub fn encode_ck_type3(inst: i32, frame: i32, samples: &[(f64, f64, f64, f64, f6
         }
         file[off..off + 8].copy_from_slice(&word.to_le_bytes());
     }
-    if file.len() % RECORD != 0 {
+    if !file.len().is_multiple_of(RECORD) {
         file.resize((file.len() / RECORD + 1) * RECORD, 0);
     }
     file

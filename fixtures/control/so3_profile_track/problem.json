@@ -1,0 +1,65 @@
+{
+  "schema": "quatopsy.control-problem/1",
+  "component_order": "wxyz",
+  "rotation_sense": "active",
+  "frame_from": "BODY",
+  "frame_to": "J2000",
+  "time_unit": "s",
+  "execution": "sil",
+  "latency_class": "bounded-software",
+  "q_initial": [1.0, 0.0, 0.0, 0.0],
+  "q_desired": [0.7071067811865476, 0.7071067811865476, 0.0, 0.0],
+  "omega_initial": [0.0, 0.0, 0.0],
+  "inertia": {
+    "model": "spherical",
+    "j": 1.0
+  },
+  "torque_limit_nm": 1.0,
+  "slew_rate_limit_rad_s": 2.0,
+  "momentum_limit_nms": 4.0,
+  "cycle_dt_s": 0.02,
+  "duration_s": 8.0,
+  "max_estimate_age_s": 0.05,
+  "max_covariance_trace": 1.0,
+  "gains": {
+    "kp": 4.0,
+    "kd": 4.0,
+    "ki": 0.0
+  },
+  "actuators": {
+    "wheels": true,
+    "momentum_dump_gain": 0.5,
+    "wheels_array": {
+      "axes": [
+        [0.7071067811865476, 0.0, 0.7071067811865476],
+        [0.0, 0.7071067811865476, 0.7071067811865476],
+        [-0.7071067811865476, 0.0, 0.7071067811865476],
+        [0.0, -0.7071067811865476, 0.7071067811865476]
+      ],
+      "inertia_kgm2": 0.01,
+      "torque_limit_nm": 1.0,
+      "momentum_limit_nms": 4.0
+    }
+  },
+  "sensor": {
+    "delay_s": 0.0,
+    "quat_noise": 0.0,
+    "rate_noise": 0.0,
+    "covariance_trace": 1e-6
+  },
+  "navigation": {
+    "filter": "mekf"
+  },
+  "guidance": {
+    "profile": [
+      {"t": 0.0, "q": [1.0, 0.0, 0.0, 0.0], "omega": [0.0, 0.0, 0.0]},
+      {"t": 2.0, "q": [0.9238795325112867, 0.3826834323650898, 0.0, 0.0], "omega": [0.4, 0.0, 0.0]},
+      {"t": 6.0, "q": [0.7071067811865476, 0.7071067811865476, 0.0, 0.0], "omega": [0.0, 0.0, 0.0]},
+      {"t": 8.0, "q": [0.7071067811865476, 0.7071067811865476, 0.0, 0.0], "omega": [0.0, 0.0, 0.0]}
+    ]
+  },
+  "gain_schedule": [
+    {"error_rad": 0.0, "kp": 4.0, "kd": 4.0},
+    {"error_rad": 0.5, "kp": 6.0, "kd": 5.0}
+  ]
+}

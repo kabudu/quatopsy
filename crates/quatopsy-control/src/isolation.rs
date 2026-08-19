@@ -33,6 +33,8 @@ pub struct CycleConfig {
     pub q_desired: [f64; 4],
     pub dump_gain: f64,
     pub keep_out: Vec<ConeDoc>,
+    #[serde(default)]
+    pub wheels_array: Option<crate::allocate::WheelArray>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
@@ -53,6 +55,13 @@ pub struct CycleIn {
     pub frames_ok: bool,
     pub fail_axis: Option<u8>,
     pub disturbance_nm: [f64; 3],
+    pub q_ref: [f64; 4],
+    pub omega_ref: [f64; 3],
+    pub alpha_ref: [f64; 3],
+    pub kp: f64,
+    pub kd: f64,
+    #[serde(default)]
+    pub field_t: Option<[f64; 3]>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -88,6 +97,22 @@ pub struct PlantIn {
     pub torque: [f64; 3],
     pub dt_sub: f64,
     pub substeps: u32,
+    #[serde(default)]
+    pub field_t: Option<[f64; 3]>,
+    #[serde(default)]
+    pub nadir: Option<[f64; 3]>,
+}
+
+impl Default for PlantIn {
+    fn default() -> Self {
+        Self {
+            torque: [0.0; 3],
+            dt_sub: 0.01,
+            substeps: 1,
+            field_t: None,
+            nadir: None,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
@@ -121,10 +146,10 @@ impl CycleEngine {
     pub(crate) fn step(&mut self, input: CycleIn) -> Result<CycleOut, ControlError> {
         let q = Quat::new(input.q[0], input.q[1], input.q[2], input.q[3]);
         let q_des = Quat::new(
-            self.config.q_desired[0],
-            self.config.q_desired[1],
-            self.config.q_desired[2],
-            self.config.q_desired[3],
+            input.q_ref[0],
+            input.q_ref[1],
+            input.q_ref[2],
+            input.q_ref[3],
         );
         let keep_out: Vec<KeepOutCone> = self
             .config
@@ -145,19 +170,31 @@ impl CycleEngine {
             },
             Reference {
                 q: q_des,
-                omega: [0.0; 3],
-                alpha: [0.0; 3],
+                omega: input.omega_ref,
+                alpha: input.alpha_ref,
             },
             Gains {
-                kp: self.config.kp,
-                kd: self.config.kd,
+                kp: input.kp,
+                kd: input.kd,
                 ki: self.config.ki,
             },
             self.config.dt,
             &mut self.law,
         );
+        if let Some(array) = &self.config.wheels_array {
+            requested = crate::allocate::allocate(requested, array)?.body;
+        }
         if let Some(limit) = self.config.momentum_limit_nms {
-            requested = momentum_dump(requested, input.h, limit, self.config.dump_gain);
+            requested = match input.field_t {
+                Some(field) => crate::allocate::magnetorquer_dump(
+                    requested,
+                    input.h,
+                    field,
+                    limit,
+                    self.config.dump_gain,
+                ),
+                None => momentum_dump(requested, input.h, limit, self.config.dump_gain),
+            };
         }
         requested = saturate(requested, self.config.torque_limit_nm, &mut self.law);
         requested = fail_axis(requested, input.fail_axis.map(usize::from));
@@ -246,17 +283,16 @@ impl PlantEngine {
                 self.config.wheel_lag_s,
             )
             .map_err(|err| ControlError::Refused(err.to_string()))?;
-            let magnetic = magnetic_residual_torque(
-                self.q.as_ref(),
-                self.config.magnetic_dipole_am2,
-                self.config.magnetic_field_t,
-            )
-            .map_err(|err| ControlError::Refused(err.to_string()))?;
+            let field = input.field_t.unwrap_or(self.config.magnetic_field_t);
+            let nadir = input.nadir.unwrap_or(self.config.nadir_inertial);
+            let magnetic =
+                magnetic_residual_torque(self.q.as_ref(), self.config.magnetic_dipole_am2, field)
+                    .map_err(|err| ControlError::Refused(err.to_string()))?;
             let gravity = gravity_gradient_torque(
                 self.q.as_ref(),
                 self.config.inertia,
                 self.config.orbital_rate_rad_s,
-                self.config.nadir_inertial,
+                nadir,
             )
             .map_err(|err| ControlError::Refused(err.to_string()))?;
             let body_torque = [
@@ -350,7 +386,7 @@ pub fn run_loopback_worker() -> Result<(), ControlError> {
 }
 
 pub(crate) enum CycleBackend {
-    Local(CycleEngine),
+    Local(Box<CycleEngine>),
     Child(ChildLines),
 }
 
@@ -361,7 +397,7 @@ impl CycleBackend {
             child.send_config(&config)?;
             Ok(Self::Child(child))
         } else {
-            Ok(Self::Local(CycleEngine::new(config)))
+            Ok(Self::Local(Box::new(CycleEngine::new(config))))
         }
     }
 
@@ -525,6 +561,7 @@ mod tests {
             torque: [1.0, 0.0, 0.0],
             dt_sub: 0.01,
             substeps: 1,
+            ..PlantIn::default()
         };
         let lagged = PlantEngine::new(rest_plant(1.0))
             .unwrap()
@@ -552,6 +589,7 @@ mod tests {
                 torque: [0.0; 3],
                 dt_sub: 0.01,
                 substeps: 1,
+                ..PlantIn::default()
             })
             .unwrap();
         assert!((out.samples[0].torque[2] - 1.0).abs() < 1e-12);
@@ -571,6 +609,7 @@ mod tests {
                 torque: [0.0; 3],
                 dt_sub: 0.01,
                 substeps: 1,
+                ..PlantIn::default()
             })
             .unwrap();
         assert!((out.samples[0].omega[2] - 0.01).abs() < 1e-9);
@@ -594,6 +633,7 @@ mod tests {
                 torque: [0.0; 3],
                 dt_sub: 0.01,
                 substeps: 1,
+                ..PlantIn::default()
             })
             .unwrap();
         let expected = 3.0 * 0.01 * (a * a);
@@ -618,6 +658,7 @@ mod tests {
                 torque: [0.0; 3],
                 dt_sub: 0.01,
                 substeps: 1,
+                ..PlantIn::default()
             })
             .unwrap();
         assert!(

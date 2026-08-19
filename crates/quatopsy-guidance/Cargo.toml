@@ -1,0 +1,14 @@
+[package]
+name = "quatopsy-guidance"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Time-tagged attitude guidance profiles. Never assigns Quatopsy verdicts."
+
+[dependencies]
+libm = { workspace = true }
+quatopsy-oracle = { workspace = true }
+thiserror = { workspace = true }
