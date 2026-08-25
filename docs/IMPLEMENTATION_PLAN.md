@@ -132,8 +132,9 @@ Exit: local CI plus the rest-to-rest fixtures and a profile-tracking fixture. Op
 Owner productisation was approved. Trademark filing was declined. Public opening remains a later gate.
 
 - [x] Record owner productisation approval and the decision to keep `Quatopsy` without a trademark filing, without claiming clearance.
-- [x] Construct and score three mark directions; select the antipodal paired-point system.
-- [x] Ship `quatopsy.brand/1` sources, exports, tokens, templates, licences, and a digest manifest.
+- [x] Construct and score the initial three mark directions; preserve the superseded antipodal paired-point decision as historical evidence.
+- [x] Incorporate owner visual review and ship the selected woven-lift revision as `quatopsy.brand/2`.
+- [x] Ship versioned sources, Space Grotesk outline provenance, exports, tokens, templates, licences, and a digest manifest.
 - [x] Validate contrast, SVG safety, overlay separation, prohibited-claim copy, and deterministic export in local CI.
 - [x] Apply the symbol and tagline on the local viewer and CLI without weakening CSP or report ownership.
 - [ ] Public repository visibility.

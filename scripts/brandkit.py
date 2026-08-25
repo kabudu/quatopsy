@@ -19,7 +19,7 @@ from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 BRAND = ROOT / "assets" / "brand"
-BRAND_VERSION = "quatopsy.brand/1"
+BRAND_VERSION = "quatopsy.brand/2"
 TAGLINE = "See where rotations go wrong."
 CATEGORY = "Orientation-trajectory diagnostics"
 
@@ -31,11 +31,13 @@ TOKENS = {
     "category": CATEGORY,
     "palette": {
         "dark": {
-            "bg": "#05080b",
-            "surface": "#0a1015",
-            "ink": "#eef4f6",
-            "muted": "#9babb4",
-            "accent": "#62e6df",
+            "bg": "#09070d",
+            "surface": "#110d18",
+            "ink": "#fff1d6",
+            "muted": "#b9aebf",
+            "accent": "#c778ff",
+            "accent_secondary": "#ec48c6",
+            "inspection": "#f5c96a",
             "pass": "#74e6a1",
             "findings": "#ff7770",
             "refused": "#ffc65c",
@@ -47,7 +49,9 @@ TOKENS = {
             "surface": "#ffffff",
             "ink": "#12181c",
             "muted": "#3d4c54",
-            "accent": "#0b6f6a",
+            "accent": "#7133a5",
+            "accent_secondary": "#9e1a77",
+            "inspection": "#6e4b00",
             "pass": "#0f6b3a",
             "findings": "#a31b16",
             "refused": "#7a4e00",
@@ -77,8 +81,9 @@ TOKENS = {
     },
     "type": {
         "ui": 'system-ui, "Segoe UI", sans-serif',
+        "wordmark": "Space Grotesk SemiBold, outlined in canonical lockups",
         "mono": 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace',
-        "recommended_open_ui": "IBM Plex Sans",
+        "recommended_open_ui": "Space Grotesk",
         "recommended_open_mono": "IBM Plex Mono",
         "redistributed": False,
     },
@@ -90,8 +95,8 @@ TOKENS = {
     },
     "motion": {"reduced": "disable non-essential animation and autoplay"},
     "mark": {
-        "direction": "antipodal-paired-point",
-        "clear_space_units": 8,
+        "direction": "woven-lift",
+        "clear_space_units": 6,
         "min_size_px": 16,
         "viewbox": 32,
     },
@@ -162,7 +167,7 @@ def antipodal_geometry(view: int = 32) -> dict[str, float]:
     }
 
 
-def symbol_svg(ink: str, accent: str, *, small: bool = False, bg: str | None = None) -> str:
+def antipodal_direction_svg(ink: str, accent: str, *, bg: str | None = None) -> str:
     g = antipodal_geometry()
     dots = (
         f'<circle cx="{g["x1"]:.3f}" cy="{g["y1"]:.3f}" r="{g["dot"]:.3f}" fill="{accent}"/>'
@@ -172,14 +177,48 @@ def symbol_svg(ink: str, accent: str, *, small: bool = False, bg: str | None = N
         f'<circle cx="{g["cx"]:.3f}" cy="{g["cy"]:.3f}" r="{g["r"]:.3f}" '
         f'fill="none" stroke="{ink}" stroke-width="{g["stroke"]:.3f}"/>'
     )
-    chord = ""
-    if not small:
-        chord = (
-            f'<path d="M {g["x1"]:.3f} {g["y1"]:.3f} A {g["r"]:.3f} {g["r"]:.3f} 0 0 1 '
-            f'{g["x2"]:.3f} {g["y2"]:.3f}" fill="none" stroke="{accent}" '
-            f'stroke-width="{g["stroke"]:.3f}" stroke-linecap="round"/>'
-        )
+    chord = (
+        f'<path d="M {g["x1"]:.3f} {g["y1"]:.3f} A {g["r"]:.3f} {g["r"]:.3f} 0 0 1 '
+        f'{g["x2"]:.3f} {g["y2"]:.3f}" fill="none" stroke="{accent}" '
+        f'stroke-width="{g["stroke"]:.3f}" stroke-linecap="round"/>'
+    )
     return svg_wrap(ring + chord + dots, bg=bg)
+
+
+RIBBON_A = "M4.6 13.8 C3.4 9.2 5.8 5.7 10.4 5.3 C15.5 4.9 20.8 8.0 23.8 12.2 C20.3 9.9 16.1 7.8 11.8 7.9 C8.0 8.0 6.3 10.2 6.8 13.8 C7.4 18.0 11.8 22.2 17.8 25.4 C12.0 23.8 6.3 19.3 4.6 13.8 Z"
+RIBBON_B = "M20.2 6.2 C24.6 7.5 27.4 11.6 27.1 16.2 C26.8 21.3 22.1 24.3 16.1 25.8 C19.7 23.4 23.3 20.6 24.8 17.2 C26.2 13.9 24.4 9.7 20.2 6.2 Z M17.8 25.4 C15.3 26.0 12.6 25.6 10.4 24.4 C13.0 24.6 15.4 24.0 17.8 22.8 C19.4 22.0 21.1 21.0 22.6 19.8 C21.4 22.4 19.9 24.2 17.8 25.4 Z"
+RIBBON_C = "M6.4 22.8 C9.2 19.6 12.8 17.4 16.8 16.0 C20.0 14.9 23.3 14.6 25.5 15.7 C21.4 15.9 17.6 17.1 14.0 18.8 C10.8 20.3 8.2 21.9 6.4 22.8 Z"
+
+
+def symbol_body(*, mono: str | None = None, small: bool = False) -> str:
+    if mono:
+        return f'<path d="{RIBBON_A}" fill="{mono}"/><path d="{RIBBON_B}" fill="{mono}"/><path d="{RIBBON_C}" fill="{mono}"/>'
+    if small:
+        return (
+            '<g transform="translate(-4,-4) scale(1.25)">'
+            '<path d="M5 14 C3.8 9 6.5 5.5 11 5.3 C16 5.1 21.2 8.1 24 12.2 '
+            'C19.6 9.4 14.3 7.4 10.2 8.5 C6.4 9.6 6.8 14.2 9.2 18 C11.5 21.6 14.8 23.8 18.3 25.5 '
+            'C12.1 24.3 6.4 20 5 14 Z" fill="#b342e8"/>'
+            '<path d="M20.2 6.2 C25 8 27.5 12 27 16.6 C26.4 21.2 22.1 24.5 16.2 25.8 '
+            'C20.1 22.8 23.4 19.9 24.7 16.8 C26 13.5 24.1 9.4 20.2 6.2 Z" fill="#d52eb2"/>'
+            '</g>'
+        )
+    return (
+        '<defs>'
+        '<linearGradient id="qa" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7c4dff"/><stop offset="1" stop-color="#d946ef"/></linearGradient>'
+        '<linearGradient id="qb" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#312e81"/><stop offset="1" stop-color="#c026d3"/></linearGradient>'
+        '<linearGradient id="qc" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#fff1d6"/><stop offset="1" stop-color="#f5c96a"/></linearGradient>'
+        '</defs>'
+        f'<path d="{RIBBON_A}" fill="url(#qa)"/>'
+        f'<path d="{RIBBON_B}" fill="url(#qb)"/>'
+        f'<path d="{RIBBON_C}" fill="url(#qc)"/>'
+    )
+
+
+def symbol_svg(ink: str, accent: str, *, small: bool = False, bg: str | None = None) -> str:
+    del accent
+    mono = ink if ink in {"#111111", "#f4f4f4"} else None
+    return svg_wrap(symbol_body(mono=mono, small=small), bg=bg)
 
 
 def direction_lifted_path() -> str:
@@ -202,44 +241,55 @@ def direction_quotient_lens() -> str:
     return svg_wrap(body)
 
 
-def wordmark_svg(ink: str, width: int = 180, height: int = 32) -> str:
+def wordmark_paths() -> str:
+    # Space Grotesk SemiBold 600 outlines generated once from the upstream
+    # font with SHA-256 acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72.
+    return (
+        '<path d="M6.068251098632812 22.252Q3.7205991210937497 22.252 2.332348022460937 20.947Q0.9440969238281249 19.642 0.9440969238281249 17.196251098632814V14.203748901367188Q0.9440969238281249 11.758000000000001 2.332348022460937 10.453000000000001Q3.7205991210937497 9.148000000000001 6.068251098632812 9.148000000000001Q8.415903076171874 9.148000000000001 9.804154174804687 10.453000000000001Q11.1924052734375 11.758000000000001 11.1924052734375 14.203748901367188V17.196251098632814Q11.1924052734375 19.642 9.804154174804687 20.947Q8.415903076171874 22.252 6.068251098632812 22.252ZM6.068251098632812 20.31698681640625Q7.475845825195312 20.31698681640625 8.25321807861328 19.49259033203125Q9.030590332031249 18.66819384765625 9.030590332031249 17.26195153808594V14.138048461914064Q9.030590332031249 12.73180615234375 8.25321807861328 11.90740966796875Q7.475845825195312 11.083013183593751 6.068251098632812 11.083013183593751Q4.6786563720703125 11.083013183593751 3.8922841186523436 11.90740966796875Q3.1059118652343747 12.73180615234375 3.1059118652343747 14.138048461914064V17.26195153808594Q3.1059118652343747 18.66819384765625 3.8922841186523436 19.49259033203125Q4.6786563720703125 20.31698681640625 6.068251098632812 20.31698681640625ZM6.871052856445312 25.158105712890624Q6.042599121093749 25.158105712890624 5.529821594238281 24.645328186035158Q5.0170440673828125 24.13255065917969 5.0170440673828125 23.268096923828125V22.0H7.116308349609374V22.930145385742186Q7.116308349609374 23.47014538574219 7.620308349609375 23.47014538574219H8.71380615234375V25.158105712890624Z"/>'
+        '<path d="M20.16740087890625 22.252Q18.654048461914062 22.252 17.56279736328125 21.700748901367184Q16.47154626464844 21.149497802734373 15.888121154785157 20.110671813964842Q15.304696044921874 19.07184582519531 15.304696044921874 17.625546264648438V9.4H17.466510986328124V17.684947143554687Q17.466510986328124 18.931440551757813 18.16445812988281 19.62421368408203Q18.8624052734375 20.31698681640625 20.16740087890625 20.31698681640625Q21.472396484375 20.31698681640625 22.17034362792969 19.62421368408203Q22.868290771484375 18.931440551757813 22.868290771484375 17.684947143554687V9.4H25.030105712890624V17.625546264648438Q25.030105712890624 19.07184582519531 24.448255493164062 20.110671813964842Q23.8664052734375 21.149497802734373 22.773579284667967 21.700748901367184Q21.680753295898437 22.252 20.16740087890625 22.252Z"/>'
+        '<path d="M28.565497802734377 22.0 32.019237915039064 9.4H35.793863403320316L39.247603515625 22.0H37.01693835449219L36.263643188476564 19.127207031250002H31.54945812988281L30.79616296386719 22.0ZM32.066510986328126 17.13279296875H35.746590332031246L34.059101318359374 10.752259887695313H33.754Z"/>'
+        '<path d="M45.81509252929688 22.0V11.364713623046876H42.04859912109375V9.4H51.74340087890625V11.364713623046876H47.976907470703125V22.0Z"/>'
+        '<path d="M60.256251098632816 22.252Q57.90859912109375 22.252 56.52034802246094 20.947Q55.13209692382813 19.642 55.13209692382813 17.196251098632814V14.203748901367188Q55.13209692382813 11.758000000000001 56.52034802246094 10.453000000000001Q57.90859912109375 9.148000000000001 60.256251098632816 9.148000000000001Q62.603903076171875 9.148000000000001 63.99215417480469 10.453000000000001Q65.3804052734375 11.758000000000001 65.3804052734375 14.203748901367188V17.196251098632814Q65.3804052734375 19.642 63.99215417480469 20.947Q62.603903076171875 22.252 60.256251098632816 22.252ZM60.256251098632816 20.31698681640625Q61.66384582519532 20.31698681640625 62.44121807861329 19.49259033203125Q63.218590332031255 18.66819384765625 63.218590332031255 17.26195153808594V14.138048461914064Q63.218590332031255 12.73180615234375 62.44121807861329 11.90740966796875Q61.66384582519532 11.083013183593751 60.256251098632816 11.083013183593751Q58.86665637207032 11.083013183593751 58.080284118652344 11.90740966796875Q57.29391186523438 12.73180615234375 57.29391186523438 14.138048461914064V17.26195153808594Q57.29391186523438 18.66819384765625 58.080284118652344 19.49259033203125Q58.86665637207032 20.31698681640625 60.256251098632816 20.31698681640625Z"/>'
+        '<path d="M69.57099560546875 22.0V9.4H74.66365197753908Q75.83905285644532 9.4 76.74490307617188 9.867550659179688Q77.65075329589844 10.335101318359376 78.16532818603517 11.186502197265625Q78.67990307617188 12.037903076171876 78.67990307617188 13.216453735351562V13.462154174804688Q78.67990307617188 14.625854614257813 78.14890307617188 15.486255493164062Q77.61790307617188 16.346656372070314 76.71205285644533 16.812632141113284Q75.80620263671875 17.27860791015625 74.66365197753908 17.27860791015625H71.732810546875V22.0ZM71.732810546875 15.313894287109376H74.44855065917969Q75.38274450683595 15.313894287109376 75.9504163208008 14.811246704101563Q76.51808813476563 14.30859912109375 76.51808813476563 13.429303955078126V13.249303955078126Q76.51808813476563 12.366859008789064 75.95356610107423 11.865786315917969Q75.38904406738283 11.364713623046876 74.44855065917969 11.364713623046876H71.732810546875Z"/>'
+        '<path d="M86.75489868164063 22.252Q85.31579736328126 22.252 84.20924670410157 21.73787445068359Q83.10269604492188 21.223748901367188 82.47584582519532 20.25017401123047Q81.84899560546876 19.27659912109375 81.84899560546876 17.88340087890625V17.40774890136719H83.98111010742188V17.88340087890625Q83.98111010742188 19.124493408203126 84.7350814819336 19.73874011230469Q85.48905285644531 20.35298681640625 86.75489868164063 20.35298681640625Q88.03874450683594 20.35298681640625 88.68426654052735 19.824464782714845Q89.32978857421875 19.29594274902344 89.32978857421875 18.47379736328125Q89.32978857421875 17.910850219726562 89.020189453125 17.56322686767578Q88.71059033203126 17.215603515625 88.12784143066406 16.996004394531248Q87.54509252929688 16.7764052734375 86.72564318847657 16.590105712890626L86.18250219726563 16.465458129882812Q84.9337489013672 16.18060791015625 84.02722247314455 15.745907470703125Q83.12069604492189 15.31120703125 82.63042071533204 14.602231262207031Q82.14014538574219 13.893255493164062 82.14014538574219 12.763303955078126Q82.14014538574219 11.633352416992189 82.68599560546875 10.82537664794922Q83.23184582519532 10.017400878906251 84.21982159423828 9.582700439453127Q85.20779736328126 9.148000000000001 86.53889868164063 9.148000000000001Q87.87 9.148000000000001 88.91355065917969 9.602275329589844Q89.95710131835938 10.056550659179688 90.55695153808594 10.952951538085937Q91.1568017578125 11.849352416992188 91.1568017578125 13.198453735351563V13.792H89.02468725585938V13.198453735351563Q89.02468725585938 12.43120703125 88.71891412353516 11.960284118652345Q88.41314099121094 11.489361206054689 87.85334362792969 11.26818719482422Q87.29354626464844 11.047013183593752 86.53889868164063 11.047013183593752Q85.41795153808594 11.047013183593752 84.84510571289063 11.486660766601563Q84.27225988769531 11.926308349609375 84.27225988769531 12.703903076171876Q84.27225988769531 13.222299560546876 84.53415856933594 13.568348022460938Q84.79605725097657 13.914396484375 85.30883038330079 14.139845825195312Q85.821603515625 14.365295166015626 86.59650219726564 14.536744506835937L87.13964318847657 14.661392089843751Q88.42664758300782 14.939942749023437 89.39572467041016 15.378918518066406Q90.3648017578125 15.817894287109375 90.91335241699218 16.544870056152345Q91.46190307617188 17.271845825195314 91.46190307617188 18.414396484375Q91.46190307617188 19.556947143554687 90.88320263671875 20.418922912597658Q90.30450219726563 21.280898681640625 89.2476762084961 21.766449340820312Q88.19085021972657 22.252 86.75489868164063 22.252Z"/>'
+        '<path d="M98.6215947265625 22.0V17.54860791015625L94.28719824218751 9.4H96.70956384277345L99.54995153808595 14.957489013671875H99.85505285644533L102.69544055175783 9.4H105.11780615234376L100.78340966796875 17.54860791015625V22.0Z"/>'
+    )
+
+
+def wordmark_svg(ink: str, width: int = 108, height: int = 32) -> str:
     return (
         f'<?xml version="1.0" encoding="UTF-8"?>\n'
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'role="img" aria-label="Quatopsy">\n'
-        f'<text x="0" y="22" fill="{ink}" font-family=\'{TOKENS["type"]["ui"]}\' '
-        f'font-size="18" font-weight="650" letter-spacing="0.08em">Quatopsy</text>\n'
+        f'<g fill="{ink}">{wordmark_paths()}</g>\n'
         f"</svg>\n"
     )
 
 
 def lockup_horizontal_svg(ink: str, accent: str, bg: str | None = None) -> str:
     symbol = symbol_svg(ink, accent).split("\n", 2)[-1].rsplit("</svg>", 1)[0]
-    background = f'<rect width="220" height="32" fill="{bg}"/>' if bg else ""
+    background = f'<rect width="156" height="32" fill="{bg}"/>' if bg else ""
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 32" '
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 32" '
         'role="img" aria-label="Quatopsy">\n'
         f"{background}"
         f'<g transform="translate(0,0)">{symbol}</g>'
-        f'<text x="40" y="22" fill="{ink}" font-family=\'{TOKENS["type"]["ui"]}\' '
-        f'font-size="18" font-weight="650" letter-spacing="0.08em">Quatopsy</text>\n'
+        f'<g transform="translate(40,0)" fill="{ink}">{wordmark_paths()}</g>\n'
         "</svg>\n"
     )
 
 
 def lockup_stacked_svg(ink: str, accent: str, bg: str | None = None) -> str:
     symbol = symbol_svg(ink, accent).split("\n", 2)[-1].rsplit("</svg>", 1)[0]
-    background = f'<rect width="96" height="64" fill="{bg}"/>' if bg else ""
+    background = f'<rect width="108" height="64" fill="{bg}"/>' if bg else ""
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" '
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 64" '
         'role="img" aria-label="Quatopsy">\n'
         f"{background}"
-        f'<g transform="translate(32,0) scale(1)">{symbol}</g>'
-        f'<text x="48" y="56" text-anchor="middle" fill="{ink}" '
-        f'font-family=\'{TOKENS["type"]["ui"]}\' font-size="12" font-weight="650" '
-        f'letter-spacing="0.08em">Quatopsy</text>\n'
+        f'<g transform="translate(38,0)">{symbol}</g>'
+        f'<g transform="translate(1,32)" fill="{ink}">{wordmark_paths()}</g>\n'
         "</svg>\n"
     )
 
@@ -402,45 +452,147 @@ def mix(bg: tuple[int, int, int], fg: tuple[int, int, int], a: float) -> tuple[i
     return tuple(int(b * (1 - a) + f * a) for b, f in zip(bg, fg))  # type: ignore[return-value]
 
 
+def inside_polygon(x: float, y: float, points: tuple[tuple[float, float], ...]) -> bool:
+    inside = False
+    previous = points[-1]
+    for current in points:
+        x1, y1 = previous
+        x2, y2 = current
+        if (y1 > y) != (y2 > y):
+            cross = (x2 - x1) * (y - y1) / (y2 - y1) + x1
+            if x < cross:
+                inside = not inside
+        previous = current
+    return inside
+
+
+def flatten_cubic_path(path: str, steps: int = 32) -> tuple[tuple[tuple[float, float], ...], ...]:
+    tokens = re.findall(r"[MCZ]|-?\d+(?:\.\d+)?", path)
+    polygons: list[tuple[tuple[float, float], ...]] = []
+    points: list[tuple[float, float]] = []
+    cursor = (0.0, 0.0)
+    i = 0
+    while i < len(tokens):
+        command = tokens[i]
+        i += 1
+        if command == "M":
+            if points:
+                polygons.append(tuple(points))
+            cursor = (float(tokens[i]), float(tokens[i + 1]))
+            points = [cursor]
+            i += 2
+        elif command == "C":
+            control1 = (float(tokens[i]), float(tokens[i + 1]))
+            control2 = (float(tokens[i + 2]), float(tokens[i + 3]))
+            end = (float(tokens[i + 4]), float(tokens[i + 5]))
+            i += 6
+            start = cursor
+            for step in range(1, steps + 1):
+                t = step / steps
+                u = 1 - t
+                points.append(
+                    (
+                        u**3 * start[0] + 3 * u * u * t * control1[0] + 3 * u * t * t * control2[0] + t**3 * end[0],
+                        u**3 * start[1] + 3 * u * u * t * control1[1] + 3 * u * t * t * control2[1] + t**3 * end[1],
+                    )
+                )
+            cursor = end
+        elif command == "Z":
+            if points:
+                polygons.append(tuple(points))
+                points = []
+        else:
+            raise ValueError(f"unsupported ribbon path token {command}")
+    if points:
+        polygons.append(tuple(points))
+    return tuple(polygons)
+
+
+def flatten_outline_path(path: str, steps: int = 16) -> tuple[tuple[tuple[float, float], ...], ...]:
+    tokens = re.findall(r"[MLHVQCZ]|-?\d+(?:\.\d+)?", path)
+    polygons: list[tuple[tuple[float, float], ...]] = []
+    points: list[tuple[float, float]] = []
+    cursor = (0.0, 0.0)
+    command = ""
+    i = 0
+    while i < len(tokens):
+        if tokens[i] in {"M", "L", "H", "V", "Q", "C", "Z"}:
+            command = tokens[i]
+            i += 1
+            if command == "Z":
+                if points:
+                    polygons.append(tuple(points))
+                    points = []
+                continue
+        if command == "M":
+            if points:
+                polygons.append(tuple(points))
+            cursor = (float(tokens[i]), float(tokens[i + 1]))
+            points = [cursor]
+            i += 2
+            command = "L"
+        elif command == "L":
+            cursor = (float(tokens[i]), float(tokens[i + 1]))
+            points.append(cursor)
+            i += 2
+        elif command == "H":
+            cursor = (float(tokens[i]), cursor[1])
+            points.append(cursor)
+            i += 1
+        elif command == "V":
+            cursor = (cursor[0], float(tokens[i]))
+            points.append(cursor)
+            i += 1
+        elif command in {"Q", "C"}:
+            start = cursor
+            if command == "Q":
+                control = (float(tokens[i]), float(tokens[i + 1]))
+                end = (float(tokens[i + 2]), float(tokens[i + 3]))
+                i += 4
+                for step in range(1, steps + 1):
+                    t = step / steps
+                    u = 1 - t
+                    points.append((u * u * start[0] + 2 * u * t * control[0] + t * t * end[0], u * u * start[1] + 2 * u * t * control[1] + t * t * end[1]))
+            else:
+                control1 = (float(tokens[i]), float(tokens[i + 1]))
+                control2 = (float(tokens[i + 2]), float(tokens[i + 3]))
+                end = (float(tokens[i + 4]), float(tokens[i + 5]))
+                i += 6
+                for step in range(1, steps + 1):
+                    t = step / steps
+                    u = 1 - t
+                    points.append((u**3 * start[0] + 3 * u * u * t * control1[0] + 3 * u * t * t * control2[0] + t**3 * end[0], u**3 * start[1] + 3 * u * u * t * control1[1] + 3 * u * t * t * control2[1] + t**3 * end[1]))
+            cursor = end
+        else:
+            raise ValueError(f"unsupported wordmark path token {tokens[i]}")
+    if points:
+        polygons.append(tuple(points))
+    return tuple(polygons)
+
+
 def raster_symbol(size: int, ink: str, accent: str, bg: str, *, small: bool = False) -> bytes:
-    g = antipodal_geometry(32)
+    del ink, accent
     scale = size / 32.0
     background = hex_rgb(bg)
-    ink_rgb = hex_rgb(ink)
-    accent_rgb = hex_rgb(accent)
+    a0, a1 = hex_rgb("#7c4dff"), hex_rgb("#d946ef")
+    b0, b1 = hex_rgb("#312e81"), hex_rgb("#c026d3")
+    c0, c1 = hex_rgb("#fff1d6"), hex_rgb("#f5c96a")
     pixels = bytearray(size * size * 4)
-    half = g["stroke"] / 2
-    a1 = math.atan2(g["y1"] - g["cy"], g["x1"] - g["cx"])
-    a2 = math.atan2(g["y2"] - g["cy"], g["x2"] - g["cx"])
-    span = (a2 - a1) % (2 * math.pi)
-
-    def plot(x: int, y: int, colour: tuple[int, int, int], alpha: float) -> None:
-        if alpha <= 0 or x < 0 or y < 0 or x >= size or y >= size:
-            return
-        i = (y * size + x) * 4
-        blended = mix((pixels[i], pixels[i + 1], pixels[i + 2]), colour, min(1.0, alpha))
-        pixels[i : i + 3] = bytes(blended)
-        pixels[i + 3] = 255
-
+    shapes = [(flatten_cubic_path(RIBBON_A), a0, a1), (flatten_cubic_path(RIBBON_B), b0, b1)]
+    if not small or size >= 32:
+        shapes.append((flatten_cubic_path(RIBBON_C), c0, c1))
     for y in range(size):
         for x in range(size):
-            i = (y * size + x) * 4
-            pixels[i : i + 3] = bytes(background)
-            pixels[i + 3] = 255
             px, py = (x + 0.5) / scale, (y + 0.5) / scale
-            radial = math.hypot(px - g["cx"], py - g["cy"])
-            d_ring = abs(radial - g["r"])
-            ring_a = coverage(d_ring, 0.55) if d_ring <= half + 0.8 else 0.0
-            on_arc = False
-            if ring_a > 0 and not small:
-                ang = math.atan2(py - g["cy"], px - g["cx"])
-                delta = (ang - a1) % (2 * math.pi)
-                on_arc = delta <= span
-            if ring_a > 0:
-                plot(x, y, accent_rgb if on_arc else ink_rgb, ring_a)
-            for dx, dy in ((g["x1"], g["y1"]), (g["x2"], g["y2"])):
-                d_dot = math.hypot(px - dx, py - dy)
-                plot(x, y, accent_rgb, coverage(d_dot - g["dot"], 0.45))
+            if small:
+                px, py = (px + 4) / 1.25, (py + 4) / 1.25
+            colour = background
+            for polygons, start, end in shapes:
+                if any(inside_polygon(px, py, polygon) for polygon in polygons):
+                    t = max(0.0, min(1.0, (px + py - 8) / 44))
+                    colour = mix(start, end, t)
+            i = (y * size + x) * 4
+            pixels[i : i + 4] = bytes((*colour, 255))
     return bytes(pixels)
 
 
@@ -513,18 +665,46 @@ def raster_lens(size: int) -> bytes:
 def raster_social(width: int, height: int) -> bytes:
     dark = TOKENS["palette"]["dark"]
     bg = hex_rgb(dark["bg"])
+    wordmark_colour = hex_rgb(dark["ink"])
     pixels = bytearray(width * height * 4)
-    mark_size = 280
+    mark_size = 360
     mark = raster_symbol(mark_size, dark["ink"], dark["accent"], dark["bg"])
     for i in range(0, len(pixels), 4):
         pixels[i : i + 3] = bytes(bg)
         pixels[i + 3] = 255
-    ox, oy = (width - mark_size) // 2, (height - mark_size) // 2
+    ox, oy = 84, (height - mark_size) // 2
     for y in range(mark_size):
         for x in range(mark_size):
             s = (y * mark_size + x) * 4
             d = ((oy + y) * width + (ox + x)) * 4
             pixels[d : d + 4] = mark[s : s + 4]
+
+    # Rasterise the canonical outlined wordmark rather than depending on an
+    # installed font. Even-odd filling preserves counters such as Q, A and O.
+    glyphs = [
+        flatten_outline_path(path)
+        for path in re.findall(r'd="([^"]+)"', wordmark_paths())
+    ]
+    word_scale = 5.55
+    word_x = 520.0
+    word_y = 226.0
+    x0, x1 = int(word_x), min(width, int(word_x + 106 * word_scale + 1))
+    y0, y1 = int(word_y + 8 * word_scale), min(height, int(word_y + 26 * word_scale + 1))
+    samples = ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            covered = 0
+            for dx, dy in samples:
+                sx = (x + dx - word_x) / word_scale
+                sy = (y + dy - word_y) / word_scale
+                if any(
+                    sum(inside_polygon(sx, sy, contour) for contour in glyph) % 2
+                    for glyph in glyphs
+                ):
+                    covered += 1
+            if covered:
+                i = (y * width + x) * 4
+                pixels[i : i + 3] = bytes(mix(bg, wordmark_colour, covered / len(samples)))
     return bytes(pixels)
 
 
@@ -546,16 +726,9 @@ def simulate(rgb: tuple[int, int, int], mode: str) -> tuple[int, int, int]:
     return tuple(max(0, min(255, int(v * 255))) for v in out)  # type: ignore[return-value]
 
 
-def simulation_strip() -> bytes:
-    dark = TOKENS["palette"]["dark"]
+def simulation_strip(colours: list[tuple[int, int, int]]) -> bytes:
     width, height = 240, 48
     pixels = bytearray(width * height * 4)
-    colours = [
-        hex_rgb(dark["pass"]),
-        hex_rgb(dark["findings"]),
-        hex_rgb(dark["refused"]),
-        hex_rgb(dark["error"]),
-    ]
     modes = ["protan", "deutan", "tritan", "gray"]
     for row, mode in enumerate(modes):
         for col, colour in enumerate(colours):
@@ -579,7 +752,18 @@ def svg_is_safe(text: str) -> list[str]:
     svg_namespace = "{http://www.w3.org/2000/svg}"
     if root.tag != f"{svg_namespace}svg":
         errors.append("root element is not SVG")
-    forbidden_elements = {"script", "foreignObject", "iframe", "audio", "video"}
+    forbidden_elements = {
+        "script",
+        "style",
+        "foreignObject",
+        "iframe",
+        "audio",
+        "video",
+        "animate",
+        "animateMotion",
+        "animateTransform",
+        "set",
+    }
     for element in root.iter():
         local_tag = element.tag.rsplit("}", 1)[-1]
         if local_tag in forbidden_elements:
@@ -591,7 +775,7 @@ def svg_is_safe(text: str) -> list[str]:
                 errors.append(f"unsafe SVG event attribute {name}")
             if name in {"href", "src"}:
                 errors.append(f"SVG resource reference {name} is forbidden")
-            if "url(" in value or "javascript:" in value or "data:" in value:
+            if ("url(" in value and not re.fullmatch(r"url\(#[a-z0-9_-]+\)", value)) or "javascript:" in value or "data:" in value:
                 errors.append(f"unsafe SVG attribute value in {name}")
     return errors
 
@@ -642,9 +826,10 @@ def tree() -> dict[str, bytes]:
     put("source/directions/lifted-path.svg", direction_lifted_path())
     put(
         "source/directions/antipodal-paired-point.svg",
-        symbol_svg(dark["ink"], dark["accent"], bg=dark["bg"]),
+        antipodal_direction_svg(dark["ink"], dark["accent"], bg=dark["bg"]),
     )
     put("source/directions/quotient-lens.svg", direction_quotient_lens())
+    put("source/directions/woven-lift.svg", symbol_svg(dark["ink"], dark["accent"], bg=dark["bg"]))
     put("source/icons/result-pass.svg", result_icon_svg("pass", dark["pass"]))
     put("source/icons/result-findings.svg", result_icon_svg("findings", dark["findings"]))
     put("source/icons/result-refused.svg", result_icon_svg("refused", dark["refused"]))
@@ -664,8 +849,23 @@ def tree() -> dict[str, bytes]:
         "LICENSES/README.md",
         (
             "Original Quatopsy marks, tokens, diagrams, and rasters are Apache-2.0.\n"
-            "Typography uses the system UI and monospace stacks. IBM Plex Sans and "
-            "IBM Plex Mono are recommended open fonts and are not redistributed here.\n"
+            "The canonical wordmark contains Space Grotesk SemiBold outlines generated from "
+            "upstream font SHA-256 acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72. "
+            "No font binary is redistributed. See SPACE_GROTESK.md for provenance and OFL terms.\n"
+            "UI typography uses system stacks; IBM Plex Mono remains the recommended open monospace.\n"
+        ),
+    )
+    put(
+        "LICENSES/SPACE_GROTESK.md",
+        (
+            "# Space Grotesk provenance\n\n"
+            "The canonical Quatopsy wordmark was outlined from Space Grotesk SemiBold 600. "
+            "The font binary is not redistributed.\n\n"
+            "Upstream: https://github.com/floriankarsten/space-grotesk\n\n"
+            "Source font SHA-256: `acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72`\n\n"
+            "Upstream licence: SIL Open Font License 1.1. The OFL permits documents created "
+            "using the font to use another licence; the generated outline paths are distributed "
+            "with the original Quatopsy artwork under Apache-2.0.\n"
         ),
     )
 
@@ -680,7 +880,24 @@ def tree() -> dict[str, bytes]:
         pixels = raster_symbol(size, dark["ink"], dark["accent"], dark["bg"], small=small)
         put(rel, encode_png(size, size, pixels))
     put("exports/social-og-1200x630.png", encode_png(1200, 630, raster_social(1200, 630)))
-    put("exports/simulations/result-cvd.png", encode_png(240, 48, simulation_strip()))
+    put(
+        "exports/simulations/result-cvd.png",
+        encode_png(
+            240,
+            48,
+            simulation_strip(
+                [hex_rgb(dark["pass"]), hex_rgb(dark["findings"]), hex_rgb(dark["refused"]), hex_rgb(dark["error"])]
+            ),
+        ),
+    )
+    put(
+        "exports/simulations/brand-cvd.png",
+        encode_png(
+            240,
+            48,
+            simulation_strip([hex_rgb("#7c4dff"), hex_rgb("#d946ef"), hex_rgb("#c026d3"), hex_rgb("#f5c96a")]),
+        ),
+    )
     put("exports/study-lifted-path.png", encode_png(512, 512, raster_lifted(512)))
     put("exports/study-quotient-lens.png", encode_png(512, 512, raster_lens(512)))
     return files
@@ -720,7 +937,7 @@ def manifest_for(files: dict[str, bytes]) -> bytes:
     doc = {
         "schema": "quatopsy.brand-manifest/1",
         "brand_version": BRAND_VERSION,
-        "direction": "antipodal-paired-point",
+        "direction": "woven-lift",
         "entries": entries,
     }
     return (json.dumps(doc, indent=2) + "\n").encode("utf-8")
@@ -783,6 +1000,7 @@ def check() -> int:
         '<svg xmlns="http://www.w3.org/2000/svg"><path onmouseover="x()"/></svg>',
         '<svg xmlns="http://www.w3.org/2000/svg"><image href="payload.png"/></svg>',
         '<svg xmlns="http://www.w3.org/2000/svg"><path style="fill:url(https://example.invalid/x)"/></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(https://example.invalid/x)</style></svg>',
     )
     for attack in svg_attack_cases:
         if not svg_is_safe('<?xml version="1.0"?>' + attack):
@@ -793,11 +1011,15 @@ def check() -> int:
         ("dark ink", dark["ink"], dark["bg"]),
         ("dark muted", dark["muted"], dark["bg"]),
         ("dark accent", dark["accent"], dark["bg"]),
+        ("dark secondary accent", dark["accent_secondary"], dark["bg"]),
+        ("dark inspection", dark["inspection"], dark["bg"]),
         ("dark pass", dark["pass"], dark["bg"]),
         ("dark findings", dark["findings"], dark["bg"]),
         ("dark refused", dark["refused"], dark["bg"]),
         ("light ink", light["ink"], light["bg"]),
         ("light accent", light["accent"], light["bg"]),
+        ("light secondary accent", light["accent_secondary"], light["bg"]),
+        ("light inspection", light["inspection"], light["bg"]),
         ("light findings", light["findings"], light["bg"]),
     ):
         ratio = contrast_ratio(fg, bg)
@@ -816,12 +1038,21 @@ def check() -> int:
     viewer_html = (ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
     if 'aria-label="Quatopsy"' not in viewer_html:
         errors.append("viewer mark missing accessible name")
+    if f'data-brand-version="{BRAND_VERSION}"' not in viewer_html:
+        errors.append("viewer mark missing canonical brand version")
+    if RIBBON_A not in viewer_html or RIBBON_B not in viewer_html or RIBBON_C not in viewer_html:
+        errors.append("viewer mark geometry drifted from canonical ribbon paths")
     if "<script" in viewer_html.lower() and "viewer.js" not in viewer_html:
         errors.append("unexpected viewer script")
     if TAGLINE not in (ROOT / "crates" / "quatopsy-cli" / "src" / "main.rs").read_text(
         encoding="utf-8"
     ):
         errors.append("CLI about text missing tagline")
+    wordmark = expected["source/quatopsy-wordmark.svg"]
+    if b"<text" in wordmark or b"font-family" in wordmark:
+        errors.append("canonical wordmark must contain outlines, not live font text")
+    if manifest.get("brand_version") != BRAND_VERSION or manifest.get("direction") != "woven-lift":
+        errors.append("brand manifest identity metadata is stale")
     if errors:
         print("brandkit check failed:", file=sys.stderr)
         for item in errors:

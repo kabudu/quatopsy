@@ -144,7 +144,10 @@ fn viewer_assets_meet_keyboard_contrast_and_text_state_requirements() {
     let css = fs::read_to_string(root.join("viewer/viewer.css")).unwrap();
     let js = fs::read_to_string(root.join("viewer/viewer.js")).unwrap();
     assert!(html.contains("aria-label=\"Quatopsy\""));
+    assert!(html.contains("data-brand-version=\"quatopsy.brand/2\""));
     assert!(html.contains("See where rotations go wrong."));
+    assert!(html.contains("brand-ribbon-a"));
+    assert!(html.contains("#7c4dff") && html.contains("#d946ef"));
     assert!(html.contains("viewBox=\"0 0 32 32\""));
     assert!(html.contains("aria-live=\"polite\""));
     assert!(html.contains("role=\"status\""));
@@ -165,9 +168,9 @@ fn viewer_assets_meet_keyboard_contrast_and_text_state_requirements() {
     assert!(!js.contains("alert("));
     assert!(!js.contains("confirm("));
     assert!(!js.contains("prompt("));
-    assert!(contrast(0xee, 0xf4, 0xf6, 0x05, 0x08, 0x0b) >= 4.5);
-    assert!(contrast(0xff, 0x77, 0x70, 0x05, 0x08, 0x0b) >= 4.5);
-    assert!(contrast(0x9b, 0xab, 0xb4, 0x05, 0x08, 0x0b) >= 4.5);
+    assert!(contrast(0xff, 0xf1, 0xd6, 0x09, 0x07, 0x0d) >= 4.5);
+    assert!(contrast(0xff, 0x77, 0x70, 0x09, 0x07, 0x0d) >= 4.5);
+    assert!(contrast(0xb9, 0xae, 0xbf, 0x09, 0x07, 0x0d) >= 4.5);
 }
 
 fn lin(channel: u8) -> f64 {
