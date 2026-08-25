@@ -12,7 +12,7 @@ Required fields: `schema`, `component_order`, `rotation_sense`, `frame_from`, `f
 
 Unknown fields are refused. Supported `rotation_sense` is `active` and `time_unit` is `s`. Boundary rates must be rest-to-rest. Inertia is `spherical`, `diagonal`, or a symmetric positive-definite `tensor` with products of inertia. `torque_limit_nm` is a positive scalar or a three-component box. Objective is `minimum-time` or a `weighted` object with non-negative `minimum_time`, `control_effort`, `energy_proxy`, `pointing`, `smoothness`, and `momentum` weights. Zero-angle and near-pi geodesics are refused.
 
-Actuators may declare reaction wheels (axis, torque, momentum, optional power), torque thrusters, and a four-CMG pyramid. Keep-out zones are body-axis versus inertial-axis cones. A campaign requests a bounded open-loop perturbation study. `solver` may force `eigenaxis-bang-coast-bang` or `multiple-shooting`. The alias `scvx-collocation` selects the same bounded shooting path; it does not run sequential convexification.
+Actuators may declare reaction wheels (axis, torque, momentum, optional power), torque thrusters, and a four-CMG pyramid. Keep-out zones are body-axis versus inertial-axis cones. A campaign requests a bounded open-loop perturbation study. `solver` may force `eigenaxis-bang-coast-bang` or `direct-shooting`; the legacy inputs `multiple-shooting` and `scvx-collocation` select the same bounded direct-shooting path and are retained only for input compatibility.
 
 ## Plan document
 
@@ -22,7 +22,7 @@ Actuators may declare reaction wheels (axis, torque, momentum, optional power), 
 
 `eigenaxis-bang-coast-bang` version `1` is used for minimum-time rest-to-rest problems without actuators, keep-out, or weighted trade-offs. It rotates about the shortest-path eigenaxis.
 
-`multiple-shooting-lm` version `1` is used when actuators, keep-out zones, weighted objectives, or `solver: multiple-shooting` / `scvx-collocation` are declared. Decision variables are duration and piecewise controls. Attitude is reconstructed with the SO(3) exponential map; quaternion components are never decision variables. Convergence is bounded by a compiled iteration cap. A locally converged candidate is not globally optimal. This is not a collocation transcription and not sequential convexification.
+`direct-shooting-lm` version `1` is used when actuators, keep-out zones, weighted objectives, or a numerical solver is declared. Decision variables are duration and piecewise controls. Attitude is reconstructed with the SO(3) exponential map; quaternion components are never decision variables. Convergence is bounded by compiled iteration, decision, duration, and sample caps. A locally converged candidate is not globally optimal. This is not multiple shooting, a collocation transcription, or sequential convexification.
 
 The kernel manifest declares quaternion and angular-velocity columns; torque and optional momentum columns are present for the oracle and ignored by analysis. `sample_count` is a lower bound; density is raised when needed so interval kinematics stay within the kernel omega tolerance.
 

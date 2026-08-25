@@ -19,12 +19,13 @@ use quatopsy_schema::{
 use scvx::{CollocationPath, SOLVER_NODES, SolverProblem, Weights, sample_seed, solve};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::sync::atomic::AtomicBool;
 use thiserror::Error;
 
 const PROBLEM_SCHEMA: &str = "quatopsy.plan-problem/1";
 const PLAN_SCHEMA: &str = "quatopsy.plan/1";
 const BANG_ALGORITHM: &str = "eigenaxis-bang-coast-bang";
-const SCVX_ALGORITHM: &str = "multiple-shooting-lm";
+const SCVX_ALGORITHM: &str = "direct-shooting-lm";
 const ALGORITHM_VERSION: &str = "1";
 const MAX_SAMPLES: u64 = 100_000;
 const MIN_SAMPLES: u64 = 3;
@@ -239,7 +240,11 @@ impl Objective {
 #[serde(rename_all = "kebab-case")]
 enum SolverName {
     EigenaxisBangCoastBang,
-    #[serde(alias = "scvx-collocation")]
+    #[serde(
+        rename = "direct-shooting",
+        alias = "multiple-shooting",
+        alias = "scvx-collocation"
+    )]
     MultipleShooting,
 }
 
@@ -379,6 +384,14 @@ impl Profile {
 }
 
 pub fn plan(problem_bytes: &[u8], version: &str) -> Result<PlanOutput, PlanError> {
+    plan_cancelled(problem_bytes, version, None)
+}
+
+pub fn plan_cancelled(
+    problem_bytes: &[u8],
+    version: &str,
+    cancelled: Option<&AtomicBool>,
+) -> Result<PlanOutput, PlanError> {
     let problem: ProblemDocument = serde_json::from_slice(problem_bytes)
         .map_err(|err| PlanError::Refused(format!("plan problem parse failed: {err}")))?;
     if problem.schema != PROBLEM_SCHEMA {
@@ -458,6 +471,7 @@ pub fn plan(problem_bytes: &[u8], version: &str) -> Result<PlanOutput, PlanError
             profile.duration,
             &seed_omega,
             &seed_tau,
+            cancelled,
         )?;
         let (times, quats, omegas, torques, momenta) = scvx::densify(
             &SolverProblem {
@@ -568,6 +582,7 @@ pub fn plan(problem_bytes: &[u8], version: &str) -> Result<PlanOutput, PlanError
                 &path,
                 qf,
                 &keep_out,
+                &actuators,
             )?)
         }
         None => None,
@@ -758,6 +773,7 @@ fn rows_to_path(rows: &[Row], duration: f64) -> Result<CollocationPath, PlanErro
         }
     }
     Ok(CollocationPath {
+        wheel_momenta: vec![vec![]; times.len()],
         times,
         quats,
         omegas,
@@ -953,6 +969,7 @@ pub fn example_problem_bytes() -> Vec<u8> {
 mod tests {
     use super::*;
     use quatopsy_oracle::plan_residuals;
+    use std::sync::atomic::AtomicBool;
 
     #[test]
     fn plan_document_has_no_result_field() {
@@ -1137,7 +1154,7 @@ mod tests {
         value["sample_count"] = serde_json::json!(64);
         let out = plan(&serde_json::to_vec(&value).unwrap(), "0.1.0").unwrap();
         let doc: serde_json::Value = serde_json::from_str(&out.plan).unwrap();
-        assert_eq!(doc["algorithm"], "multiple-shooting-lm");
+        assert_eq!(doc["algorithm"], "direct-shooting-lm");
         assert!(doc.get("result").is_none());
         assert!(out.csv.contains("hx"));
     }
@@ -1157,7 +1174,7 @@ mod tests {
         value["sample_count"] = serde_json::json!(64);
         let out = plan(&serde_json::to_vec(&value).unwrap(), "0.1.0").unwrap();
         let doc: serde_json::Value = serde_json::from_str(&out.plan).unwrap();
-        assert_eq!(doc["algorithm"], "multiple-shooting-lm");
+        assert_eq!(doc["algorithm"], "direct-shooting-lm");
         assert!(doc.get("result").is_none());
     }
 
@@ -1181,7 +1198,7 @@ mod tests {
         match result {
             Ok(out) => {
                 let doc: serde_json::Value = serde_json::from_str(&out.plan).unwrap();
-                assert_eq!(doc["algorithm"], "multiple-shooting-lm");
+                assert_eq!(doc["algorithm"], "direct-shooting-lm");
                 assert!(doc["residuals"]["max_keep_out_violation"].as_f64().unwrap() <= 1e-3);
             }
             Err(PlanError::Infeasible(_)) => {}
@@ -1190,7 +1207,7 @@ mod tests {
     }
 
     #[test]
-    fn weighted_control_effort_uses_multiple_shooting() {
+    fn weighted_control_effort_uses_direct_shooting() {
         let mut value: serde_json::Value =
             serde_json::from_slice(&example_problem_bytes()).unwrap();
         value["objective"] = serde_json::json!({
@@ -1201,19 +1218,50 @@ mod tests {
         value["sample_count"] = serde_json::json!(64);
         let out = plan(&serde_json::to_vec(&value).unwrap(), "0.1.0").unwrap();
         let doc: serde_json::Value = serde_json::from_str(&out.plan).unwrap();
-        assert_eq!(doc["algorithm"], "multiple-shooting-lm");
+        assert_eq!(doc["algorithm"], "direct-shooting-lm");
         assert_eq!(doc["optimality_class"], "not-claimed");
     }
 
     #[test]
-    fn solver_scvx_collocation_alias_selects_multiple_shooting() {
+    fn pointing_weight_changes_the_direct_shooting_candidate() {
+        let mut low: serde_json::Value = serde_json::from_slice(&example_problem_bytes()).unwrap();
+        low["objective"] = serde_json::json!({
+            "kind":"weighted", "minimum_time":1.0, "pointing":0.01
+        });
+        low["sample_count"] = serde_json::json!(64);
+        let mut high = low.clone();
+        high["objective"]["pointing"] = serde_json::json!(100.0);
+        let low_out = plan(&serde_json::to_vec(&low).unwrap(), "0.1.0").unwrap();
+        let high_out = plan(&serde_json::to_vec(&high).unwrap(), "0.1.0").unwrap();
+        assert_ne!(low_out.csv, high_out.csv);
+    }
+
+    #[test]
+    fn direct_shooting_observes_cancellation() {
+        let mut value: serde_json::Value =
+            serde_json::from_slice(&example_problem_bytes()).unwrap();
+        value["objective"] = serde_json::json!({
+            "kind":"weighted", "minimum_time":1.0, "control_effort":0.1
+        });
+        let cancelled = AtomicBool::new(true);
+        let err = plan_cancelled(
+            &serde_json::to_vec(&value).unwrap(),
+            "0.1.0",
+            Some(&cancelled),
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("cancelled"));
+    }
+
+    #[test]
+    fn legacy_scvx_collocation_alias_selects_direct_shooting() {
         let mut value: serde_json::Value =
             serde_json::from_slice(&example_problem_bytes()).unwrap();
         value["solver"] = serde_json::json!("scvx-collocation");
         value["sample_count"] = serde_json::json!(64);
         let out = plan(&serde_json::to_vec(&value).unwrap(), "0.1.0").unwrap();
         let doc: serde_json::Value = serde_json::from_str(&out.plan).unwrap();
-        assert_eq!(doc["algorithm"], "multiple-shooting-lm");
+        assert_eq!(doc["algorithm"], "direct-shooting-lm");
     }
 
     #[test]
@@ -1250,7 +1298,7 @@ mod tests {
         match result {
             Ok(out) => {
                 let doc: serde_json::Value = serde_json::from_str(&out.plan).unwrap();
-                assert_eq!(doc["algorithm"], "multiple-shooting-lm");
+                assert_eq!(doc["algorithm"], "direct-shooting-lm");
             }
             Err(PlanError::Infeasible(_)) => {}
             Err(other) => panic!("unexpected {other}"),

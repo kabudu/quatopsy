@@ -86,9 +86,9 @@ Exit: local CI plus the named fixtures and CLI tests.
 - [x] Replace same-crate residual checks with an independent dynamics oracle and mutation coverage.
 - [x] Emit body-rate columns and prove Euler residuals, including switch intervals, against `Jω̇ + ω × Jω = τ`.
 - [x] Add wheels, thrusters, CMGs, keep-out zones, and a general inertia tensor.
-- [x] Add weighted objectives beyond minimum-time rest-to-rest.
-- [x] Add a bounded collocation, multiple-shooting, or sequential-convexification solver.
-- [x] Add simulation campaigns under model uncertainty and actuator saturation.
+- [x] Add weighted objectives beyond minimum-time rest-to-rest, with behavioural weight-sensitivity evidence.
+- [x] Add a bounded nonlinear direct-shooting solver with explicit iteration, decision, duration, and sample limits.
+- [x] Add simulation campaigns under model uncertainty and declared per-actuator saturation.
 
 Exit: local CI plus the spherical rest-to-rest fixture. Open boxes are not shipped.
 
@@ -99,7 +99,7 @@ Exit: local CI plus the spherical rest-to-rest fixture. Open boxes are not shipp
 - [x] Enforce estimator contracts for frame, timestamp, covariance, and freshness.
 - [x] Add saturation, anti-windup, momentum dump, mode transitions, arbitration, and safe fallback.
 - [x] Inhibit commands with an independent oracle monitor outside the PD law.
-- [x] Run deterministic SIL campaigns under noise, delay, inertia error, disturbance, actuator failure, and numerical faults.
+- [x] Run deterministic SIL campaigns and emit reproducible canonical artifacts under noise, delay, inertia error, disturbance, actuator failure, and numerical faults.
 - [x] Refuse hard real-time and physical actuator command. Hardware use remains fail-closed without a qualification record.
 - [x] Processor-in-the-loop with an isolated controller process on the host CPU. Target flight processors are not claimed.
 - [x] Hardware-in-the-loop command bus against a loopback actuator emulator. Physical actuators are refused.
@@ -112,13 +112,13 @@ Exit: local CI plus the SO(3) rest-to-rest SIL, PIL, loopback HIL, and declared-
 
 This milestone is a software navigation, guidance, and control plane. It does not solve space navigation, qualify hardware, or produce a certification artefact.
 
-- [x] Replace the measurement pass-through with a 6-state MEKF (attitude error plus gyro bias), asynchronous star/gyro ingest, χ² outlier rejection, and NIS/NEES audit output.
+- [x] Replace the measurement pass-through with a 6-state MEKF (attitude error plus gyro bias), timestamp-safe star/gyro ingest, χ² outlier rejection, and per-update NIS/NEES audit output.
 - [x] Add a UKF on the same error-state and measurement model, selected by `navigation.filter`.
-- [x] Add `quatopsy-guidance` time-tagged `(t, q, ω, α)` profiles, including optional plan-CSV ingest, keep-out, named sun-pointing, and terminal rest.
+- [x] Add bounded `quatopsy-guidance` time-tagged `(t, q, ω, α)` profiles, including optional plan-CSV ingest, keep-out, named sun-pointing, and an enforced terminal-rest contract.
 - [x] Track time-varying guidance references in geometric PD (nonzero `ω_d`/`α_d`) with optional gain scheduling.
 - [x] Add control-side reaction-wheel allocation (3-axis or 4-wheel pyramid) with per-wheel limits and an independent allocation residual.
 - [x] Add a declared two-body geometry source for LVLH/nadir, sun, eclipse, and dipole `B(t)`. This is not orbit determination.
-- [x] Record a sequential deterministic cycle partition with software phase durations. `hard-real-time` remains refused.
+- [x] Record a sequential deterministic cycle partition; keep nondeterministic software timing telemetry outside canonical artifacts. `hard-real-time` remains refused.
 - [ ] Physical 6-DOF hardware-in-the-loop, real star-tracker/gyro drivers, and actuator I/O.
 - [ ] CMG gimbal-rate allocation.
 - [ ] Target-processor qualification, WCET per phase, and a flight telemetry/command security bus.

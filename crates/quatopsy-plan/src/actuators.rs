@@ -221,19 +221,27 @@ impl ActuatorMap {
         Ok(tau)
     }
 
-    pub(crate) fn wheel_h_dot(&self, u: &[f64]) -> [f64; 3] {
-        let mut hdot = [0.0; 3];
-        for (wheel, &ui) in self.wheels.iter().zip(u.iter()) {
-            hdot = add3(hdot, scale3(wheel.axis, ui));
-        }
-        hdot
+    pub(crate) fn wheel_momentum_rates(&self, u: &[f64]) -> Vec<f64> {
+        self.wheels
+            .iter()
+            .enumerate()
+            .map(|(index, _)| u.get(index).copied().unwrap_or(0.0))
+            .collect()
     }
 
-    pub(crate) fn momentum_excess(&self, h: [f64; 3]) -> f64 {
+    pub(crate) fn body_momentum(&self, wheel_momenta: &[f64]) -> [f64; 3] {
+        self.wheels
+            .iter()
+            .zip(wheel_momenta)
+            .fold([0.0; 3], |sum, (wheel, momentum)| {
+                add3(sum, scale3(wheel.axis, *momentum))
+            })
+    }
+
+    pub(crate) fn momentum_excess(&self, wheel_momenta: &[f64]) -> f64 {
         let mut excess = 0.0_f64;
-        for wheel in &self.wheels {
-            let hi = h[0] * wheel.axis[0] + h[1] * wheel.axis[1] + h[2] * wheel.axis[2];
-            excess = excess.max(hi.abs() - wheel.max_momentum_nms);
+        for (wheel, momentum) in self.wheels.iter().zip(wheel_momenta) {
+            excess = excess.max(momentum.abs() - wheel.max_momentum_nms);
         }
         excess
     }
@@ -421,4 +429,30 @@ pub(crate) fn body_euler_torque(
     let w_dot = scale3(axis, alpha);
     let w = scale3(axis, omega);
     euler_lhs(inertia, w_dot, w, h)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn redundant_wheel_nullspace_momentum_is_not_lost() {
+        let s = 1.0 / 3.0_f64.sqrt();
+        let map = ActuatorMap {
+            wheels: vec![[s, s, s], [s, -s, -s], [-s, s, -s], [-s, -s, s]]
+                .into_iter()
+                .map(|axis| PreparedWheel {
+                    axis,
+                    max_torque_nm: 1.0,
+                    max_momentum_nms: 1.0,
+                    max_power_w: None,
+                })
+                .collect(),
+            thrusters: vec![],
+            cmgs: None,
+        };
+        let individual = vec![2.0; 4];
+        assert!(crate::geom::norm3(map.body_momentum(&individual)) < 1.0e-12);
+        assert!((map.momentum_excess(&individual) - 1.0).abs() < 1.0e-12);
+    }
 }
