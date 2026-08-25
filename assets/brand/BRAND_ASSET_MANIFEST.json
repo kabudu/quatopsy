@@ -190,7 +190,7 @@
     },
     {
       "path": "source/icons/result-error.svg",
-      "sha256": "e7879d3ec6677bbaf6a96d6a0714341d2e80ef38d444f75ef1d4053e81006174",
+      "sha256": "96a53d76439ec84b07430a8b8dacc93ea5513fe2382f8a8e2bfc399c2a488245",
       "bytes": 392,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -200,7 +200,7 @@
     },
     {
       "path": "source/icons/result-findings.svg",
-      "sha256": "89b0ab83207133e86205d757736c9336ef8a2cfae81c064735160bd3c2434974",
+      "sha256": "ef3140f48163533994427493fcbef09a08657785f3930eadc1aaeb86004ee8c1",
       "bytes": 398,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -210,7 +210,7 @@
     },
     {
       "path": "source/icons/result-pass.svg",
-      "sha256": "6db9b75abc73d766f59f9f478ea0309b1b527f771f673f6a7519f6cbc862b183",
+      "sha256": "3a805a7d1492062aaf44a0009182e87575fa70f9b7c8452d15a690c7aa35c234",
       "bytes": 481,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -220,7 +220,7 @@
     },
     {
       "path": "source/icons/result-refused.svg",
-      "sha256": "e814715a348c27cbbab28f675daedc50ccf272fbd917573a8d6623ab38b15d44",
+      "sha256": "bb272ada68122d4667b178d2bcfd6ebfb206d46980ba4f2f4a00ffd354e1c4b8",
       "bytes": 385,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -230,7 +230,7 @@
     },
     {
       "path": "source/quatopsy-lockup-horizontal-mono.svg",
-      "sha256": "d3e26583c9e010b784d061c41817d54d65920d7daf35b19ce2e863bbf228f2a4",
+      "sha256": "91ef4188be8ae509a2d088a2f690e8520c1f2cf9bfa5a2a52d6c9da75320b8d5",
       "bytes": 674,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -240,7 +240,7 @@
     },
     {
       "path": "source/quatopsy-lockup-horizontal-reversed.svg",
-      "sha256": "48c56fa5f25a59eb4bcca59b314338096142180addc8ccb247b72f2870a24f8b",
+      "sha256": "8099e83080efa98f5f30a048e30836790ab40f4c3eb1cbce30c70a86d8e7cd8e",
       "bytes": 720,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -250,7 +250,7 @@
     },
     {
       "path": "source/quatopsy-lockup-horizontal.svg",
-      "sha256": "14a9895247bb28220b6de9bdc276f898e8e4e9cd494aae53f3ffa5ed883e7045",
+      "sha256": "a91bd1bef42dfd18f8f91cd4ef53aec8c794a5b0ad4dd9659099b491e96da7aa",
       "bytes": 674,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -260,7 +260,7 @@
     },
     {
       "path": "source/quatopsy-lockup-light.svg",
-      "sha256": "3b9a2a3e5fdf676ba18672bbae2b00c2ebf68711e96ed7a06a56b9cec8fc918b",
+      "sha256": "49961e4ea95ee9912e4230559d49bb7bae0942e61572f519fb9d1538b6bf5eef",
       "bytes": 674,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -270,7 +270,7 @@
     },
     {
       "path": "source/quatopsy-lockup-stacked.svg",
-      "sha256": "c0f064b85723af8a21b5e8158842938e8c480c739dca487d5b28339674e4a260",
+      "sha256": "f16b21ae14b92a9b98fde24ecc153ff0c66279b1aa24a7dbcce31dcb5276ac33",
       "bytes": 704,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -320,7 +320,7 @@
     },
     {
       "path": "source/quatopsy-wordmark.svg",
-      "sha256": "85b0d52c86215a14797a4ebeab8dec94313ab957ebd142bfc10e81e1a3517a76",
+      "sha256": "861578aef8263e81d666496a43bb9503180359d520b4402411461d406199499a",
       "bytes": 296,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -330,7 +330,7 @@
     },
     {
       "path": "templates/chart-states.svg",
-      "sha256": "196ad916938a3cd887c028bbdfcc6ba1c1c6acae6017c56271c14c77d43ec15c",
+      "sha256": "c02ccf5f4c706cb48a7c2b22f8857476c6ec269b635cfbb340e1c6bc0c1b9c7c",
       "bytes": 1000,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -340,7 +340,7 @@
     },
     {
       "path": "templates/diagram-workflow.svg",
-      "sha256": "b77646bbb80cdec13f8158e28f564e45b63c77b4d257fb0405fd0c99cd070a55",
+      "sha256": "91a09fb777a3dab92eec2d81987bd0ff8fa9bf7164b57f574a38d9fcf016a0e6",
       "bytes": 1268,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -350,7 +350,7 @@
     },
     {
       "path": "templates/overlay-private-research.svg",
-      "sha256": "1bb21382eeda06401df583718739f7c79f5a808727d929401a185f763e7e8d60",
+      "sha256": "d37d7b9c7222af3d09c2682e7e8c43730f995faf428a516cece909e12aeaa50b",
       "bytes": 355,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -360,7 +360,7 @@
     },
     {
       "path": "templates/release-lockup.svg",
-      "sha256": "f963cbfd6e497211c949f62f75de517bbbf04bd269d7511a737a3149aacb8363",
+      "sha256": "0df0b1cd67b1961f78d57aeb8d1e7dfdedd7e9b082b149d76da73b6664acf2d9",
       "bytes": 720,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -370,8 +370,8 @@
     },
     {
       "path": "tokens/tokens.css",
-      "sha256": "6f5856b5bcb2d751df9fb7c19cf3c5d1f20503209cfe7a2a99c4c40d3c760e32",
-      "bytes": 860,
+      "sha256": "fe93d6940bf2227489519f90ce9681258ddb3a87ef947cc3d21decd0e03f1209",
+      "bytes": 1066,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",

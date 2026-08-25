@@ -15,6 +15,7 @@ import struct
 import sys
 import zlib
 from pathlib import Path
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 BRAND = ROOT / "assets" / "brand"
@@ -206,7 +207,7 @@ def wordmark_svg(ink: str, width: int = 180, height: int = 32) -> str:
         f'<?xml version="1.0" encoding="UTF-8"?>\n'
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'role="img" aria-label="Quatopsy">\n'
-        f'<text x="0" y="22" fill="{ink}" font-family="{TOKENS["type"]["ui"]}" '
+        f'<text x="0" y="22" fill="{ink}" font-family=\'{TOKENS["type"]["ui"]}\' '
         f'font-size="18" font-weight="650" letter-spacing="0.08em">Quatopsy</text>\n'
         f"</svg>\n"
     )
@@ -221,7 +222,7 @@ def lockup_horizontal_svg(ink: str, accent: str, bg: str | None = None) -> str:
         'role="img" aria-label="Quatopsy">\n'
         f"{background}"
         f'<g transform="translate(0,0)">{symbol}</g>'
-        f'<text x="40" y="22" fill="{ink}" font-family="{TOKENS["type"]["ui"]}" '
+        f'<text x="40" y="22" fill="{ink}" font-family=\'{TOKENS["type"]["ui"]}\' '
         f'font-size="18" font-weight="650" letter-spacing="0.08em">Quatopsy</text>\n'
         "</svg>\n"
     )
@@ -237,7 +238,7 @@ def lockup_stacked_svg(ink: str, accent: str, bg: str | None = None) -> str:
         f"{background}"
         f'<g transform="translate(32,0) scale(1)">{symbol}</g>'
         f'<text x="48" y="56" text-anchor="middle" fill="{ink}" '
-        f'font-family="{TOKENS["type"]["ui"]}" font-size="12" font-weight="650" '
+        f'font-family=\'{TOKENS["type"]["ui"]}\' font-size="12" font-weight="650" '
         f'letter-spacing="0.08em">Quatopsy</text>\n'
         "</svg>\n"
     )
@@ -257,7 +258,7 @@ def result_icon_svg(kind: str, fill: str) -> str:
         f'<title>Quatopsy {label}</title>'
         + shapes[kind].format(fill)
         + f'<text x="12" y="34" text-anchor="middle" fill="{fill}" font-size="6" '
-        f'font-family="{TOKENS["type"]["ui"]}">{label}</text>'
+        f'font-family=\'{TOKENS["type"]["ui"]}\'>{label}</text>'
     )
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -280,7 +281,7 @@ def workflow_diagram_svg() -> str:
             f'<rect x="{x}" y="{y}" width="52" height="20" fill="none" '
             f'stroke="{dark["accent"]}" stroke-width="1.2"/>'
             f'<text x="{x + 26}" y="{y + 14}" text-anchor="middle" fill="{dark["ink"]}" '
-            f'font-size="7" font-family="{TOKENS["type"]["mono"]}">{label}</text>'
+            f'font-size="7" font-family=\'{TOKENS["type"]["mono"]}\'>{label}</text>'
         )
     parts.append(
         f'<path d="M60 28 H70 M122 28 H140 M192 28 H210" stroke="{dark["muted"]}" '
@@ -317,7 +318,7 @@ def chart_states_svg() -> str:
         parts.append(
             mark
             + f'<text x="28" y="{y + 3}" fill="{dark["ink"]}" font-size="8" '
-            f'font-family="{TOKENS["type"]["mono"]}">{label}</text>'
+            f'font-family=\'{TOKENS["type"]["mono"]}\'>{label}</text>'
         )
         y += 16
     return (
@@ -337,7 +338,7 @@ def overlay_private_svg() -> str:
         'role="img" aria-label="Private research overlay">\n'
         f'<rect width="280" height="36" fill="{dark["surface"]}"/>'
         f'<text x="12" y="22" fill="{dark["muted"]}" font-size="11" '
-        f'font-family="{TOKENS["type"]["ui"]}">Private research overlay. Not a maturity mark.</text>\n'
+        f'font-family=\'{TOKENS["type"]["ui"]}\'>Private research overlay. Not a maturity mark.</text>\n'
         "</svg>\n"
     )
 
@@ -362,6 +363,11 @@ def tokens_css() -> str:
         "@media (prefers-reduced-motion: reduce) { *, *::before, *::after "
         "{ animation: none !important; transition: none !important; } }\n"
     )
+    forced = TOKENS["palette"]["forced_colour"]
+    lines.append("@media (forced-colors: active) { :root {")
+    for key, value in forced.items():
+        lines.append(f"  --qp-{key}: {value};")
+    lines.append("} }")
     return "\n".join(lines)
 
 
@@ -563,25 +569,37 @@ def simulation_strip() -> bytes:
 
 
 def svg_is_safe(text: str) -> list[str]:
-    errors = []
-    lowered = re.sub(r'xmlns="http://www.w3.org/2000/svg"', "", text).lower()
-    for needle in (
-        "<script",
-        "javascript:",
-        "onload=",
-        "onclick=",
-        "http://",
-        "https://",
-        "<foreignobject",
-        "<iframe",
-        "xlink:href",
-        "data:image",
-    ):
-        if needle in lowered:
-            errors.append(f"unsafe SVG fragment {needle}")
+    errors: list[str] = []
     if "<?xml" not in text:
         errors.append("SVG missing XML declaration")
+    try:
+        root = ElementTree.fromstring(text)
+    except ElementTree.ParseError as exc:
+        return errors + [f"invalid XML: {exc}"]
+    svg_namespace = "{http://www.w3.org/2000/svg}"
+    if root.tag != f"{svg_namespace}svg":
+        errors.append("root element is not SVG")
+    forbidden_elements = {"script", "foreignObject", "iframe", "audio", "video"}
+    for element in root.iter():
+        local_tag = element.tag.rsplit("}", 1)[-1]
+        if local_tag in forbidden_elements:
+            errors.append(f"unsafe SVG element {local_tag}")
+        for raw_name, raw_value in element.attrib.items():
+            name = raw_name.rsplit("}", 1)[-1].lower()
+            value = raw_value.strip().lower()
+            if name.startswith("on"):
+                errors.append(f"unsafe SVG event attribute {name}")
+            if name in {"href", "src"}:
+                errors.append(f"SVG resource reference {name} is forbidden")
+            if "url(" in value or "javascript:" in value or "data:" in value:
+                errors.append(f"unsafe SVG attribute value in {name}")
     return errors
+
+
+def png_dimensions(data: bytes) -> tuple[int, int] | None:
+    if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        return None
+    return struct.unpack(">II", data[16:24])
 
 
 def tree() -> dict[str, bytes]:
@@ -711,12 +729,10 @@ def manifest_for(files: dict[str, bytes]) -> bytes:
 def export(dest: Path = BRAND) -> None:
     files = tree()
     files["BRAND_ASSET_MANIFEST.json"] = manifest_for(files)
-    if dest.exists():
-        for path in dest.rglob("*"):
-            if path.is_file():
-                path.unlink()
     for rel, data in files.items():
         path = dest / rel
+        if path.is_symlink() or any(parent.is_symlink() for parent in path.parents if parent != dest.parent):
+            raise RuntimeError(f"refusing brand export through symlink: {path}")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
     print(f"brandkit: wrote {len(files)} files under {dest.relative_to(ROOT)}")
@@ -732,11 +748,12 @@ def check() -> int:
         errors.append("assets/brand is missing")
         print("\n".join(errors), file=sys.stderr)
         return 1
-    actual = {
-        str(path.relative_to(BRAND)): path.read_bytes()
-        for path in BRAND.rglob("*")
-        if path.is_file()
-    }
+    actual: dict[str, bytes] = {}
+    for path in BRAND.rglob("*"):
+        if path.is_symlink():
+            errors.append(f"brand tree contains symlink: {path.relative_to(BRAND)}")
+        elif path.is_file():
+            actual[str(path.relative_to(BRAND))] = path.read_bytes()
     if set(actual) != set(expected):
         extra = sorted(set(actual) - set(expected))
         missing = sorted(set(expected) - set(actual))
@@ -755,6 +772,21 @@ def check() -> int:
             text = data.decode("utf-8", errors="replace")
             if MATURITY_RE.search(text) and "overlay" not in rel:
                 errors.append(f"{rel}: maturity term in canonical brand surface")
+    manifest = json.loads(expected["BRAND_ASSET_MANIFEST.json"])
+    for entry in manifest["entries"]:
+        if "dimensions" in entry:
+            dimensions = png_dimensions(expected[entry["path"]])
+            if dimensions is None or list(dimensions) != entry["dimensions"]:
+                errors.append(f'{entry["path"]}: manifest dimensions do not match PNG')
+    svg_attack_cases = (
+        '<svg xmlns="http://www.w3.org/2000/svg"><script/></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg"><path onmouseover="x()"/></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg"><image href="payload.png"/></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg"><path style="fill:url(https://example.invalid/x)"/></svg>',
+    )
+    for attack in svg_attack_cases:
+        if not svg_is_safe('<?xml version="1.0"?>' + attack):
+            errors.append("SVG validator accepted a built-in attack case")
     dark = TOKENS["palette"]["dark"]
     light = TOKENS["palette"]["light"]
     for name, fg, bg in (

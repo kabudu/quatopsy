@@ -32,3 +32,13 @@
   --qp-error: #ff00ff;
 } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (forced-colors: active) { :root {
+  --qp-bg: Canvas;
+  --qp-ink: CanvasText;
+  --qp-accent: Highlight;
+  --qp-pass: LinkText;
+  --qp-findings: Mark;
+  --qp-refused: GrayText;
+  --qp-error: Mark;
+} }

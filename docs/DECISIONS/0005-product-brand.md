@@ -14,11 +14,15 @@ Three mark directions were required: a lifted-path diagnostic trace, an antipoda
 
 Keep the product name `Quatopsy`. Record that this is not trademark clearance.
 
-Select the antipodal paired-point mark. It states the representation-versus-physical mechanism, stays legible at 16 px, and avoids medical or spacecraft cliches. Score notes:
+Select the antipodal paired-point mark. It states the representation-versus-physical mechanism, stays legible at 16 px, and avoids medical or spacecraft cliches. The owner assessed exported candidates against a five-point scale, where 5 is strongest. The small-size score was judged from each 16 px raster export; the other scores were judged from the source direction at 32 and 512 px.
 
-- Lifted-path: readable as a generic chart sparkline; the defect tick is easy to miss at small size.
-- Antipodal paired-point: two samples on one circle plus a chosen lift. Highest mechanism fit.
-- Quotient lens: overlapping circles read as a Venn diagram or generic comparison mark.
+| Direction | Mechanism fit | 16 px legibility | Distinctiveness | Misreading resistance | One-colour fitness | Total / 25 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Lifted path | 4 | 2 | 3 | 2 | 3 | 14 |
+| Antipodal paired point | 5 | 5 | 4 | 4 | 5 | 23 |
+| Quotient lens | 4 | 3 | 3 | 2 | 4 | 16 |
+
+The lifted-path defect tick is easy to miss at small size and can read as a generic sparkline. The quotient lens can read as a Venn diagram. The selected paired-point direction preserves its ring-and-opposite-points structure in the dedicated small-size export. These are design judgements, not user-research results.
 
 Ship `quatopsy.brand/1` as source SVGs, deterministic PNG exports, tokens, templates, licences, and `BRAND_ASSET_MANIFEST.json`. Canonical lockups stay maturity-neutral. Private-research wording lives only in overlay templates.
 
