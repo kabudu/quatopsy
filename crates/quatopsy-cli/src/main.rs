@@ -32,7 +32,7 @@ const MAX_REPRO_SLICES: usize = 1024;
 #[command(
     name = "quatopsy",
     version,
-    about = "Local quaternion trajectory linter"
+    about = "Local quaternion trajectory linter. See where rotations go wrong."
 )]
 struct Cli {
     #[command(subcommand)]

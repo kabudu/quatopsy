@@ -20,7 +20,7 @@ The project combines the trajectory linter and visual debugger, targets spacecra
 | Medium | A web service would expand privacy and operational risk before value is proven | Local Rust CLI plus static viewer; no accounts, server, or telemetry |
 | Medium | Shared WebAssembly computations could make the viewer a second rule engine | Canonical report remains authoritative; WASM sharing limited to non-authoritative view computations |
 | Medium | Large profiles can exhaust browser or CLI resources | Streaming parse, safe maxima, finding caps, bounded concurrency, evidence-preserving downsampling |
-| Medium | Full visual branding may imply maturity | Restrained research identity until explicit productisation and legal gates |
+| Medium | Full visual branding may imply maturity | Maturity-neutral `quatopsy.brand/1` lockups, overlay templates, and claim scan |
 | Medium | External review could become an accidental schedule dependency | Explicit optional policy across ADR, roadmap, validation, traceability, and release |
 
 ## Simplicity decisions
@@ -33,13 +33,13 @@ The proposed claim is bounded to supported rule conformance, not safe flight. Th
 
 ## Residual risks
 
-Novelty remains unestablished; the patent search is preliminary; legal name/mark clearance is absent for public productisation; user comprehension of representation versus physical motion is untested in a practitioner study; and kernel numeric behaviour is locked by `quatopsy.numeric/1` and fixture oracles, not by an independent external audit. These risks constrain public claims. The private `0.1.0` release accepts them by remaining private, unsigned, unpublished to crates.io, and claim-bounded.
+Novelty remains unestablished; the patent search is preliminary; the owner declined a trademark filing, so name clearance is absent for any later public opening; user comprehension of representation versus physical motion is untested in a practitioner study; and kernel numeric behaviour is locked by `quatopsy.numeric/1` and fixture oracles, not by an independent external audit. These risks constrain public claims. The private `0.1.0` release accepts them by remaining private, unsigned, unpublished to crates.io, and claim-bounded.
 
 ## Documents tailored
 
-`SOUNDNESS_CASE.md` and `REPORT_PROTOCOL.md` were added because the product makes machine-checkable semantic claims. Adapter provenance and `quatopsy-adapt` contract tests cover the integration boundary. Full brand assets are intentionally absent because productisation is not approved. `AGENTS.md` and `scripts/ci-local.sh` exist as of M1.
+`SOUNDNESS_CASE.md` and `REPORT_PROTOCOL.md` were added because the product makes machine-checkable semantic claims. Adapter provenance and `quatopsy-adapt` contract tests cover the integration boundary. Canonical brand assets are `quatopsy.brand/1` after owner productisation approval. `AGENTS.md` and `scripts/ci-local.sh` exist as of M1.
 
 ## Completion statement
 
-M5 records a private `0.1.0` research release: Apache-2.0 licence, frozen claims, curated notes, supply-chain allowlist, and a fail-closed GitHub Release path. Full brand assets remain absent because productisation is not approved. Public opening, hosted CI, and crates.io remain distinct unauthorised gates.
+M5 records a private `0.1.0` research release: Apache-2.0 licence, frozen claims, curated notes, supply-chain allowlist, and a fail-closed GitHub Release path. M9 records `quatopsy.brand/1` after owner productisation approval without a trademark filing. Public opening, hosted CI, and crates.io remain distinct unauthorised gates.
 

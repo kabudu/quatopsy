@@ -4,7 +4,7 @@
 
 ### Added
 
-- Responsive forensic investigation console with synchronized trajectory playback, timeline scrubbing, evidence navigation, sample telemetry, and richer offline canvas rendering.
+- Canonical product brand `quatopsy.brand/1` with antipodal paired-point mark, tokens, lockups, deterministic PNG exports, and local CI validation.
 - `quatopsy control` for a geometric PD controller on SO(3), with independent command inhibition, estimator freshness contracts, saturation and safe fallback, host-CPU processor-in-the-loop, loopback hardware-in-the-loop, declared software plant models, a software GN&C plane (MEKF/UKF, guidance profiles, wheel allocation, declared two-body geometry), a fail-closed hardware-use gate, deterministic robustness trials, no physical actuator I/O, and no report `result`.
 - `quatopsy plan` for a torque-limited rest-to-rest candidate, with independent Euler/kinematics residuals, body-rate columns, actuator and keep-out models, weighted objectives, bounded multiple shooting, perturbation campaigns, infeasibility on constraint violation, and no report `result`.
 - Forensic gap closure for strict adoption-policy validation, canonical UTC overrides, unknown-major refusal exits, transactionally committed output sets, per-finding reproducers, and bounded viewer finding navigation.
@@ -27,7 +27,7 @@
 
 ### Claims
 
-These close the previously deferred V1 gaps. They do not claim flight safety, TUBIN reconstruction, novelty, or independent external validation. The unreleased planner is a candidate generator, not a certified or globally optimal trajectory. The unreleased controller is not flight software, not hard real-time, not a qualified processor, and not actuator permission.
+These close the previously deferred V1 gaps. They do not claim flight safety, TUBIN reconstruction, novelty, trademark clearance, or independent external validation. The unreleased planner is a candidate generator, not a certified or globally optimal trajectory. The unreleased controller is not flight software, not hard real-time, not a qualified processor, and not actuator permission. The brand system is not public opening.
 
 ## 0.1.0 - 2026-08-15
 

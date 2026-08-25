@@ -142,6 +142,9 @@ PY
 log "supply-chain licenses"
 python3 "$root/scripts/check-supply-chain.py"
 
+log "brand system"
+python3 "$root/scripts/brandkit.py" check
+
 log "curated release notes"
 python3 "$root/scripts/check-release-notes.py"
 bash "$root/scripts/preview-release-notes.sh" "$tmp/release-notes-preview.html"

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 32" role="img" aria-label="Quatopsy">
+<rect width="220" height="32" fill="#05080b"/><g transform="translate(0,0)"><circle cx="16.000" cy="16.000" r="11.000" fill="none" stroke="#eef4f6" stroke-width="1.700"/><path d="M 23.071 7.574 A 11.000 11.000 0 0 1 8.929 24.426" fill="none" stroke="#62e6df" stroke-width="1.700" stroke-linecap="round"/><circle cx="23.071" cy="7.574" r="2.240" fill="#62e6df"/><circle cx="8.929" cy="24.426" r="2.240" fill="#62e6df"/>
+</g><text x="40" y="22" fill="#eef4f6" font-family="system-ui, "Segoe UI", sans-serif" font-size="18" font-weight="650" letter-spacing="0.08em">Quatopsy</text>
+</svg>

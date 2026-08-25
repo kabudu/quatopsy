@@ -2,19 +2,21 @@
 
 ## Productisation state
 
-Quatopsy currently has a restrained research identity only. Full visual production remains deferred: productisation is not approved, and legal review has not cleared a public name and mark path. This deferral does not block the private `0.1.0` research release.
+Owner productisation was approved on 2026-08-19. The owner declined a trademark filing as unnecessary for current needs. `Quatopsy` remains the product name. That decision is not trademark clearance, not a worldwide availability guarantee, and not public opening.
+
+The canonical visual system is `quatopsy.brand/1`. Public opening, hosted CI, crates.io, signed binaries, and production support remain later distinct gates.
 
 ## Name and positioning
 
-Candidate name: `Quatopsy`, combining quaternion and examination. Pronunciation: `kwot-op-see`. Category hypothesis: orientation-trajectory diagnostics. Permanent purpose hypothesis: make hidden rotation-path defects inspectable and reproducible. Candidate tagline: `See where rotations go wrong.`
+Name: `Quatopsy`, combining quaternion and examination. Pronunciation: `kwot-op-see`. Category: orientation-trajectory diagnostics. Purpose: make hidden rotation-path defects inspectable and reproducible. Tagline: `See where rotations go wrong.`
 
-The name was searched on 2026-08-14 across general web results, GitHub repository names, npm, PyPI, and crates.io without an exact material collision. Similarity, trademark classes, domains, and international markets require legal review before public productisation. Fallback candidates retained for re-audit are `Quatlint` and `Attiscope`.
+The name was searched on 2026-08-14 across general web results, GitHub repository names, npm, PyPI, and crates.io without an exact material collision. Fallback candidates retained for re-audit before any later public opening are `Quatlint` and `Attiscope`. Residual collision risk is accepted by the owner for private use without a trademark filing (R10).
 
 ## Audiences and language
 
 Primary: spacecraft guidance, navigation, and control engineers. Secondary: robotics, simulation, and graphics engineers. Use `orientation trajectory`, `physical rotation`, `quaternion representation`, `finding`, `refusal`, and `repair candidate`. Avoid implying that quaternion components are four physical spatial dimensions.
 
-## Brand platform hypothesis
+## Brand platform
 
 - Purpose: make orientation failures explainable before they become expensive motion.
 - Promise: connect raw quaternion data to reproducible mathematical evidence.
@@ -24,23 +26,32 @@ Primary: spacecraft guidance, navigation, and control engineers. Secondary: robo
 
 ## Claim vocabulary
 
-Permitted before evidence: `candidate`, `detects supported rule violations`, `proposes a repair`, `local-first`, and `deterministic under the documented profile`. Evidence-dependent: `reduces debugging time`, `prevents unwinding`, `portable`, and `differentiated`. Prohibited without applicable gates: `novel`, `safe`, `flight-proven`, `certified`, `production-ready`, `complete`, `optimal`, or `guarantees correct motion`.
+Permitted: `candidate`, `detects supported rule violations`, `proposes a repair`, `local-first`, and `deterministic under the documented profile`. Evidence-dependent: `reduces debugging time`, `prevents unwinding`, `portable`, and `differentiated`. Prohibited: `novel`, `safe`, `flight-proven`, `certified`, `production-ready`, `complete`, `optimal`, or `guarantees correct motion`.
 
 ## Two-layer model
 
-The enduring identity is the name, category, purpose, principles, and future canonical visual system. Maturity, support, assurance, release channel, and independent-validation status are separate metadata overlays. No canonical mark, tagline, palette, or durable asset name may encode alpha, beta, evaluation, production, or independently validated status.
+Permanent identity: name, category, purpose, promise, principles, personality, mark, tagline, tokens, and lockups. These do not encode alpha, beta, evaluation, or production status.
 
-## Future visual directions
+Maturity overlay: private research, support posture, independent-validation status, and exact limitations. Overlay copy lives only in separately named templates such as `templates/overlay-private-research.svg`.
 
-Three directions must be developed and tested after productisation approval: a lifted-path diagnostic trace, an antipodal paired-point system, and a quotient-space inspection lens. They must be visually distinct, avoid medical gore and generic spacecraft silhouettes, remain legible at 16 pixels, and not imply a safety certification seal.
+## Selected visual direction
 
-The eventual system must include complete horizontal, stacked, symbol, wordmark, monochrome, reversed, and small-size marks; accessible light, dark, monochrome, forced-colour, and high-contrast palettes; text/icon/shape redundant result states; open-font typography; diagram and chart rules that retain failures and refusals; reduced-motion behaviour; and machine-readable tokens.
+Three directions were constructed and scored in `assets/brand/source/directions/` and `docs/DECISIONS/0005-product-brand.md`. The selected mark is the antipodal paired-point system: a circle, two opposite samples, and the chosen lift arc. It names the double cover without medical gore or a spacecraft silhouette. Minimum size is 16 px. Clear space is 8 units on the 32-unit grid.
+
+## Visual system
+
+- Lockups: horizontal, stacked, symbol, wordmark, monochrome, reversed, small-size, and light.
+- Palettes: dark, light, monochrome, reversed, high-contrast, and forced-colour tokens in `assets/brand/tokens/`.
+- Result states use colour plus a shape plus a text label: pass circle, findings diamond, refused triangle, error square.
+- Typography: system UI and monospace stacks. IBM Plex Sans and IBM Plex Mono are recommended and are not redistributed.
+- Diagrams and charts retain pass, findings, refused, and error as labelled states.
+- Motion: non-essential animation disables under `prefers-reduced-motion`.
+- Machine-readable tokens: `tokens.json` and `tokens.css`.
 
 ## Assets, provenance, and validation
 
-No canonical visual assets exist yet and none are claimed complete. Future assets will live under `assets/brand/` with vector sources, deterministic exports, licences, provenance, SHA-256 digests, accessibility tests, SVG sanitisation, raster limits, colour-vision simulations, cross-channel snapshots, and a manifest. Generated concepts may inform exploration but final marks require reviewed vector redraw and legal review.
+Canonical assets live under `assets/brand/`. `python3 scripts/brandkit.py export` is the only writer. `python3 scripts/brandkit.py check` is wired into local CI. Each manifest entry records digests, dimensions, licence, creator, allowed use, and the export command. SVG sources forbid scripts, remote resources, and embedded rasters. Original marks are Apache-2.0.
 
-## Governance and launch gate
+## Governance
 
-Owner roles are product, research claims, engineering, security, accessibility, brand/design, and legal. One person may hold multiple roles during early development, but each approval is recorded separately. Public productisation requires owner approval, name/mark review, frozen claims, complete source assets and exports, accessible states, deterministic reproduction, and consistent public surfaces.
-
+Roles: product, research claims, engineering, security, accessibility, brand/design, and legal. The owner currently holds each role and recorded productisation approval plus the trademark-filing decline separately from public opening. Brand sources version as `quatopsy.brand/1`, independent of the software protocol. Do not silently replace released manifests.
