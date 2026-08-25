@@ -29,6 +29,7 @@ use quatopsy_schema::{ComponentOrder, MANIFEST_SCHEMA, RotationSense, TimeUnit};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use thiserror::Error;
 
 const PROBLEM_SCHEMA: &str = "quatopsy.control-problem/1";
@@ -36,6 +37,7 @@ const CONTROL_SCHEMA: &str = "quatopsy.control/1";
 const ALGORITHM: &str = "geometric-pd-so3";
 const ALGORITHM_VERSION: &str = "1";
 const MAX_SAMPLES: u64 = 100_000;
+const MAX_GAIN_BREAKS: usize = 1_024;
 const MIN_SAMPLES: u64 = 3;
 const REST_RATE_ABS: f64 = 1.0e-12;
 const MAX_KEEP_OUT: usize = 8;
@@ -273,7 +275,17 @@ struct NavDocument {
     rejected: u64,
     covariance_trace: f64,
     bias: [f64; 3],
+    updates: Vec<NavAuditRow>,
     notes: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct NavAuditRow {
+    t: f64,
+    measurement_valid: bool,
+    accepted: bool,
+    nis: f64,
+    nees: Option<f64>,
 }
 
 #[derive(Debug, Serialize)]
@@ -500,10 +512,15 @@ struct ControlDocument {
     nav_sha256: String,
     guidance_sha256: String,
     runtime_partition: &'static str,
+    /// Retained for `quatopsy.control/1` compatibility. Canonical timing is unavailable.
     nav_phase_ns: u64,
     guidance_phase_ns: u64,
     control_phase_ns: u64,
     plant_phase_ns: u64,
+    nav_phase_calls: u64,
+    guidance_phase_calls: u64,
+    control_phase_calls: u64,
+    plant_phase_calls: u64,
 }
 
 struct Prepared {
@@ -562,10 +579,10 @@ struct SilRun {
     inhibited: bool,
     nav: String,
     guidance: String,
-    nav_phase_ns: u64,
-    guidance_phase_ns: u64,
-    control_phase_ns: u64,
-    plant_phase_ns: u64,
+    nav_phase_calls: u64,
+    guidance_phase_calls: u64,
+    control_phase_calls: u64,
+    plant_phase_calls: u64,
 }
 
 pub fn control(problem_bytes: &[u8], version: &str) -> Result<ControlOutput, ControlError> {
@@ -576,6 +593,15 @@ pub fn control_with_workers(
     problem_bytes: &[u8],
     version: &str,
     worker_bin: Option<&Path>,
+) -> Result<ControlOutput, ControlError> {
+    control_with_workers_cancelled(problem_bytes, version, worker_bin, None)
+}
+
+pub fn control_with_workers_cancelled(
+    problem_bytes: &[u8],
+    version: &str,
+    worker_bin: Option<&Path>,
+    cancelled: Option<&AtomicBool>,
 ) -> Result<ControlOutput, ControlError> {
     let problem: ProblemDocument = serde_json::from_slice(problem_bytes)
         .map_err(|err| ControlError::Refused(format!("control problem parse failed: {err}")))?;
@@ -593,9 +619,9 @@ pub fn control_with_workers(
         sensor_fault: false,
         dt_jitter_s: 0.0,
     };
-    let run = run_closed_loop(&prepared, &nominal, worker_bin)?;
+    let run = run_closed_loop(&prepared, &nominal, worker_bin, cancelled)?;
     let campaign = match &problem.campaign {
-        Some(spec) => Some(run_campaign(&prepared, spec)?),
+        Some(spec) => Some(run_campaign(&prepared, spec, cancelled)?),
         None => None,
     };
     let isolated = worker_bin.is_some() && !matches!(prepared.execution, Execution::Sil);
@@ -664,10 +690,14 @@ pub fn control_with_workers(
         nav_sha256: digest_hex(run.nav.as_bytes()),
         guidance_sha256: digest_hex(run.guidance.as_bytes()),
         runtime_partition: "sequential-deterministic",
-        nav_phase_ns: run.nav_phase_ns,
-        guidance_phase_ns: run.guidance_phase_ns,
-        control_phase_ns: run.control_phase_ns,
-        plant_phase_ns: run.plant_phase_ns,
+        nav_phase_ns: 0,
+        guidance_phase_ns: 0,
+        control_phase_ns: 0,
+        plant_phase_ns: 0,
+        nav_phase_calls: run.nav_phase_calls,
+        guidance_phase_calls: run.guidance_phase_calls,
+        control_phase_calls: run.control_phase_calls,
+        plant_phase_calls: run.plant_phase_calls,
     };
     let control_json = serde_json::to_string(&document)
         .map_err(|err| ControlError::Refused(format!("control serialize failed: {err}")))?;
@@ -863,6 +893,11 @@ fn prepare(problem: &ProblemDocument) -> Result<Prepared, ControlError> {
             "momentum_limit_nms must be finite and positive".to_string(),
         ));
     }
+    if problem.gain_schedule.len() > MAX_GAIN_BREAKS {
+        return Err(ControlError::Refused(format!(
+            "gain_schedule exceeds the {MAX_GAIN_BREAKS}-entry limit"
+        )));
+    }
     for item in &problem.gain_schedule {
         if !item.error_rad.is_finite()
             || item.error_rad < 0.0
@@ -972,7 +1007,21 @@ fn prepare_profile(problem: &ProblemDocument) -> Result<Profile, ControlError> {
         Profile::setpoint([q.w, q.x, q.y, q.z], problem.duration_s)
             .map_err(|err| ControlError::Refused(err.to_string()))?
     };
+    let q_des = from_declared(problem.q_desired, problem.component_order)?.normalized()?;
+    profile
+        .validate_terminal_rest([q_des.w, q_des.x, q_des.y, q_des.z], 1.0e-4, 1.0e-4)
+        .map_err(|err| ControlError::Refused(err.to_string()))?;
     if let Some(sun) = problem.guidance.sun_point {
+        if !sun.body_axis.iter().all(|value| value.is_finite())
+            || norm3(sun.body_axis) < 1.0e-12
+            || !sun.min_angle_rad.is_finite()
+            || !(0.0..=std::f64::consts::PI).contains(&sun.min_angle_rad)
+        {
+            return Err(ControlError::Refused(
+                "sun_point must declare a finite non-zero body axis and angle in [0, pi]"
+                    .to_string(),
+            ));
+        }
         profile.sun_point = Some(SunPoint {
             body_axis: sun.body_axis,
             min_angle_rad: sun.min_angle_rad,
@@ -1003,6 +1052,11 @@ fn prepare_wheels(problem: &ProblemDocument) -> Result<Option<allocate::WheelArr
     };
     if array.axes.is_empty() {
         return Ok(None);
+    }
+    if !matches!(array.axes.len(), 3 | 4) {
+        return Err(ControlError::Refused(
+            "wheels_array requires exactly 3 or 4 wheel axes".to_string(),
+        ));
     }
     Ok(Some(allocate::WheelArray {
         axes: array.axes.clone(),
@@ -1087,6 +1141,7 @@ fn run_closed_loop(
     prepared: &Prepared,
     faults: &Faults,
     worker_bin: Option<&Path>,
+    cancelled: Option<&AtomicBool>,
 ) -> Result<SilRun, ControlError> {
     let cycle_bin = match prepared.execution {
         Execution::Pil => worker_bin,
@@ -1111,13 +1166,19 @@ fn run_closed_loop(
     let mut last_nis = 0.0;
     let mut last_nees = None;
     let mut rejected = 0_u64;
-    let mut nav_phase_ns = 0_u64;
-    let mut guidance_phase_ns = 0_u64;
-    let mut control_phase_ns = 0_u64;
-    let mut plant_phase_ns = 0_u64;
+    let mut nav_updates = Vec::with_capacity(prepared.steps.saturating_sub(1));
+    let mut nav_phase_calls = 0_u64;
+    let mut guidance_phase_calls = 0_u64;
+    let mut control_phase_calls = 0_u64;
+    let mut plant_phase_calls = 0_u64;
     let mut last_guide_mode = "track";
     let quat_delay = faults.star_tracker_delay_s;
     for i in 0..prepared.steps.saturating_sub(1) {
+        if cancelled.is_some_and(|flag| flag.load(Ordering::Relaxed)) {
+            return Err(ControlError::Refused(
+                "controller was cancelled".to_string(),
+            ));
+        }
         let mut t = prepared.dt * i as f64;
         if faults.dt_jitter_s > 0.0 {
             t += faults.dt_jitter_s * 0.5 * (unit_noise(faults.seed, 9000 + i as u32) + 1.0);
@@ -1142,6 +1203,11 @@ fn run_closed_loop(
                     faults.quat_noise * unit_noise(faults.seed, (i as u32) * 3 + 1),
                     faults.quat_noise * unit_noise(faults.seed, (i as u32) * 3 + 2),
                 ]))
+                .normalized()?;
+        }
+        if delayed_q.0 < t {
+            meas_q = meas_q
+                .mul(geom::exp_so3(geom::scale3(delayed_w.2, t - delayed_q.0)))
                 .normalized()?;
         }
         let mut meas_w = delayed_w.2;
@@ -1170,27 +1236,34 @@ fn run_closed_loop(
         if faults.nan_step == Some(i) {
             meas_q.w = f64::NAN;
         }
-        let nav_start = std::time::Instant::now();
         estimator.predict(t, delayed_w.0, meas_w)?;
         let eclipse = geom_now.map(|item| item.eclipse).unwrap_or(false);
         let star_valid = !eclipse
             && !faults.sensor_fault
             && prepared.sensor.status != SensorStatus::Failed
             && meas_q.is_finite();
-        let (estimate, accepted) = estimator.update_star(delayed_q.0, meas_q, star_valid)?;
+        let (estimate, accepted) = estimator.update_star(t, meas_q, star_valid)?;
+        last_nis = estimate.nis;
+        let mut update_nees = None;
         if accepted {
-            last_nis = estimate.nis;
             let err = quatopsy_nav::attitude_error_state(
                 estimate.q,
                 [q.w, q.x, q.y, q.z],
                 estimate.bias,
                 [0.0; 3],
             );
-            last_nees = quatopsy_oracle::error_nees(err, estimator.covariance()).ok();
+            update_nees = quatopsy_oracle::error_nees(err, estimator.covariance()).ok();
+            last_nees = update_nees;
         }
+        nav_updates.push(NavAuditRow {
+            t,
+            measurement_valid: star_valid,
+            accepted,
+            nis: estimate.nis,
+            nees: update_nees,
+        });
         rejected = estimate.rejected;
-        nav_phase_ns = nav_phase_ns.saturating_add(nav_start.elapsed().as_nanos() as u64);
-        let guide_start = std::time::Instant::now();
+        nav_phase_calls += 1;
         let reference = prepared
             .profile
             .sample_at(t)
@@ -1217,8 +1290,7 @@ fn run_closed_loop(
         {
             last_guide_mode = "safe";
         }
-        guidance_phase_ns =
-            guidance_phase_ns.saturating_add(guide_start.elapsed().as_nanos() as u64);
+        guidance_phase_calls += 1;
         let att_err = geodesic_angle(
             quatopsy_oracle::RefQuat {
                 w: estimate.q[0],
@@ -1234,7 +1306,6 @@ fn run_closed_loop(
             },
         );
         let (kp, kd) = scheduled_gains(prepared.gains, &prepared.gain_schedule, att_err);
-        let control_start = std::time::Instant::now();
         let commanded = cycle.step(CycleIn {
             t,
             q: estimate.q,
@@ -1259,13 +1330,11 @@ fn run_closed_loop(
             inhibit_count += 1;
             last_reason = commanded.reason;
         }
-        control_phase_ns =
-            control_phase_ns.saturating_add(control_start.elapsed().as_nanos() as u64);
+        control_phase_calls += 1;
         let applied = commanded.torque;
         if i == 0 {
             rows.push((t, q, w, [0.0; 3], h));
         }
-        let plant_start = std::time::Instant::now();
         let next = plant.step(PlantIn {
             torque: applied,
             dt_sub: prepared.dt_sub,
@@ -1273,7 +1342,7 @@ fn run_closed_loop(
             field_t: geom_now.map(|item| item.field_t),
             nadir: geom_now.map(|item| item.nadir),
         })?;
-        plant_phase_ns = plant_phase_ns.saturating_add(plant_start.elapsed().as_nanos() as u64);
+        plant_phase_calls += 1;
         if next.samples.len() != prepared.substeps {
             return Err(ControlError::Refused(
                 "plant worker returned the wrong number of substeps".to_string(),
@@ -1307,6 +1376,7 @@ fn run_closed_loop(
         rejected,
         covariance_trace: estimator.estimate().covariance_trace,
         bias: estimator.estimate().bias,
+        updates: nav_updates,
         notes: "Software attitude navigator. Not a flight filter. Not a report result.",
     })
     .map_err(|err| ControlError::Refused(format!("nav serialize failed: {err}")))?;
@@ -1329,30 +1399,34 @@ fn run_closed_loop(
         inhibited: inhibit_count > 0,
         nav: nav_json,
         guidance: guidance_json,
-        nav_phase_ns,
-        guidance_phase_ns,
-        control_phase_ns,
-        plant_phase_ns,
+        nav_phase_calls,
+        guidance_phase_calls,
+        control_phase_calls,
+        plant_phase_calls,
     })
 }
 
 fn delayed_state(history: &[(f64, Quat, [f64; 3])], now: f64, delay: f64) -> (f64, Quat, [f64; 3]) {
     let target = now - delay;
-    let mut chosen = history[0];
-    for item in history {
-        if item.0 <= target {
-            chosen = *item;
-        }
-    }
-    chosen
+    let upper = history.partition_point(|item| item.0 <= target);
+    history[upper.saturating_sub(1)]
 }
 
-fn run_campaign(prepared: &Prepared, spec: &CampaignSpec) -> Result<CampaignReport, ControlError> {
+fn run_campaign(
+    prepared: &Prepared,
+    spec: &CampaignSpec,
+    cancelled: Option<&AtomicBool>,
+) -> Result<CampaignReport, ControlError> {
     validate(spec)?;
     let mut rng = spec.seed | 1;
     let mut inhibit_events = 0;
     let mut terminal_attitude_fail = 0;
     for trial in 0..spec.trials {
+        if cancelled.is_some_and(|flag| flag.load(Ordering::Relaxed)) {
+            return Err(ControlError::Refused(
+                "controller was cancelled".to_string(),
+            ));
+        }
         rng = campaign::next_rng(rng);
         let inertia = perturb_inertia(prepared.inertia, spec.inertia_rel_sigma, rng);
         let faults = Faults {
@@ -1376,7 +1450,7 @@ fn run_campaign(prepared: &Prepared, spec: &CampaignSpec) -> Result<CampaignRepo
             sensor_fault: spec.sensor_fault,
             dt_jitter_s: spec.dt_jitter_s.min(prepared.dt * 0.5),
         };
-        let run = run_closed_loop(prepared, &faults, None)?;
+        let run = run_closed_loop(prepared, &faults, None, cancelled)?;
         if run.inhibited {
             inhibit_events += 1;
         }
@@ -1852,10 +1926,10 @@ mod tests {
         }
         let control: serde_json::Value = serde_json::from_str(&out.control).unwrap();
         assert_eq!(control["runtime_partition"], "sequential-deterministic");
-        assert!(control["nav_phase_ns"].as_u64().unwrap() > 0);
-        assert!(control["guidance_phase_ns"].as_u64().unwrap() > 0);
-        assert!(control["control_phase_ns"].as_u64().unwrap() > 0);
-        assert!(control["plant_phase_ns"].as_u64().unwrap() > 0);
+        assert!(control["nav_phase_calls"].as_u64().unwrap() > 0);
+        assert!(control["guidance_phase_calls"].as_u64().unwrap() > 0);
+        assert!(control["control_phase_calls"].as_u64().unwrap() > 0);
+        assert!(control["plant_phase_calls"].as_u64().unwrap() > 0);
         let nav: serde_json::Value = serde_json::from_str(&out.nav).unwrap();
         assert_eq!(nav["filter"], "mekf");
         assert!(
@@ -1864,6 +1938,25 @@ mod tests {
                 .unwrap()
                 .contains("Not a flight filter")
         );
+    }
+
+    #[test]
+    fn canonical_control_outputs_are_reproducible() {
+        let first = run(&example_problem()).unwrap();
+        let second = run(&example_problem()).unwrap();
+        assert_eq!(first.csv, second.csv);
+        assert_eq!(first.control, second.control);
+        assert_eq!(first.nav, second.nav);
+        assert_eq!(first.guidance, second.guidance);
+    }
+
+    #[test]
+    fn control_observes_cancellation_inside_the_cycle_loop() {
+        let cancelled = AtomicBool::new(true);
+        let problem = serde_json::to_vec(&example_problem()).unwrap();
+        let err =
+            control_with_workers_cancelled(&problem, "0.1.0", None, Some(&cancelled)).unwrap_err();
+        assert!(err.to_string().contains("cancelled"));
     }
 
     #[test]

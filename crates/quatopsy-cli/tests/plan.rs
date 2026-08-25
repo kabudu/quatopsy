@@ -93,7 +93,7 @@ fn wheel_plan_then_analyze_keeps_verdict_in_the_kernel() {
     assert!(status.success());
     let plan_body = fs::read_to_string(planned.join("plan.json")).unwrap();
     assert!(!plan_body.contains("\"result\""));
-    assert!(plan_body.contains("multiple-shooting-lm"));
+    assert!(plan_body.contains("direct-shooting-lm"));
     let report = tmp.join("report.json");
     let status = Command::new(bin())
         .args([

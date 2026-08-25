@@ -16,7 +16,7 @@ The plant is a rigid body with a symmetric positive-definite inertia tensor and 
 
 ## Execution classes
 
-`sil` runs the cycle law and the plant in-process. `pil` runs the cycle law, including the independent monitor, in a child `control-cycle-worker` process on the host CPU; the plant stays in the parent. `hil` sends torque commands to a child `control-loopback-worker` process that emulates the plant; physical actuators are refused. Library calls without a worker binary exercise the same packet ABI in-process. Campaigns always run in-process SIL trials.
+`sil` runs the cycle law and the plant in-process. `pil` runs the cycle law, including the independent monitor, in a child `control-cycle-worker` process on the host CPU; the plant stays in the parent. `hil` sends torque commands to a child `control-loopback-worker` process that emulates the plant; physical actuators are refused. Worker messages are capped at 1 MiB and responses have a five-second deadline. Library calls without a worker binary exercise the same packet ABI in-process. Campaigns always run in-process SIL trials.
 
 ## Control law
 
@@ -40,7 +40,7 @@ Motor torque (the lagged command) updates stored wheel momentum `h`. Magnetic re
 
 ## Guidance and reference tracking
 
-Optional `guidance.profile` is a time-tagged list of `{t, q, omega}`. Optional `guidance.csv_text` is a `quatopsy plan` CSV with the same columns. Angular acceleration is derived from consecutive rates. The cycle interpolates `q` on SO(3) with antipodal continuity and passes `ω_d` and `α_d` into geometric PD. Absent guidance, the reference is the problem `q_desired` at rest. Optional `gain_schedule` maps attitude-error breakpoints to `(kp, kd)`. Optional `guidance.sun_point` is a named body-axis versus sun-vector cone. Keep-out cones remain as declared. `guidance.json` never contains `result`.
+Optional `guidance.profile` is a bounded time-tagged list of `{t, q, omega}`. Optional `guidance.csv_text` is a bounded `quatopsy plan` CSV with the same columns. All values must be finite and the final sample must match `q_desired` at rest. Angular acceleration is derived from consecutive rates. The cycle locates interpolation intervals by binary search, interpolates `q` on SO(3) with antipodal continuity, and passes `ω_d` and `α_d` into geometric PD. Absent guidance, the reference is the problem `q_desired` at rest. Optional `gain_schedule` maps at most 1,024 attitude-error breakpoints to `(kp, kd)`. Optional `guidance.sun_point` is a validated body-axis versus sun-vector cone. Keep-out cones remain as declared. `guidance.json` never contains `result`.
 
 ## Declared two-body geometry
 
@@ -52,7 +52,9 @@ Optional `actuators.wheels_array` declares a 3-axis triad or 4-wheel pyramid wit
 
 ## Cycle partition
 
-Each cycle runs sequentially: nav predict, optional star update, guidance sample, PD, allocate, oracle monitor, plant. Recorded phase durations (`nav_phase_ns`, `guidance_phase_ns`, `control_phase_ns`, `plant_phase_ns`) are software clocks. They are not WCET. `hard-real-time` remains refused.
+Each cycle runs sequentially: nav predict, optional time-aligned star update, guidance sample, PD, allocate, oracle monitor, plant. Canonical output records deterministic phase invocation counts (`nav_phase_calls`, `guidance_phase_calls`, `control_phase_calls`, `plant_phase_calls`). The legacy `*_phase_ns` fields remain zero for `quatopsy.control/1` reader compatibility. Wall-clock timing is deliberately excluded because it is host-dependent and is not WCET. `hard-real-time` remains refused.
+
+Delayed star-tracker measurements are constant-rate gyro-preintegrated to the current filter epoch before update. The MEKF and UKF refuse star measurements that are not time-aligned with the current estimate; they do not silently apply out-of-sequence measurements to current state. `nav.json` records each update timestamp, validity, acceptance, NIS, and available NEES in a bounded audit sequence.
 
 ## Modes and inhibition
 

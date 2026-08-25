@@ -331,7 +331,7 @@ mod tests {
     }
 
     #[test]
-    fn delayed_star_is_applied_future_star_is_refused() {
+    fn stale_and_future_star_samples_are_refused() {
         let mut nav = Navigator::new(identity(), 0.0, config(FilterKind::Mekf)).unwrap();
         nav.predict(
             GyroSample {
@@ -341,17 +341,16 @@ mod tests {
             0.05,
         )
         .unwrap();
-        let (est, accepted) = nav
-            .update_star(
+        assert!(
+            nav.update_star(
                 StarSample {
                     t_s: 0.01,
                     q: identity(),
                 },
                 true,
             )
-            .unwrap();
-        assert!(accepted);
-        assert!(est.t_s > 0.04);
+            .is_err()
+        );
         assert!(
             nav.update_star(
                 StarSample {

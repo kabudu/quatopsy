@@ -1,5 +1,6 @@
 //! Deterministic open-loop campaigns under inertia error and saturation.
 
+use crate::actuators::{ActuatorMap, allocate_body_torque};
 use crate::geom::{Quat, add3, apply_tensor, euler_lhs, exp_so3, invert_spd, scale3, sub3};
 use crate::scvx::CollocationPath;
 use serde::Deserialize;
@@ -47,6 +48,7 @@ pub(crate) fn run_campaign(
     path: &CollocationPath,
     q_final: Quat,
     keep_out: &[quatopsy_oracle::KeepOutCone],
+    actuators: &ActuatorMap,
 ) -> Result<CampaignReport, crate::PlanError> {
     if spec.trials == 0 || spec.trials > MAX_TRIALS {
         return Err(crate::PlanError::Refused(
@@ -80,12 +82,24 @@ pub(crate) fn run_campaign(
             let dt = path.times[i + 1] - path.times[i];
             let mut tau = path.torques[i];
             if spec.saturate_actuators {
-                for k in 0..3 {
-                    let clipped = tau[k].clamp(-torque_limit[k], torque_limit[k]);
-                    if (clipped - tau[k]).abs() > 1.0e-12 {
-                        sat = true;
+                if actuators.is_empty() {
+                    for k in 0..3 {
+                        let clipped = tau[k].clamp(-torque_limit[k], torque_limit[k]);
+                        if (clipped - tau[k]).abs() > 1.0e-12 {
+                            sat = true;
+                        }
+                        tau[k] = clipped;
                     }
-                    tau[k] = clipped;
+                } else {
+                    let mut controls =
+                        allocate_body_torque(actuators, tau, actuators.control_dim())?;
+                    let requested = controls.clone();
+                    actuators.project_controls(&mut controls, torque_limit);
+                    sat |= controls
+                        .iter()
+                        .zip(requested)
+                        .any(|(applied, requested)| (applied - requested).abs() > 1.0e-12);
+                    tau = actuators.body_torque(&controls, w, path.momenta[i], [0.0; 4])?;
                 }
             }
             let lhs = euler_lhs(perturbed, [0.0; 3], w, path.momenta[i]);
@@ -142,4 +156,56 @@ fn perturb_inertia(j: [[f64; 3]; 3], sigma: f64, seed: u64) -> [[f64; 3]; 3] {
     out[1][2] = p12;
     out[2][1] = p12;
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::actuators::{ActuatorMap, PreparedWheel};
+
+    #[test]
+    fn campaign_counts_declared_wheel_saturation() {
+        let wheel = |axis| PreparedWheel {
+            axis,
+            max_torque_nm: 0.1,
+            max_momentum_nms: 10.0,
+            max_power_w: None,
+        };
+        let actuators = ActuatorMap {
+            wheels: vec![
+                wheel([1.0, 0.0, 0.0]),
+                wheel([0.0, 1.0, 0.0]),
+                wheel([0.0, 0.0, 1.0]),
+            ],
+            thrusters: vec![],
+            cmgs: None,
+        };
+        let path = CollocationPath {
+            times: vec![0.0, 0.1],
+            quats: vec![Quat::new(1.0, 0.0, 0.0, 0.0); 2],
+            omegas: vec![[0.0; 3]; 2],
+            torques: vec![[1.0, 0.0, 0.0]; 2],
+            momenta: vec![[0.0; 3]; 2],
+            wheel_momenta: vec![vec![0.0; 3]; 2],
+            duration: 0.1,
+            iterations: 0,
+            max_defect: 0.0,
+        };
+        let report = run_campaign(
+            &CampaignSpec {
+                trials: 1,
+                inertia_rel_sigma: 0.0,
+                saturate_actuators: true,
+                seed: 1,
+            },
+            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            [2.0; 3],
+            &path,
+            Quat::new(1.0, 0.0, 0.0, 0.0),
+            &[],
+            &actuators,
+        )
+        .unwrap();
+        assert_eq!(report.saturation_events, 1);
+    }
 }

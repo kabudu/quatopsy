@@ -5,7 +5,10 @@
 
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
-use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
+use std::process::{Child, Command, Stdio};
+use std::sync::mpsc::{self, Receiver, Sender};
+use std::thread;
+use std::time::Duration;
 
 use crate::actuators::{fail_axis, momentum_dump, saturate};
 use crate::geom::Quat;
@@ -17,6 +20,23 @@ use quatopsy_oracle::{
     gravity_gradient_torque, magnetic_residual_torque, monitor_command, rigid_body_step,
 };
 use serde::{Deserialize, Serialize};
+
+const MAX_WORKER_LINE_BYTES: u64 = 1_048_576;
+const WORKER_RESPONSE_TIMEOUT: Duration = Duration::from_secs(5);
+
+fn read_bounded_line<R: BufRead>(reader: &mut R) -> Result<Option<String>, ControlError> {
+    let mut line = String::new();
+    let n = std::io::Read::take(reader, MAX_WORKER_LINE_BYTES + 1).read_line(&mut line)?;
+    if n == 0 {
+        return Ok(None);
+    }
+    if n as u64 > MAX_WORKER_LINE_BYTES || !line.ends_with('\n') {
+        return Err(ControlError::Refused(format!(
+            "worker message exceeds the {MAX_WORKER_LINE_BYTES}-byte limit"
+        )));
+    }
+    Ok(Some(line))
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CycleConfig {
@@ -330,15 +350,13 @@ impl PlantEngine {
 pub fn run_cycle_worker() -> Result<(), ControlError> {
     let stdin = std::io::stdin();
     let mut stdout = std::io::stdout();
-    let mut lines = stdin.lock().lines();
-    let first = lines
-        .next()
-        .ok_or_else(|| ControlError::Refused("cycle worker missing configuration".to_string()))??;
+    let mut input = BufReader::new(stdin.lock());
+    let first = read_bounded_line(&mut input)?
+        .ok_or_else(|| ControlError::Refused("cycle worker missing configuration".to_string()))?;
     let config: CycleConfig = serde_json::from_str(&first)
         .map_err(|err| ControlError::Refused(format!("cycle worker config: {err}")))?;
     let mut engine = CycleEngine::new(config);
-    for line in lines {
-        let line = line?;
+    while let Some(line) = read_bounded_line(&mut input)? {
         if line.is_empty() {
             continue;
         }
@@ -359,15 +377,14 @@ pub fn run_cycle_worker() -> Result<(), ControlError> {
 pub fn run_loopback_worker() -> Result<(), ControlError> {
     let stdin = std::io::stdin();
     let mut stdout = std::io::stdout();
-    let mut lines = stdin.lock().lines();
-    let first = lines.next().ok_or_else(|| {
+    let mut input = BufReader::new(stdin.lock());
+    let first = read_bounded_line(&mut input)?.ok_or_else(|| {
         ControlError::Refused("loopback worker missing configuration".to_string())
-    })??;
+    })?;
     let config: PlantConfig = serde_json::from_str(&first)
         .map_err(|err| ControlError::Refused(format!("loopback worker config: {err}")))?;
     let mut engine = PlantEngine::new(config)?;
-    for line in lines {
-        let line = line?;
+    while let Some(line) = read_bounded_line(&mut input)? {
         if line.is_empty() {
             continue;
         }
@@ -456,8 +473,8 @@ pub(crate) fn mode_name(mode: Mode) -> &'static str {
 
 pub(crate) struct ChildLines {
     child: Child,
-    stdin: Option<ChildStdin>,
-    stdout: BufReader<ChildStdout>,
+    requests: Option<Sender<String>>,
+    responses: Receiver<Result<String, String>>,
 }
 
 impl ChildLines {
@@ -469,7 +486,7 @@ impl ChildLines {
             .stderr(Stdio::inherit())
             .spawn()
             .map_err(|err| ControlError::Refused(format!("could not spawn {worker}: {err}")))?;
-        let stdin = child
+        let mut stdin = child
             .stdin
             .take()
             .ok_or_else(|| ControlError::Refused(format!("{worker} stdin missing")))?;
@@ -477,54 +494,70 @@ impl ChildLines {
             .stdout
             .take()
             .ok_or_else(|| ControlError::Refused(format!("{worker} stdout missing")))?;
+        let (request_send, request_receive) = mpsc::channel::<String>();
+        thread::spawn(move || {
+            for request in request_receive {
+                if writeln!(stdin, "{request}").is_err() || stdin.flush().is_err() {
+                    break;
+                }
+            }
+        });
+        let (send, responses) = mpsc::sync_channel(1);
+        thread::spawn(move || {
+            let mut reader = BufReader::new(stdout);
+            loop {
+                let response = read_bounded_line(&mut reader).map_err(|err| err.to_string());
+                let done = !matches!(response, Ok(Some(_)));
+                let message = response
+                    .and_then(|line| line.ok_or_else(|| "worker closed stdout".to_string()));
+                if send.send(message).is_err() || done {
+                    break;
+                }
+            }
+        });
         Ok(Self {
             child,
-            stdin: Some(stdin),
-            stdout: BufReader::new(stdout),
+            requests: Some(request_send),
+            responses,
         })
     }
 
-    fn stdin(&mut self) -> Result<&mut ChildStdin, ControlError> {
-        self.stdin
-            .as_mut()
-            .ok_or_else(|| ControlError::Refused("worker stdin closed".to_string()))
+    fn send_line(&self, line: String) -> Result<(), ControlError> {
+        self.requests
+            .as_ref()
+            .ok_or_else(|| ControlError::Refused("worker stdin closed".to_string()))?
+            .send(line)
+            .map_err(|_| ControlError::Refused("worker stdin closed".to_string()))
     }
 
     pub(crate) fn send_json<T: Serialize, R: for<'de> Deserialize<'de>>(
         &mut self,
         value: &T,
     ) -> Result<R, ControlError> {
-        writeln!(
-            self.stdin()?,
-            "{}",
+        self.send_line(
             serde_json::to_string(value)
-                .map_err(|err| ControlError::Refused(format!("worker serialize: {err}")))?
+                .map_err(|err| ControlError::Refused(format!("worker serialize: {err}")))?,
         )?;
-        self.stdin()?.flush()?;
-        let mut line = String::new();
-        let n = self.stdout.read_line(&mut line)?;
-        if n == 0 {
-            return Err(ControlError::Refused("worker closed stdout".to_string()));
-        }
+        let line = self
+            .responses
+            .recv_timeout(WORKER_RESPONSE_TIMEOUT)
+            .map_err(|err| ControlError::Refused(format!("worker response timeout: {err}")))?
+            .map_err(ControlError::Refused)?;
         serde_json::from_str(line.trim())
             .map_err(|err| ControlError::Refused(format!("worker deserialize: {err}")))
     }
 
     pub(crate) fn send_config<T: Serialize>(&mut self, value: &T) -> Result<(), ControlError> {
-        writeln!(
-            self.stdin()?,
-            "{}",
+        self.send_line(
             serde_json::to_string(value)
-                .map_err(|err| ControlError::Refused(format!("worker config serialize: {err}")))?
-        )?;
-        self.stdin()?.flush()?;
-        Ok(())
+                .map_err(|err| ControlError::Refused(format!("worker config serialize: {err}")))?,
+        )
     }
 }
 
 impl Drop for ChildLines {
     fn drop(&mut self) {
-        self.stdin = None;
+        self.requests = None;
         let _ = self.child.kill();
         let _ = self.child.wait();
     }
@@ -539,6 +572,14 @@ impl From<std::io::Error> for ControlError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn worker_lines_are_bounded() {
+        let bytes = vec![b'x'; MAX_WORKER_LINE_BYTES as usize + 1];
+        let mut reader = BufReader::new(bytes.as_slice());
+        let err = read_bounded_line(&mut reader).unwrap_err();
+        assert!(err.to_string().contains("exceeds"));
+    }
 
     fn rest_plant(lag: f64) -> PlantConfig {
         PlantConfig {

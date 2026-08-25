@@ -110,9 +110,9 @@ impl Mekf {
         if !valid {
             return Ok((self.estimate(), false));
         }
-        if !star.t_s.is_finite() || star.t_s > self.t_s + 1.0e-9 {
+        if !star.t_s.is_finite() || (star.t_s - self.t_s).abs() > 1.0e-9 {
             return Err(NavError::Refused(
-                "star-tracker sample time is invalid or in the future".to_string(),
+                "star-tracker sample must be time-aligned with the current estimate".to_string(),
             ));
         }
         if !finite(star.q) {

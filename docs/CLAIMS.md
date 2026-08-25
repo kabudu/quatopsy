@@ -15,7 +15,7 @@ Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research reposito
 
 ## Unreleased M6
 
-- `quatopsy plan` emits a torque-limited rest-to-rest candidate plus `quatopsy.plan/1`. Closed-form eigenaxis and bounded multiple-shooting paths are available. Residuals are computed by an independent oracle, including stored momentum and keep-out cones. Optional actuator models, weighted objectives, and perturbation campaigns never assign report `result`. A subsequent `analyze` owns the only verdict. Optimality is not claimed. Gyroscopic torque or actuator limits that cannot be met are infeasible.
+- `quatopsy plan` emits a torque-limited rest-to-rest candidate plus `quatopsy.plan/1`. Closed-form eigenaxis and bounded nonlinear direct-shooting paths are available. Residuals are computed by an independent oracle, including stored momentum and keep-out cones. Optional actuator models, weighted objectives, and perturbation campaigns never assign report `result`. A subsequent `analyze` owns the only verdict. Optimality is not claimed. Gyroscopic torque or actuator limits that cannot be met are infeasible.
 
 ## Unreleased M7
 

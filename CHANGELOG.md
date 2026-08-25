@@ -6,7 +6,7 @@
 
 - Canonical product brand `quatopsy.brand/1` with antipodal paired-point mark, tokens, lockups, deterministic PNG exports, and local CI validation.
 - `quatopsy control` for a geometric PD controller on SO(3), with independent command inhibition, estimator freshness contracts, saturation and safe fallback, host-CPU processor-in-the-loop, loopback hardware-in-the-loop, declared software plant models, a software GN&C plane (MEKF/UKF, guidance profiles, wheel allocation, declared two-body geometry), a fail-closed hardware-use gate, deterministic robustness trials, no physical actuator I/O, and no report `result`.
-- `quatopsy plan` for a torque-limited rest-to-rest candidate, with independent Euler/kinematics residuals, body-rate columns, actuator and keep-out models, weighted objectives, bounded multiple shooting, perturbation campaigns, infeasibility on constraint violation, and no report `result`.
+- `quatopsy plan` for a torque-limited rest-to-rest candidate, with independent Euler/kinematics residuals, body-rate columns, actuator and keep-out models, behaviorally tested weighted objectives, bounded nonlinear direct shooting, declared-actuator perturbation campaigns, infeasibility on constraint violation, and no report `result`.
 - Forensic gap closure for strict adoption-policy validation, canonical UTC overrides, unknown-major refusal exits, transactionally committed output sets, per-finding reproducers, and bounded viewer finding navigation.
 - `QAT-CONV-001` matrix comparison and `QAT-OMEGA-001` body-rate comparison.
 - `quatopsy adapt` for `ids-jason1`, `ros-json`, `tubin-str`, uncompressed `mcap-json`, and `spice-ck` type 3, with provenance that never contains `result`.
@@ -19,6 +19,7 @@
 
 ### Fixed
 
+- M6-M8 hardening makes pointing weights effective, models redundant-wheel momentum per wheel, bounds delay/profile/schedule work, aligns delayed star updates to the filter epoch, records per-update NIS/NEES, makes canonical control artifacts reproducible, and gives PIL/HIL workers bounded messages and response deadlines.
 - Control plant applies magnetic residual and gravity-gradient torque to Euler's equation only. Stored wheel momentum follows motor torque.
 - Logged control CSV torque is the plant-applied body torque after command-to-torque lag and declared environmental models. The initial sample is zero.
 - `star_tracker_delay_s: 0` is zero attitude delay. It does not fall back to gyro `delay_s`.

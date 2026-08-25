@@ -521,17 +521,18 @@ fn run_plan(
         eprintln!("error: planner was cancelled");
         return Err(ExitCode::from(3));
     }
-    let out = match quatopsy_plan::plan(&bytes, env!("CARGO_PKG_VERSION")) {
-        Ok(out) => out,
-        Err(quatopsy_plan::PlanError::Infeasible(reason)) => {
-            eprintln!("error: infeasible: {reason}");
-            return Err(ExitCode::from(2));
-        }
-        Err(err) => {
-            eprintln!("error: {err}");
-            return Err(ExitCode::from(2));
-        }
-    };
+    let out =
+        match quatopsy_plan::plan_cancelled(&bytes, env!("CARGO_PKG_VERSION"), Some(cancelled)) {
+            Ok(out) => out,
+            Err(quatopsy_plan::PlanError::Infeasible(reason)) => {
+                eprintln!("error: infeasible: {reason}");
+                return Err(ExitCode::from(2));
+            }
+            Err(err) => {
+                eprintln!("error: {err}");
+                return Err(ExitCode::from(2));
+            }
+        };
     if cancelled.load(Ordering::SeqCst) {
         eprintln!("error: planner was cancelled");
         return Err(ExitCode::from(3));
@@ -590,15 +591,18 @@ fn run_control(
         eprintln!("error: could not locate this executable for isolation: {err}");
         ExitCode::from(3)
     })?;
-    let out =
-        match quatopsy_control::control_with_workers(&bytes, env!("CARGO_PKG_VERSION"), Some(&exe))
-        {
-            Ok(out) => out,
-            Err(err) => {
-                eprintln!("error: {err}");
-                return Err(ExitCode::from(2));
-            }
-        };
+    let out = match quatopsy_control::control_with_workers_cancelled(
+        &bytes,
+        env!("CARGO_PKG_VERSION"),
+        Some(&exe),
+        Some(cancelled),
+    ) {
+        Ok(out) => out,
+        Err(err) => {
+            eprintln!("error: {err}");
+            return Err(ExitCode::from(2));
+        }
+    };
     if cancelled.load(Ordering::SeqCst) {
         eprintln!("error: controller was cancelled");
         return Err(ExitCode::from(3));

@@ -20,6 +20,9 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 | INT-4 | Keep the candidate planner outside semantic verdict ownership | Plan contract | Plan-then-analyze E2E | Plan protocol tests | verified |
 | INT-5 | Keep the controller outside semantic verdict ownership and physical hardware command | Control contract | Control-then-analyze E2E including PIL and loopback HIL | Control protocol and safety tests | verified |
 | INT-6 | Keep the software GN&C plane outside semantic verdict ownership, physical hardware command, and flight-navigation claims | Nav/guidance/control contract | Profile-track control-then-analyze plus independent NIS and allocation oracles | Control protocol and safety tests | verified |
+| INT-7 | Make M6 weighted objectives and solver classification behaviorally truthful | Planner objective and direct-shooting protocol | Pointing-weight sensitivity, legacy solver alias, plan-then-analyze tests | Planner unit and CLI tests | verified |
+| INT-8 | Bound M7/M8 history, guidance, schedules, worker IPC, and cancellation | Controller, guidance, PIL/HIL isolation | Binary-search paths, input caps, worker framing, in-loop cancellation tests | Control and guidance unit tests | verified |
+| INT-9 | Align delayed measurements and emit reproducible estimator/control audits | Navigator and canonical control/nav protocols | Stale-star refusal, delayed tracking, per-update NIS/NEES, repeat-run equality | Nav/control unit tests | verified |
 | PERF-1 | Analyse one million samples under registered time and memory targets | Kernel/CLI | Frozen benchmark | Benchmark report | verified |
 | REL-1 | Run repository-owned local CI as the authoritative private-repo gate | Maintainers | `./scripts/ci-local.sh` | Recorded PR result | verified |
 | REL-2 | Require explicit user approval before hosted CI activation | Owner | Repository audit | Release checklist | planned |
