@@ -185,9 +185,9 @@ def antipodal_direction_svg(ink: str, accent: str, *, bg: str | None = None) -> 
     return svg_wrap(ring + chord + dots, bg=bg)
 
 
-RIBBON_A = "M4.6 13.8 C3.4 9.2 5.8 5.7 10.4 5.3 C15.5 4.9 20.8 8.0 23.8 12.2 C20.3 9.9 16.1 7.8 11.8 7.9 C8.0 8.0 6.3 10.2 6.8 13.8 C7.4 18.0 11.8 22.2 17.8 25.4 C12.0 23.8 6.3 19.3 4.6 13.8 Z"
-RIBBON_B = "M20.2 6.2 C24.6 7.5 27.4 11.6 27.1 16.2 C26.8 21.3 22.1 24.3 16.1 25.8 C19.7 23.4 23.3 20.6 24.8 17.2 C26.2 13.9 24.4 9.7 20.2 6.2 Z M17.8 25.4 C15.3 26.0 12.6 25.6 10.4 24.4 C13.0 24.6 15.4 24.0 17.8 22.8 C19.4 22.0 21.1 21.0 22.6 19.8 C21.4 22.4 19.9 24.2 17.8 25.4 Z"
-RIBBON_C = "M6.4 22.8 C9.2 19.6 12.8 17.4 16.8 16.0 C20.0 14.9 23.3 14.6 25.5 15.7 C21.4 15.9 17.6 17.1 14.0 18.8 C10.8 20.3 8.2 21.9 6.4 22.8 Z"
+RIBBON_A = "M4.7 14.0 C3.1 9.0 6.0 5.0 11.0 4.8 C16.0 4.6 20.9 7.8 23.8 12.2 C19.8 9.4 15.3 7.1 11.3 7.3 C7.7 7.5 6.2 10.2 7.0 13.8 C8.0 18.1 12.5 22.8 18.6 25.9 C12.2 24.3 6.4 19.9 4.7 14.0 Z"
+RIBBON_B = "M20.2 5.8 C25.0 7.1 28.0 11.3 27.7 16.2 C27.3 21.4 22.4 24.5 16.3 25.8 C20.5 23.0 24.0 20.2 25.1 16.6 C26.2 13.0 24.3 8.9 20.2 5.8 Z M17.8 25.2 C21.1 26.2 23.8 25.4 26.3 23.1 C23.8 26.8 20.7 28.0 17.7 27.2 C14.7 26.4 12.3 25.7 10.4 24.3 C13.0 24.7 15.5 24.3 17.8 25.2 Z"
+RIBBON_C = "M6.0 23.1 C9.7 18.1 15.7 14.0 21.7 14.1 C23.5 14.1 24.8 14.7 25.6 15.6 C21.1 15.4 16.8 16.6 13.0 18.5 C9.8 20.1 7.3 22.1 6.0 23.1 Z"
 
 
 def symbol_body(*, mono: str | None = None, small: bool = False) -> str:
@@ -196,18 +196,15 @@ def symbol_body(*, mono: str | None = None, small: bool = False) -> str:
     if small:
         return (
             '<g transform="translate(-4,-4) scale(1.25)">'
-            '<path d="M5 14 C3.8 9 6.5 5.5 11 5.3 C16 5.1 21.2 8.1 24 12.2 '
-            'C19.6 9.4 14.3 7.4 10.2 8.5 C6.4 9.6 6.8 14.2 9.2 18 C11.5 21.6 14.8 23.8 18.3 25.5 '
-            'C12.1 24.3 6.4 20 5 14 Z" fill="#b342e8"/>'
-            '<path d="M20.2 6.2 C25 8 27.5 12 27 16.6 C26.4 21.2 22.1 24.5 16.2 25.8 '
-            'C20.1 22.8 23.4 19.9 24.7 16.8 C26 13.5 24.1 9.4 20.2 6.2 Z" fill="#d52eb2"/>'
+            f'<path d="{RIBBON_A}" fill="#b342e8"/>'
+            f'<path d="{RIBBON_B}" fill="#d52eb2"/>'
             '</g>'
         )
     return (
         '<defs>'
-        '<linearGradient id="qa" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7c4dff"/><stop offset="1" stop-color="#d946ef"/></linearGradient>'
-        '<linearGradient id="qb" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#312e81"/><stop offset="1" stop-color="#c026d3"/></linearGradient>'
-        '<linearGradient id="qc" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#fff1d6"/><stop offset="1" stop-color="#f5c96a"/></linearGradient>'
+        '<linearGradient id="qa" gradientUnits="userSpaceOnUse" x1="5" y1="6" x2="20" y2="26"><stop stop-color="#8b5cf6"/><stop offset="0.48" stop-color="#b445eb"/><stop offset="1" stop-color="#d946ef"/></linearGradient>'
+        '<linearGradient id="qb" gradientUnits="userSpaceOnUse" x1="12" y1="26" x2="27" y2="8"><stop stop-color="#58104f"/><stop offset="0.52" stop-color="#b21eaa"/><stop offset="1" stop-color="#ec48c6"/></linearGradient>'
+        '<linearGradient id="qc" gradientUnits="userSpaceOnUse" x1="6" y1="22" x2="26" y2="15"><stop stop-color="#f5c96a"/><stop offset="0.45" stop-color="#fff1d6"/><stop offset="1" stop-color="#fff8e8"/></linearGradient>'
         '</defs>'
         f'<path d="{RIBBON_A}" fill="url(#qa)"/>'
         f'<path d="{RIBBON_B}" fill="url(#qb)"/>'
@@ -574,23 +571,64 @@ def raster_symbol(size: int, ink: str, accent: str, bg: str, *, small: bool = Fa
     del ink, accent
     scale = size / 32.0
     background = hex_rgb(bg)
-    a0, a1 = hex_rgb("#7c4dff"), hex_rgb("#d946ef")
-    b0, b1 = hex_rgb("#312e81"), hex_rgb("#c026d3")
-    c0, c1 = hex_rgb("#fff1d6"), hex_rgb("#f5c96a")
-    pixels = bytearray(size * size * 4)
-    shapes = [(flatten_cubic_path(RIBBON_A), a0, a1), (flatten_cubic_path(RIBBON_B), b0, b1)]
+    a0, a1 = hex_rgb("#8b5cf6"), hex_rgb("#d946ef")
+    b0, b1 = hex_rgb("#58104f"), hex_rgb("#ec48c6")
+    c0, c1 = hex_rgb("#f5c96a"), hex_rgb("#fff8e8")
+    supersample = 4
+    canvas_size = size * supersample
+    canvas = bytearray(bytes(background) * (canvas_size * canvas_size))
+    shapes = [(flatten_cubic_path(RIBBON_A, 96), a0, a1), (flatten_cubic_path(RIBBON_B, 96), b0, b1)]
     if not small or size >= 32:
-        shapes.append((flatten_cubic_path(RIBBON_C), c0, c1))
+        shapes.append((flatten_cubic_path(RIBBON_C, 96), c0, c1))
+
+    def canvas_point(point: tuple[float, float]) -> tuple[float, float]:
+        x, y = point
+        if small:
+            x, y = 1.25 * x - 4, 1.25 * y - 4
+        return x * scale * supersample, y * scale * supersample
+
+    # Scan-convert at 4x resolution and box-filter down. This keeps the raster
+    # silhouette faithful to the canonical cubic paths without platform font or
+    # graphics-library dependencies.
+    for polygons, start, end in shapes:
+        for polygon in polygons:
+            transformed = tuple(canvas_point(point) for point in polygon)
+            min_y = max(0, math.floor(min(point[1] for point in transformed)))
+            max_y = min(canvas_size, math.ceil(max(point[1] for point in transformed)))
+            for y in range(min_y, max_y):
+                sample_y = y + 0.5
+                intersections: list[float] = []
+                previous = transformed[-1]
+                for current in transformed:
+                    x1, y1 = previous
+                    x2, y2 = current
+                    if (y1 > sample_y) != (y2 > sample_y):
+                        intersections.append(x1 + (sample_y - y1) * (x2 - x1) / (y2 - y1))
+                    previous = current
+                intersections.sort()
+                for left, right in zip(intersections[0::2], intersections[1::2]):
+                    first = max(0, math.ceil(left - 0.5))
+                    last = min(canvas_size, math.ceil(right - 0.5))
+                    for x in range(first, last):
+                        px = (x + 0.5) / (scale * supersample)
+                        py = (y + 0.5) / (scale * supersample)
+                        if small:
+                            px, py = (px + 4) / 1.25, (py + 4) / 1.25
+                        t = max(0.0, min(1.0, (px + py - 8) / 44))
+                        colour = mix(start, end, t)
+                        i = (y * canvas_size + x) * 3
+                        canvas[i : i + 3] = bytes(colour)
+
+    pixels = bytearray(size * size * 4)
     for y in range(size):
         for x in range(size):
-            px, py = (x + 0.5) / scale, (y + 0.5) / scale
-            if small:
-                px, py = (px + 4) / 1.25, (py + 4) / 1.25
-            colour = background
-            for polygons, start, end in shapes:
-                if any(inside_polygon(px, py, polygon) for polygon in polygons):
-                    t = max(0.0, min(1.0, (px + py - 8) / 44))
-                    colour = mix(start, end, t)
+            channels = [0, 0, 0]
+            for sy in range(y * supersample, (y + 1) * supersample):
+                for sx in range(x * supersample, (x + 1) * supersample):
+                    i = (sy * canvas_size + sx) * 3
+                    for channel in range(3):
+                        channels[channel] += canvas[i + channel]
+            colour = tuple(round(value / supersample**2) for value in channels)
             i = (y * size + x) * 4
             pixels[i : i + 4] = bytes((*colour, 255))
     return bytes(pixels)
