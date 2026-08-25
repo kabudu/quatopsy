@@ -147,7 +147,9 @@ fn viewer_assets_meet_keyboard_contrast_and_text_state_requirements() {
     assert!(html.contains("data-brand-version=\"quatopsy.brand/2\""));
     assert!(html.contains("See where rotations go wrong."));
     assert!(html.contains("brand-ribbon-a"));
-    assert!(html.contains("#7c4dff") && html.contains("#d946ef"));
+    assert!(html.contains("#8b5cf6") && html.contains("#d946ef"));
+    assert!(html.contains("#58104f") && html.contains("#ec48c6"));
+    assert!(html.contains("#f5c96a") && html.contains("#fff8e8"));
     assert!(html.contains("viewBox=\"0 0 32 32\""));
     assert!(html.contains("aria-live=\"polite\""));
     assert!(html.contains("role=\"status\""));

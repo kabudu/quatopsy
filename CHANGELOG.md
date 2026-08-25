@@ -19,6 +19,7 @@
 
 ### Fixed
 
+- Brand raster exports now use deterministic 4x supersampled scan conversion, and the canonical ribbon geometry retains the broad curves and folded lower return of the owner-approved concept instead of a faceted approximation.
 - M6-M8 hardening makes pointing weights effective, models redundant-wheel momentum per wheel, bounds delay/profile/schedule work, aligns delayed star updates to the filter epoch, records per-update NIS/NEES, makes canonical control artifacts reproducible, and gives PIL/HIL workers bounded messages and response deadlines.
 - Control plant applies magnetic residual and gravity-gradient torque to Euler's equation only. Stored wheel momentum follows motor torque.
 - Logged control CSV torque is the plant-applied body torque after command-to-torque lag and declared environmental models. The initial sample is zero.
