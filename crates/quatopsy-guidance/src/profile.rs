@@ -2,6 +2,8 @@ use libm::{acos, sin, sqrt};
 use quatopsy_oracle::{KeepOutCone, RefQuat, keep_out_violation};
 use thiserror::Error;
 
+pub const MAX_PROFILE_SAMPLES: usize = 100_000;
+
 #[derive(Debug, Error)]
 pub enum GuideError {
     #[error("{0}")]
@@ -57,10 +59,20 @@ impl Profile {
     }
 
     pub fn from_samples(mut samples: Vec<ProfileSample>) -> Result<Self, GuideError> {
-        if samples.len() < 2 {
-            return Err(GuideError::Refused(
-                "guidance profile needs at least two samples".to_string(),
-            ));
+        if !(2..=MAX_PROFILE_SAMPLES).contains(&samples.len()) {
+            return Err(GuideError::Refused(format!(
+                "guidance profile needs 2..={MAX_PROFILE_SAMPLES} samples"
+            )));
+        }
+        for sample in &samples {
+            if !sample.t.is_finite()
+                || !sample.omega.iter().all(|value| value.is_finite())
+                || !sample.alpha.iter().all(|value| value.is_finite())
+            {
+                return Err(GuideError::Refused(
+                    "guidance time, angular rate, and acceleration must be finite".to_string(),
+                ));
+            }
         }
         samples.sort_by(|a, b| a.t.total_cmp(&b.t));
         for window in samples.windows(2) {
@@ -142,19 +154,34 @@ impl Profile {
         if t >= last.t {
             return Ok(last);
         }
-        for window in self.samples.windows(2) {
-            if t >= window[0].t && t <= window[1].t {
-                let span = window[1].t - window[0].t;
-                let u = (t - window[0].t) / span;
-                return Ok(ProfileSample {
-                    t,
-                    q: slerp(window[0].q, window[1].q, u),
-                    omega: lerp3(window[0].omega, window[1].omega, u),
-                    alpha: window[0].alpha,
-                });
-            }
+        let upper = self.samples.partition_point(|sample| sample.t < t);
+        let left = self.samples[upper - 1];
+        let right = self.samples[upper];
+        let span = right.t - left.t;
+        let u = (t - left.t) / span;
+        Ok(ProfileSample {
+            t,
+            q: slerp(left.q, right.q, u),
+            omega: lerp3(left.omega, right.omega, u),
+            alpha: left.alpha,
+        })
+    }
+
+    pub fn validate_terminal_rest(
+        &self,
+        q_des: [f64; 4],
+        attitude_tolerance_rad: f64,
+        rate_tolerance_rad_s: f64,
+    ) -> Result<(), GuideError> {
+        let last = *self.samples.last().expect("validated profile is non-empty");
+        if geodesic(last.q, normalize(q_des)?) > attitude_tolerance_rad
+            || norm3(last.omega) > rate_tolerance_rad_s
+        {
+            return Err(GuideError::Refused(
+                "guidance profile must terminate at q_desired with zero body rate".to_string(),
+            ));
         }
-        Ok(last)
+        Ok(())
     }
 
     pub fn mode(&self, sample: ProfileSample, q_des: [f64; 4]) -> GuidanceMode {

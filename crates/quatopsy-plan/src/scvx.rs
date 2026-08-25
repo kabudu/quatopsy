@@ -1,14 +1,15 @@
-//! Bounded multiple-shooting solver on SO(3) with Levenberg-Marquardt.
+//! Bounded nonlinear direct-shooting solver on SO(3) with Levenberg-Marquardt.
 //!
 //! Attitude is reconstructed with the exponential map. Quaternion components
 //! are never decision variables. The algorithm name written to `plan.json` is
-//! `multiple-shooting-lm`. This is not a globally optimal NLP, and it is not a
+//! `direct-shooting-lm`. This is not a globally optimal NLP, and it is not a
 //! sequential-convexification collocation method.
 
 use crate::PlanError;
 use crate::actuators::{ActuatorMap, allocate_body_torque};
 use crate::geom::{Quat, add3, euler_lhs, exp_so3, log_so3, norm3, scale3, sub3, torque_excess};
 use quatopsy_oracle::{KeepOutCone, keep_out_violation};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 pub(crate) const SOLVER_NODES: usize = 17;
 pub(crate) const MAX_ITERS: usize = 40;
@@ -55,6 +56,7 @@ pub(crate) struct CollocationPath {
     pub omegas: Vec<[f64; 3]>,
     pub torques: Vec<[f64; 3]>,
     pub momenta: Vec<[f64; 3]>,
+    pub wheel_momenta: Vec<Vec<f64>>,
     pub duration: f64,
     pub iterations: u32,
     pub max_defect: f64,
@@ -90,6 +92,7 @@ pub(crate) fn solve(
     seed_duration: f64,
     seed_omega: &[[f64; 3]],
     seed_torque: &[[f64; 3]],
+    cancelled: Option<&AtomicBool>,
 ) -> Result<CollocationPath, PlanError> {
     let n = SOLVER_NODES;
     if seed_omega.len() != n || seed_torque.len() != n {
@@ -119,6 +122,9 @@ pub(crate) fn solve(
     let mut best = residual_norm(problem, &z)?;
     let mut iters = 0;
     for iter in 0..MAX_ITERS {
+        if cancelled.is_some_and(|flag| flag.load(Ordering::Relaxed)) {
+            return Err(PlanError::Refused("planner was cancelled".to_string()));
+        }
         iters = iter as u32 + 1;
         let r = residuals(problem, &z)?;
         let mag = norm_slice(&r);
@@ -173,13 +179,14 @@ pub(crate) fn solve(
             "collocation dynamics defects remain above tolerance".to_string(),
         ));
     }
-    for (q, omega, torque, h) in path
+    for (index, (q, omega, torque, _h)) in path
         .quats
         .iter()
         .zip(path.omegas.iter())
         .zip(path.torques.iter())
         .zip(path.momenta.iter())
         .map(|(((q, w), t), h)| (q, w, t, h))
+        .enumerate()
     {
         if torque_excess(*torque, problem.torque_limit) > 1.0e-9 {
             return Err(PlanError::Infeasible(
@@ -193,7 +200,11 @@ pub(crate) fn solve(
                 "collocation body rate exceeds the slew limit".to_string(),
             ));
         }
-        if problem.actuators.momentum_excess(*h) > 1.0e-9 {
+        if problem
+            .actuators
+            .momentum_excess(&path.wheel_momenta[index])
+            > 1.0e-9
+        {
             return Err(PlanError::Infeasible(
                 "collocation stored momentum exceeds a wheel limit".to_string(),
             ));
@@ -268,12 +279,15 @@ fn reconstruct(problem: &SolverProblem<'_>, z: &Decision) -> Result<CollocationP
     let mut omegas = vec![[0.0; 3]; n];
     let mut torques = vec![[0.0; 3]; n];
     let mut momenta = vec![[0.0; 3]; n];
+    let mut wheel_momenta = vec![vec![0.0; problem.actuators.wheels.len()]; n];
     let mut w = [0.0; 3];
     let mut h = [0.0; 3];
+    let mut h_wheels = vec![0.0; problem.actuators.wheels.len()];
     let mut delta = [0.0; 4];
     let mut max_defect = 0.0_f64;
     for i in 0..n - 1 {
         momenta[i] = h;
+        wheel_momenta[i].clone_from(&h_wheels);
         omegas[i] = w;
         let tau = problem.actuators.body_torque(&z.u[i], w, h, delta)?;
         torques[i] = tau;
@@ -284,7 +298,13 @@ fn reconstruct(problem: &SolverProblem<'_>, z: &Decision) -> Result<CollocationP
         let lhs = euler_lhs(problem.inertia, w_dot, w, h);
         max_defect = max_defect.max(norm3(sub3(lhs, tau)));
         quats[i + 1] = quats[i].mul(exp_so3(scale3(w_mid, dt))).normalized()?;
-        h = add3(h, scale3(problem.actuators.wheel_h_dot(&z.u[i]), dt));
+        for (momentum, rate) in h_wheels
+            .iter_mut()
+            .zip(problem.actuators.wheel_momentum_rates(&z.u[i]))
+        {
+            *momentum += rate * dt;
+        }
+        h = problem.actuators.body_momentum(&h_wheels);
         if let Some(cmg) = &problem.actuators.cmgs {
             let off = problem.actuators.wheels.len() + problem.actuators.thrusters.len();
             for (gimbal, rate) in delta.iter_mut().zip(z.u[i].iter().skip(off).take(4)) {
@@ -305,6 +325,7 @@ fn reconstruct(problem: &SolverProblem<'_>, z: &Decision) -> Result<CollocationP
     }
     omegas[n - 1] = w;
     momenta[n - 1] = h;
+    wheel_momenta[n - 1].clone_from(&h_wheels);
     torques[n - 1] = torques[n - 2];
     let times: Vec<f64> = (0..n).map(|i| i as f64 * dt).collect();
     Ok(CollocationPath {
@@ -313,6 +334,7 @@ fn reconstruct(problem: &SolverProblem<'_>, z: &Decision) -> Result<CollocationP
         omegas,
         torques,
         momenta,
+        wheel_momenta,
         duration: z.duration,
         iterations: 0,
         max_defect,
@@ -333,6 +355,13 @@ fn residuals(problem: &SolverProblem<'_>, z: &Decision) -> Result<Vec<f64>, Plan
             viol = viol.max(keep_out_violation(q.as_ref(), *zone).unwrap_or(1.0));
         }
         r.push(viol * 80.0);
+        if problem.weights.pointing > 0.0 {
+            let pointing = log_so3(q.conjugate().mul(problem.qf));
+            r.extend_from_slice(&scale3(
+                pointing,
+                (problem.weights.pointing / n as f64).sqrt(),
+            ));
+        }
     }
     r.push(problem.weights.time.sqrt() * z.duration * 0.02);
     let mut effort = 0.0;
@@ -357,7 +386,12 @@ fn residuals(problem: &SolverProblem<'_>, z: &Decision) -> Result<Vec<f64>, Plan
         smooth += norm3(w_dot) * norm3(w_dot) * dt;
     }
     r.push(problem.weights.smoothness.sqrt() * smooth.sqrt());
-    r.push(problem.weights.momentum.sqrt() * norm3(path.momenta[n - 1]));
+    let terminal_wheel_momentum = path.wheel_momenta[n - 1]
+        .iter()
+        .map(|value| value * value)
+        .sum::<f64>()
+        .sqrt();
+    r.push(problem.weights.momentum.sqrt() * terminal_wheel_momentum);
     Ok(r)
 }
 

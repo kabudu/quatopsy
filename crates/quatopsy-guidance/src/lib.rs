@@ -4,7 +4,9 @@ mod orbit;
 mod profile;
 
 pub use orbit::{Geometry, TwoBody};
-pub use profile::{GuidanceMode, GuideError, Profile, ProfileSample, SunPoint};
+pub use profile::{
+    GuidanceMode, GuideError, MAX_PROFILE_SAMPLES, Profile, ProfileSample, SunPoint,
+};
 
 #[cfg(test)]
 mod tests {
@@ -102,6 +104,50 @@ mod tests {
             !profile
                 .sun_violation([1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0])
                 .unwrap()
+        );
+    }
+
+    #[test]
+    fn non_finite_rate_is_refused() {
+        let err = Profile::from_samples(vec![
+            ProfileSample {
+                t: 0.0,
+                q: [1.0, 0.0, 0.0, 0.0],
+                omega: [f64::NAN, 0.0, 0.0],
+                alpha: [0.0; 3],
+            },
+            ProfileSample {
+                t: 1.0,
+                q: [1.0, 0.0, 0.0, 0.0],
+                omega: [0.0; 3],
+                alpha: [0.0; 3],
+            },
+        ])
+        .unwrap_err();
+        assert!(err.to_string().contains("must be finite"));
+    }
+
+    #[test]
+    fn terminal_rest_contract_is_enforced() {
+        let profile = Profile::from_samples(vec![
+            ProfileSample {
+                t: 0.0,
+                q: [1.0, 0.0, 0.0, 0.0],
+                omega: [0.0; 3],
+                alpha: [0.0; 3],
+            },
+            ProfileSample {
+                t: 1.0,
+                q: [1.0, 0.0, 0.0, 0.0],
+                omega: [0.1, 0.0, 0.0],
+                alpha: [0.0; 3],
+            },
+        ])
+        .unwrap();
+        assert!(
+            profile
+                .validate_terminal_rest([1.0, 0.0, 0.0, 0.0], 1e-4, 1e-4)
+                .is_err()
         );
     }
 }
