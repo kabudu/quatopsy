@@ -65,3 +65,5 @@ M6 adds `quatopsy plan`, an offline candidate generator for a torque-limited res
 M7 adds `quatopsy control`, a geometric PD controller on SO(3). Independent oracle inhibition, estimator freshness contracts, fail-closed safe fallback, host-CPU PIL, loopback HIL, and declared software plant models are in-repo. It never writes `quatopsy.report/1` `result`, never opens a physical actuator, and is not a hard-real-time or flight controller. The systems-safety programme cannot qualify hardware.
 
 M8 adds a software GN&C plane: MEKF/UKF attitude navigation with NIS/NEES audit, time-tagged guidance, reference tracking, reaction-wheel allocation, and declared two-body geometry. It is not orbit determination, not a certified estimator, and not permission to command hardware.
+
+M9 adds the enduring product brand `quatopsy.brand/1`: antipodal paired-point mark, tokens, lockups, and local CI validation. It is not trademark clearance and not public opening.

@@ -53,4 +53,4 @@ Repository visibility remains private until the owner explicitly approves public
 
 ## Brand gate
 
-A restrained research presentation may accompany a claim-bounded release. Claiming complete productisation requires separate owner approval, legal name/mark review, complete canonical assets and manifests, deterministic exports, accessibility and cross-channel validation, and governance. Maturity status remains an overlay and never changes the canonical identity.
+A restrained research presentation may accompany a claim-bounded release. The owner approved productisation of the enduring brand on 2026-08-19 and declined a trademark filing. Canonical assets are `quatopsy.brand/1`. Public opening, hosted CI, crates.io, signed binaries, website deployment, and production support remain distinct gates. Maturity status remains an overlay and never changes the canonical identity.

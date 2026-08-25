@@ -31,6 +31,7 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 | UX-1 | Synchronise all views by sample identity with bounded finding navigation | Viewer | Public-workflow bundle tests and browser interaction | Visual workflow evidence | verified |
 | UX-2 | Distinguish raw, derived, repaired, representation, and physical states | Viewer | Viewer layer and caption tests | UI evidence | verified |
 | UX-3 | Never use colour as the sole result signal | Viewer | Text state, contrast checks, and browser accessibility snapshot | Accessibility report | verified |
+| BRAND-1 | Ship `quatopsy.brand/1` sources, exports, tokens, and overlay-separated templates | Brand | `scripts/brandkit.py check` | Local CI log | verified |
 | NOV-1 | Test the closed diagnostic-contract differentiation hypothesis | Research | Systematic comparison | Updated prior-art matrix | planned |
 | NOV-2 | Test the combined evidence/visual/repair workflow hypothesis | Research | Matched prototype comparison | Validation report | planned |
 | NOV-3 | Keep independent validation optional and claims conditional | Product/research | Gate and copy audit | Release checklist | verified |

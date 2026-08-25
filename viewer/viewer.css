@@ -12,10 +12,7 @@ body { margin: 0; background: radial-gradient(circle at 78% -10%, rgba(55, 163, 
 .masthead, .status-strip, main, footer { width: min(100% - 2rem, 96rem); margin-inline: auto; }
 .masthead { min-height: 7.5rem; display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding-block: 1.5rem; }
 .brand-lockup { display: flex; align-items: center; gap: 1rem; }
-.brand-mark { width: 2.9rem; height: 2.9rem; position: relative; display: block; }
-.brand-mark i { position: absolute; border: 1px solid var(--cyan); border-radius: 50%; inset: 0.45rem; }
-.brand-mark i:nth-child(2) { transform: rotate(60deg) scaleX(0.42); }
-.brand-mark i:nth-child(3) { transform: rotate(-60deg) scaleX(0.42); }
+.brand-mark { width: 2.9rem; height: 2.9rem; display: block; color: var(--fg); flex: none; }
 .eyebrow, .panel-index { margin: 0 0 0.2rem; color: var(--cyan); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 h1, h2, p { overflow-wrap: anywhere; }
 h1 { font: 700 1.15rem/1.2 system-ui, sans-serif; letter-spacing: 0.08em; margin: 0; }

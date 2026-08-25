@@ -10,7 +10,7 @@ Quatopsy does not claim to invent quaternions, sign canonicalisation, shortest-p
 
 ## Status
 
-M5 is a private `0.1.0` research release with frozen claims and checksummed local artefacts. No safety qualification, public opening, signed publication, crates.io package, hosted CI, full brand system, or independent external validation is claimed.
+M5 is a private `0.1.0` research release with frozen claims and checksummed local artefacts. Canonical brand assets exist as `quatopsy.brand/1`. No safety qualification, public opening, signed publication, crates.io package, hosted CI, trademark clearance, or independent external validation is claimed.
 
 The learning-laboratory concept is a separate future project and is not part of Quatopsy.
 
@@ -67,6 +67,7 @@ Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 ## Documentation
 
 - [Frozen claims](docs/CLAIMS.md)
+- [Brand identity](docs/BRAND_IDENTITY.md)
 - [Release gate audit](docs/RELEASE_GATE.md)
 - [Product specification](docs/PRODUCT_SPECIFICATION.md)
 - [Architecture](docs/ARCHITECTURE.md)
@@ -84,4 +85,4 @@ Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 
 ## Name audit
 
-`Quatopsy` is a point-in-time candidate, searched on 2026-08-14 across general web results, GitHub repository names, npm, PyPI, and crates.io. No exact product or package collision was found. This is not trademark clearance, domain reservation, patent clearance, or a guarantee of worldwide availability. Legal review remains required before public productisation.
+`Quatopsy` is the product name. It was searched on 2026-08-14 across general web results, GitHub repository names, npm, PyPI, and crates.io. No exact product or package collision was found. The owner declined a trademark filing. This is not trademark clearance, domain reservation, patent clearance, or a guarantee of worldwide availability. Residual collision risk is accepted until a later public-opening review.

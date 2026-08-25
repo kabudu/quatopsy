@@ -64,7 +64,7 @@ Exit: supported scope passes adversarial, portability, lifecycle, performance, a
 - [x] Generate and validate release-note previews at desktop and narrow widths before publication.
 - [x] Publish only with explicit release authorization and documented credentials path.
 
-Exit: release policy passes for a private `0.1.0` GitHub Release. External independent validation is welcome but is not required for this exit; unsupported independent-validation claims remain prohibited. Public opening, hosted CI, crates.io, signed binaries, and full brand productisation remain distinct unauthorised gates.
+Exit: release policy passes for a private `0.1.0` GitHub Release. External independent validation is welcome but is not required for this exit; unsupported independent-validation claims remain prohibited. Public opening, hosted CI, crates.io, and signed binaries remain distinct unauthorised gates. The brand system is tracked as M9.
 
 ## V1 gap closure
 
@@ -126,6 +126,21 @@ This milestone is a software navigation, guidance, and control plane. It does no
 - [ ] Orbit determination, GPS, or map-aiding filters.
 
 Exit: local CI plus the rest-to-rest fixtures and a profile-tracking fixture. Open boxes are not shipped.
+
+## M9: Product brand system
+
+Owner productisation was approved. Trademark filing was declined. Public opening remains a later gate.
+
+- [x] Record owner productisation approval and the decision to keep `Quatopsy` without a trademark filing, without claiming clearance.
+- [x] Construct and score three mark directions; select the antipodal paired-point system.
+- [x] Ship `quatopsy.brand/1` sources, exports, tokens, templates, licences, and a digest manifest.
+- [x] Validate contrast, SVG safety, overlay separation, prohibited-claim copy, and deterministic export in local CI.
+- [x] Apply the symbol and tagline on the local viewer and CLI without weakening CSP or report ownership.
+- [ ] Public repository visibility.
+- [ ] Hosted CI.
+- [ ] crates.io, signed binaries, website, and production support.
+
+Exit: local CI including `python3 scripts/brandkit.py check`. Open boxes are not shipped.
 
 ## Optional post-release evidence track
 

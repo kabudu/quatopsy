@@ -1,0 +1,392 @@
+{
+  "schema": "quatopsy.brand-manifest/1",
+  "brand_version": "quatopsy.brand/1",
+  "direction": "antipodal-paired-point",
+  "entries": [
+    {
+      "path": "LICENSES/README.md",
+      "sha256": "771e3695fdf575b4e20adca375e8bec48b1d6a1e75928ea7644ec343eafd1f4e",
+      "bytes": 214,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "exports/app-icon-512.png",
+      "sha256": "faed00748d9752235a771cb7974c6e04893c06765aabef20e665bedf8a18e05a",
+      "bytes": 33684,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "exports/apple-touch-180.png",
+      "sha256": "2078bcf5054471f9858147e7efa700b1e5a50508cc0e39b714d307577ae5342e",
+      "bytes": 4652,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        180,
+        180
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "exports/avatar-512.png",
+      "sha256": "faed00748d9752235a771cb7974c6e04893c06765aabef20e665bedf8a18e05a",
+      "bytes": 33684,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "exports/favicon-16.png",
+      "sha256": "f61033de0f337a39d3a4e4f3fbaafe80b90f303df5803785ef0e0c88d167f34c",
+      "bytes": 134,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        16,
+        16
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "exports/favicon-32.png",
+      "sha256": "bce8cafe670aaac58c971df00369d99954aa35465c832fed74cff56163b773e4",
+      "bytes": 236,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        32,
+        32
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "exports/plain-lockup.txt",
+      "sha256": "f20b52566231d7e1b21641b528d00c1504193454534b92b993783ac986ff9a00",
+      "bytes": 74,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "exports/simulations/result-cvd.png",
+      "sha256": "22b575e6d9483023bf7e2acccd56a2e7eb86de9547bef939b401851e6af1d32a",
+      "bytes": 369,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        240,
+        48
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "exports/social-og-1200x630.png",
+      "sha256": "848a9f644fbe0610d44627ae0b2578b49e210f5586df37313ba8c099115950a8",
+      "bytes": 16467,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        1200,
+        630
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "exports/study-lifted-path.png",
+      "sha256": "7d0cf43133fd025f2798c41a3166a0c17288318bed7467b053bd285069a76ff4",
+      "bytes": 27620,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "exports/study-quotient-lens.png",
+      "sha256": "6190d632ab74a6f8451e980528d2b7c3d9c9152fc2938def688e278b5265295d",
+      "bytes": 62707,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        512,
+        512
+      ],
+      "colour_space": "sRGB"
+    },
+    {
+      "path": "source/directions/antipodal-paired-point.svg",
+      "sha256": "618aca8a4272b2982ccf45c83eaf4df8781a907947dcaab25d19acf6884a7884",
+      "bytes": 528,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/directions/lifted-path.svg",
+      "sha256": "f4d4ee2409eea4117d75393119454bf183cfca2d62191c5253746bf2d3cf9597",
+      "bytes": 404,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/directions/quotient-lens.svg",
+      "sha256": "b00825f244a9b8a3158c6fea29d0662508d4bdb982fb7bec207ad666173c892f",
+      "bytes": 409,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/icons/result-error.svg",
+      "sha256": "96a53d76439ec84b07430a8b8dacc93ea5513fe2382f8a8e2bfc399c2a488245",
+      "bytes": 392,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/icons/result-findings.svg",
+      "sha256": "ef3140f48163533994427493fcbef09a08657785f3930eadc1aaeb86004ee8c1",
+      "bytes": 398,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/icons/result-pass.svg",
+      "sha256": "3a805a7d1492062aaf44a0009182e87575fa70f9b7c8452d15a690c7aa35c234",
+      "bytes": 481,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/icons/result-refused.svg",
+      "sha256": "bb272ada68122d4667b178d2bcfd6ebfb206d46980ba4f2f4a00ffd354e1c4b8",
+      "bytes": 385,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-lockup-horizontal-mono.svg",
+      "sha256": "91ef4188be8ae509a2d088a2f690e8520c1f2cf9bfa5a2a52d6c9da75320b8d5",
+      "bytes": 674,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-lockup-horizontal-reversed.svg",
+      "sha256": "8099e83080efa98f5f30a048e30836790ab40f4c3eb1cbce30c70a86d8e7cd8e",
+      "bytes": 720,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-lockup-horizontal.svg",
+      "sha256": "a91bd1bef42dfd18f8f91cd4ef53aec8c794a5b0ad4dd9659099b491e96da7aa",
+      "bytes": 674,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-lockup-light.svg",
+      "sha256": "49961e4ea95ee9912e4230559d49bb7bae0942e61572f519fb9d1538b6bf5eef",
+      "bytes": 674,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-lockup-stacked.svg",
+      "sha256": "f16b21ae14b92a9b98fde24ecc153ff0c66279b1aa24a7dbcce31dcb5276ac33",
+      "bytes": 704,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-symbol-mono.svg",
+      "sha256": "99a07b39104c73b6a2b059403a8ad2c2cf354bd48b763acc29821acac2a72ec8",
+      "bytes": 483,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-symbol-reversed.svg",
+      "sha256": "6e0077e6fe32d2e6990d94a5763d1bd6f48f60bf92c6da5e41ad70fe2895e2fa",
+      "bytes": 528,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-symbol-small.svg",
+      "sha256": "bfc6f192c2c3937bbbb467462838be3eb924b0db85db6456b7ca2912cc8d8daf",
+      "bytes": 349,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-symbol.svg",
+      "sha256": "2bc149a2f9c5ef435078f222afbebd58dd44359995ecfe3f364154cc4fe4ab32",
+      "bytes": 483,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/quatopsy-wordmark.svg",
+      "sha256": "861578aef8263e81d666496a43bb9503180359d520b4402411461d406199499a",
+      "bytes": 296,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "templates/chart-states.svg",
+      "sha256": "c02ccf5f4c706cb48a7c2b22f8857476c6ec269b635cfbb340e1c6bc0c1b9c7c",
+      "bytes": 1000,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "templates/diagram-workflow.svg",
+      "sha256": "91a09fb777a3dab92eec2d81987bd0ff8fa9bf7164b57f574a38d9fcf016a0e6",
+      "bytes": 1268,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "templates/overlay-private-research.svg",
+      "sha256": "d37d7b9c7222af3d09c2682e7e8c43730f995faf428a516cece909e12aeaa50b",
+      "bytes": 355,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "templates/release-lockup.svg",
+      "sha256": "0df0b1cd67b1961f78d57aeb8d1e7dfdedd7e9b082b149d76da73b6664acf2d9",
+      "bytes": 720,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "tokens/tokens.css",
+      "sha256": "fe93d6940bf2227489519f90ce9681258ddb3a87ef947cc3d21decd0e03f1209",
+      "bytes": 1066,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "tokens/tokens.json",
+      "sha256": "12488fc624a4bce359b2ccdf95f2e47be628f1e3c21fbdd7b8f7a7fd9217210f",
+      "bytes": 1953,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    }
+  ]
+}

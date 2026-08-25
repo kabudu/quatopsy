@@ -1,0 +1,3 @@
+Quatopsy
+See where rotations go wrong.
+Orientation-trajectory diagnostics

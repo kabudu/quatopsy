@@ -143,7 +143,9 @@ fn viewer_assets_meet_keyboard_contrast_and_text_state_requirements() {
     let html = fs::read_to_string(root.join("viewer/index.html")).unwrap();
     let css = fs::read_to_string(root.join("viewer/viewer.css")).unwrap();
     let js = fs::read_to_string(root.join("viewer/viewer.js")).unwrap();
-    assert!(html.contains("Skip to main content"));
+    assert!(html.contains("aria-label=\"Quatopsy\""));
+    assert!(html.contains("See where rotations go wrong."));
+    assert!(html.contains("viewBox=\"0 0 32 32\""));
     assert!(html.contains("aria-live=\"polite\""));
     assert!(html.contains("role=\"status\""));
     assert!(html.contains("aria-label=\"Trajectory playback controls\""));
