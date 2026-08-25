@@ -1,12 +1,22 @@
 {
   "schema": "quatopsy.brand-manifest/1",
-  "brand_version": "quatopsy.brand/1",
-  "direction": "antipodal-paired-point",
+  "brand_version": "quatopsy.brand/2",
+  "direction": "woven-lift",
   "entries": [
     {
       "path": "LICENSES/README.md",
-      "sha256": "771e3695fdf575b4e20adca375e8bec48b1d6a1e75928ea7644ec343eafd1f4e",
-      "bytes": 214,
+      "sha256": "c1b5cf7f46556cd82985cdce9ebb0511abb0a9c4cea7ffd39ff1565e8c613106",
+      "bytes": 410,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "LICENSES/SPACE_GROTESK.md",
+      "sha256": "ccb6a5b58d7d36a06ff6573f56aee003c86544cc0e71558dcac5728dad2588d8",
+      "bytes": 508,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -15,8 +25,8 @@
     },
     {
       "path": "exports/app-icon-512.png",
-      "sha256": "faed00748d9752235a771cb7974c6e04893c06765aabef20e665bedf8a18e05a",
-      "bytes": 33684,
+      "sha256": "d69f88719ddce70ae67a05e30275ce8e97032d14685c4465b49bf63f9fc4936a",
+      "bytes": 7346,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -30,8 +40,8 @@
     },
     {
       "path": "exports/apple-touch-180.png",
-      "sha256": "2078bcf5054471f9858147e7efa700b1e5a50508cc0e39b714d307577ae5342e",
-      "bytes": 4652,
+      "sha256": "842c3246fb47338521018652ba4c814b4d7c0e305a205da0b01ea4c298ce25da",
+      "bytes": 2342,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -45,8 +55,8 @@
     },
     {
       "path": "exports/avatar-512.png",
-      "sha256": "faed00748d9752235a771cb7974c6e04893c06765aabef20e665bedf8a18e05a",
-      "bytes": 33684,
+      "sha256": "d69f88719ddce70ae67a05e30275ce8e97032d14685c4465b49bf63f9fc4936a",
+      "bytes": 7346,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -60,8 +70,8 @@
     },
     {
       "path": "exports/favicon-16.png",
-      "sha256": "f61033de0f337a39d3a4e4f3fbaafe80b90f303df5803785ef0e0c88d167f34c",
-      "bytes": 134,
+      "sha256": "8df095bd1ddc72013121982257c59f8da24e5423219fbdd7996835e4b2067623",
+      "bytes": 247,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -75,8 +85,8 @@
     },
     {
       "path": "exports/favicon-32.png",
-      "sha256": "bce8cafe670aaac58c971df00369d99954aa35465c832fed74cff56163b773e4",
-      "bytes": 236,
+      "sha256": "b8ae32ff7e978620cfdf4dd41a3acbe0c8c00378eec1459148e71efc1071a7ea",
+      "bytes": 450,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -99,6 +109,21 @@
       "export_command": "python3 scripts/brandkit.py export"
     },
     {
+      "path": "exports/simulations/brand-cvd.png",
+      "sha256": "64ef18e9711d14e192ed7ce1f760a6e25a3d69111f6decf0c63961f3d377c460",
+      "bytes": 378,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export",
+      "dimensions": [
+        240,
+        48
+      ],
+      "colour_space": "sRGB"
+    },
+    {
       "path": "exports/simulations/result-cvd.png",
       "sha256": "22b575e6d9483023bf7e2acccd56a2e7eb86de9547bef939b401851e6af1d32a",
       "bytes": 369,
@@ -115,8 +140,8 @@
     },
     {
       "path": "exports/social-og-1200x630.png",
-      "sha256": "848a9f644fbe0610d44627ae0b2578b49e210f5586df37313ba8c099115950a8",
-      "bytes": 16467,
+      "sha256": "489486a5a2e3f01972dd0bf83b309b3b1498704f19afa8eb796682d7589e055f",
+      "bytes": 10938,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -130,8 +155,8 @@
     },
     {
       "path": "exports/study-lifted-path.png",
-      "sha256": "7d0cf43133fd025f2798c41a3166a0c17288318bed7467b053bd285069a76ff4",
-      "bytes": 27620,
+      "sha256": "7e086f715a44f83e93d454d47d5bd53190b1a72ff76743cb136834503559127f",
+      "bytes": 27342,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -145,8 +170,8 @@
     },
     {
       "path": "exports/study-quotient-lens.png",
-      "sha256": "6190d632ab74a6f8451e980528d2b7c3d9c9152fc2938def688e278b5265295d",
-      "bytes": 62707,
+      "sha256": "e420232f0f4414f7b825f1f18a569bc10f22bdfd23ed6da7eee0296fd43e1976",
+      "bytes": 63103,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -160,7 +185,7 @@
     },
     {
       "path": "source/directions/antipodal-paired-point.svg",
-      "sha256": "618aca8a4272b2982ccf45c83eaf4df8781a907947dcaab25d19acf6884a7884",
+      "sha256": "6037a54d6a830bd78b47b1c6f638ef34b79530b7abbb4cc50c58006c2bf01d42",
       "bytes": 528,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -182,6 +207,16 @@
       "path": "source/directions/quotient-lens.svg",
       "sha256": "b00825f244a9b8a3158c6fea29d0662508d4bdb982fb7bec207ad666173c892f",
       "bytes": 409,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
+      "path": "source/directions/woven-lift.svg",
+      "sha256": "26579388f65404f688fa7c7a7eec67b64c395be12a283deee122305a18a60009",
+      "bytes": 1272,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -230,8 +265,8 @@
     },
     {
       "path": "source/quatopsy-lockup-horizontal-mono.svg",
-      "sha256": "91ef4188be8ae509a2d088a2f690e8520c1f2cf9bfa5a2a52d6c9da75320b8d5",
-      "bytes": 674,
+      "sha256": "af87e31fb8f85c3e62ed0a857819d2bb33376ba62b93e8f031917e626bfad2dc",
+      "bytes": 8668,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -240,8 +275,8 @@
     },
     {
       "path": "source/quatopsy-lockup-horizontal-reversed.svg",
-      "sha256": "8099e83080efa98f5f30a048e30836790ab40f4c3eb1cbce30c70a86d8e7cd8e",
-      "bytes": 720,
+      "sha256": "0e1e902760609e39062bb59268a86ef482db38b4effbe5d498efdba50344d9a7",
+      "bytes": 8714,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -250,8 +285,8 @@
     },
     {
       "path": "source/quatopsy-lockup-horizontal.svg",
-      "sha256": "a91bd1bef42dfd18f8f91cd4ef53aec8c794a5b0ad4dd9659099b491e96da7aa",
-      "bytes": 674,
+      "sha256": "89e7515ebf74efcae27b1db2ad4efe43190b4ce5cac8b17aad3e4e2398061119",
+      "bytes": 9092,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -260,8 +295,8 @@
     },
     {
       "path": "source/quatopsy-lockup-light.svg",
-      "sha256": "49961e4ea95ee9912e4230559d49bb7bae0942e61572f519fb9d1538b6bf5eef",
-      "bytes": 674,
+      "sha256": "178716c544b1b824156b10233e1fe6a3e1f968f3807c89e68e449612e044bd17",
+      "bytes": 9092,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -270,8 +305,8 @@
     },
     {
       "path": "source/quatopsy-lockup-stacked.svg",
-      "sha256": "f16b21ae14b92a9b98fde24ecc153ff0c66279b1aa24a7dbcce31dcb5276ac33",
-      "bytes": 704,
+      "sha256": "4121c4df7d06694bdf533703b39b31672c71073983bedc9bd75cc832c3b4243a",
+      "bytes": 9093,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -280,8 +315,8 @@
     },
     {
       "path": "source/quatopsy-symbol-mono.svg",
-      "sha256": "99a07b39104c73b6a2b059403a8ad2c2cf354bd48b763acc29821acac2a72ec8",
-      "bytes": 483,
+      "sha256": "e08e2e7e3477c57be3aee41b08b1f65641b33a98ee9da08c6900a0319c31d712",
+      "bytes": 803,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -290,8 +325,8 @@
     },
     {
       "path": "source/quatopsy-symbol-reversed.svg",
-      "sha256": "6e0077e6fe32d2e6990d94a5763d1bd6f48f60bf92c6da5e41ad70fe2895e2fa",
-      "bytes": 528,
+      "sha256": "a7be7c458a8ab90c5e0fc1e6e1cada722885b3b11d156b0454321eeec652a5a7",
+      "bytes": 848,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -300,8 +335,8 @@
     },
     {
       "path": "source/quatopsy-symbol-small.svg",
-      "sha256": "bfc6f192c2c3937bbbb467462838be3eb924b0db85db6456b7ca2912cc8d8daf",
-      "bytes": 349,
+      "sha256": "1053a9ca3200bc18704518a4a0f37d4e2874944ba3a6f690b075289d099071a2",
+      "bytes": 526,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -310,8 +345,8 @@
     },
     {
       "path": "source/quatopsy-symbol.svg",
-      "sha256": "2bc149a2f9c5ef435078f222afbebd58dd44359995ecfe3f364154cc4fe4ab32",
-      "bytes": 483,
+      "sha256": "7ea8c95fbbe0b20ee3fc243f5185346c88109ad33019ca4ad9655b4dad698d14",
+      "bytes": 1227,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -320,8 +355,8 @@
     },
     {
       "path": "source/quatopsy-wordmark.svg",
-      "sha256": "861578aef8263e81d666496a43bb9503180359d520b4402411461d406199499a",
-      "bytes": 296,
+      "sha256": "08277edd2475e0ca4150aad3fe5e0f6551a56a992020d71fea4a68783e316872",
+      "bytes": 7943,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -330,7 +365,7 @@
     },
     {
       "path": "templates/chart-states.svg",
-      "sha256": "c02ccf5f4c706cb48a7c2b22f8857476c6ec269b635cfbb340e1c6bc0c1b9c7c",
+      "sha256": "ffc1266f9605ec4e31f1d1a251be8bd8c60773f42bbf7b8059643399c850f1ee",
       "bytes": 1000,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -340,7 +375,7 @@
     },
     {
       "path": "templates/diagram-workflow.svg",
-      "sha256": "91a09fb777a3dab92eec2d81987bd0ff8fa9bf7164b57f574a38d9fcf016a0e6",
+      "sha256": "fe81a1c1253cda94e746c06afda926167513c7bfe9b6756fdf687ac9e033aa4a",
       "bytes": 1268,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -350,7 +385,7 @@
     },
     {
       "path": "templates/overlay-private-research.svg",
-      "sha256": "d37d7b9c7222af3d09c2682e7e8c43730f995faf428a516cece909e12aeaa50b",
+      "sha256": "c6b73a6aa20a398838acc6a6dfc372fbf8e891e4684981cb037b3550ca9f473b",
       "bytes": 355,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
@@ -360,8 +395,8 @@
     },
     {
       "path": "templates/release-lockup.svg",
-      "sha256": "0df0b1cd67b1961f78d57aeb8d1e7dfdedd7e9b082b149d76da73b6664acf2d9",
-      "bytes": 720,
+      "sha256": "aa721fb72a7d24a5acdbb0f1f5fe72282d0d0041e1b2188a0f77544412b4f2d2",
+      "bytes": 9138,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -370,8 +405,8 @@
     },
     {
       "path": "tokens/tokens.css",
-      "sha256": "fe93d6940bf2227489519f90ce9681258ddb3a87ef947cc3d21decd0e03f1209",
-      "bytes": 1066,
+      "sha256": "2233109333a7368780f6a9a7b5076dc1eb6dc788e277e34a50dc7a4576a6c5f2",
+      "bytes": 1190,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
@@ -380,8 +415,8 @@
     },
     {
       "path": "tokens/tokens.json",
-      "sha256": "12488fc624a4bce359b2ccdf95f2e47be628f1e3c21fbdd7b8f7a7fd9217210f",
-      "bytes": 1953,
+      "sha256": "d3ddca533cadae90f7b2a63fd20eacddb5bb3e0642cb29d666aa48be5c07e91a",
+      "bytes": 2150,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",

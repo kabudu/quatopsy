@@ -27,7 +27,7 @@ Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research reposito
 
 ## Unreleased M9
 
-- Canonical Quatopsy marks, tokens, and lockups exist as `quatopsy.brand/1`. The viewer uses the antipodal paired-point symbol. The CLI about line carries the tagline. This is not trademark clearance and not public opening.
+- Canonical Quatopsy marks, tokens, and lockups exist as `quatopsy.brand/2`. The viewer uses the woven-lift ribbon symbol. The CLI about line carries the tagline. This is not trademark clearance and not public opening.
 
 ## Required non-claims
 
@@ -38,7 +38,7 @@ Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, pr
 - Automatic convention inference and automatic convention repair remain refused.
 - Hardware command, hard real-time execution, target-processor PIL, physical-actuator HIL, and flight assurance remain refused. Host-CPU PIL and loopback HIL are software evidence only. The controller does not open actuator devices.
 - Hosted CI, crates.io publication, signed binaries, public repository visibility, websites, and production support remain distinct unauthorised gates.
-- Full visual brand assets exist as `quatopsy.brand/1`. They do not authorise public opening, trademark claims, or production support.
+- Full visual brand assets exist as `quatopsy.brand/2`. They do not authorise public opening, trademark claims, or production support.
 
 ## Evidence map
 

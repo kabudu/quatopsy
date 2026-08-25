@@ -1,9 +1,11 @@
 :root {
-  --qp-bg: #05080b;
-  --qp-surface: #0a1015;
-  --qp-ink: #eef4f6;
-  --qp-muted: #9babb4;
-  --qp-accent: #62e6df;
+  --qp-bg: #09070d;
+  --qp-surface: #110d18;
+  --qp-ink: #fff1d6;
+  --qp-muted: #b9aebf;
+  --qp-accent: #c778ff;
+  --qp-accent_secondary: #ec48c6;
+  --qp-inspection: #f5c96a;
   --qp-pass: #74e6a1;
   --qp-findings: #ff7770;
   --qp-refused: #ffc65c;
@@ -15,7 +17,9 @@
   --qp-surface: #ffffff;
   --qp-ink: #12181c;
   --qp-muted: #3d4c54;
-  --qp-accent: #0b6f6a;
+  --qp-accent: #7133a5;
+  --qp-accent_secondary: #9e1a77;
+  --qp-inspection: #6e4b00;
   --qp-pass: #0f6b3a;
   --qp-findings: #a31b16;
   --qp-refused: #7a4e00;

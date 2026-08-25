@@ -66,4 +66,4 @@ M7 adds `quatopsy control`, a geometric PD controller on SO(3). Independent orac
 
 M8 adds a software GN&C plane: MEKF/UKF attitude navigation with NIS/NEES audit, time-tagged guidance, reference tracking, reaction-wheel allocation, and declared two-body geometry. It is not orbit determination, not a certified estimator, and not permission to command hardware.
 
-M9 adds the enduring product brand `quatopsy.brand/1`: antipodal paired-point mark, tokens, lockups, and local CI validation. It is not trademark clearance and not public opening.
+M9 adds the enduring product brand, revised as `quatopsy.brand/2`: woven-lift ribbon mark, outlined Space Grotesk wordmark, tokens, lockups, and local CI validation. It is not trademark clearance and not public opening.

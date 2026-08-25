@@ -4,7 +4,7 @@
 
 Owner productisation was approved on 2026-08-19. The owner declined a trademark filing as unnecessary for current needs. `Quatopsy` remains the product name. That decision is not trademark clearance, not a worldwide availability guarantee, and not public opening.
 
-The canonical visual system is `quatopsy.brand/1`. Public opening, hosted CI, crates.io, signed binaries, and production support remain later distinct gates.
+The canonical visual system is `quatopsy.brand/2`. Public opening, hosted CI, crates.io, signed binaries, and production support remain later distinct gates. `quatopsy.brand/1` is superseded but remains recoverable from repository history and its release commit.
 
 ## Name and positioning
 
@@ -36,22 +36,35 @@ Maturity overlay: private research, support posture, independent-validation stat
 
 ## Selected visual direction
 
-Three directions were constructed and scored in `assets/brand/source/directions/` and `docs/DECISIONS/0005-product-brand.md`. The selected mark is the antipodal paired-point system: a circle, two opposite samples, and the chosen lift arc. It names the double cover without medical gore or a spacecraft silhouette. Minimum size is 16 px. Clear space is 8 units on the 32-unit grid.
+The initial three directions remain recorded in `assets/brand/source/directions/` and `docs/DECISIONS/0005-product-brand.md`. Owner review found the original antipodal paired-point mark too diagrammatic. ADR 0006 records the replacement selected after iterative visual exploration.
+
+The selected woven-lift mark uses three tapered ribbon planes. Violet and cerise paths are rotational counterparts: related representations whose layered crossings imply the quaternion double cover. The ivory inspection ribbon passes through them as the forensic layer. The mark is expressive rather than a literal mathematical diagram; it must not be described as a proof or physical trajectory. Minimum size is 16 px using the dedicated two-ribbon small-size form. Clear space is 6 units on the 32-unit grid.
 
 ## Visual system
 
 - Lockups: horizontal, stacked, symbol, wordmark, monochrome, reversed, small-size, and light.
+- Primary palette: aubergine black, ultraviolet, orchid, indigo, cerise, warm ivory, and pale gold. Semantic result colours remain separate and must never be inferred from ribbon colour.
 - Palettes: dark, light, monochrome, reversed, high-contrast, and forced-colour tokens in `assets/brand/tokens/`.
 - Result states use colour plus a shape plus a text label: pass circle, findings diamond, refused triangle, error square.
-- Typography: system UI and monospace stacks. IBM Plex Sans and IBM Plex Mono are recommended and are not redistributed.
+- Wordmark typography: Space Grotesk SemiBold 600 with custom tracking. Canonical lockups contain deterministic vector outlines, not live text. The source font is not redistributed; its SHA-256 and SIL Open Font License provenance are recorded in `assets/brand/LICENSES/SPACE_GROTESK.md`.
+- Interface typography: the existing system UI and monospace stacks remain dependency-free. Space Grotesk may be used for designed campaign headings when separately licensed and packaged. IBM Plex Mono remains the recommended open monospace.
 - Diagrams and charts retain pass, findings, refused, and error as labelled states.
 - Motion: non-essential animation disables under `prefers-reduced-motion`.
 - Machine-readable tokens: `tokens.json` and `tokens.css`.
 
+## Usage rules
+
+- Use the full-colour mark on aubergine black or another near-black field. Use `quatopsy-lockup-light.svg` on light surfaces, and the mono or reversed variants when colour reproduction is uncertain.
+- Use the dedicated `quatopsy-symbol-small.svg` below 32 px. It removes the ivory inspection ribbon and enlarges the two-path silhouette. Do not mechanically shrink the full mark below 32 px.
+- Minimum symbol size is 16 px. Minimum horizontal lockup width is 156 px. Preserve clear space equal to 6 units on the mark's 32-unit construction grid.
+- Do not rotate, reflect, add nodes, add an orbit, recolour individual ribbons outside approved variants, apply glow or shadow, or use the identity gradient to encode pass/fail state.
+- Ultraviolet, orchid, indigo, and cerise are identity colours, not body-text colours. Use the documented ink, muted, focus, and semantic tokens for interface text and results.
+- The plain tagline is `See where rotations go wrong.` Do not append maturity or safety language to a canonical lockup; use a separate overlay.
+
 ## Assets, provenance, and validation
 
-Canonical assets live under `assets/brand/`. `python3 scripts/brandkit.py export` is the only writer. `python3 scripts/brandkit.py check` is wired into local CI. Each manifest entry records digests, dimensions, licence, creator, allowed use, and the export command. SVG sources forbid scripts, remote resources, and embedded rasters. Original marks are Apache-2.0.
+Canonical assets live under `assets/brand/`. `python3 scripts/brandkit.py export` is the only writer. `python3 scripts/brandkit.py check` is wired into local CI. Each manifest entry records digests, dimensions, licence, creator, allowed use, and the export command. SVG sources forbid scripts, remote resources, and embedded rasters; local fragment gradients are permitted. Original marks are Apache-2.0. Result-state and brand-palette colour-vision simulation strips are generated under `exports/simulations/`; colour never carries result meaning alone.
 
 ## Governance
 
-Roles: product, research claims, engineering, security, accessibility, brand/design, and legal. The owner currently holds each role and recorded productisation approval plus the trademark-filing decline separately from public opening. Brand sources version as `quatopsy.brand/1`, independent of the software protocol. Do not silently replace released manifests.
+Roles: product, research claims, engineering, security, accessibility, brand/design, and legal. The owner currently holds each role and recorded productisation approval, the `/2` redesign approval, and the trademark-filing decline separately from public opening. Brand sources version as `quatopsy.brand/2`, independent of the software protocol. Do not silently replace released manifests.

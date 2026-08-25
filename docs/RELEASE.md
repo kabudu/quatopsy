@@ -53,4 +53,4 @@ Repository visibility remains private until the owner explicitly approves public
 
 ## Brand gate
 
-A restrained research presentation may accompany a claim-bounded release. The owner approved productisation of the enduring brand on 2026-08-19 and declined a trademark filing. Canonical assets are `quatopsy.brand/1`. Public opening, hosted CI, crates.io, signed binaries, website deployment, and production support remain distinct gates. Maturity status remains an overlay and never changes the canonical identity.
+A restrained research presentation may accompany a claim-bounded release. The owner approved productisation of the enduring brand on 2026-08-19, approved the woven-lift redesign on 2026-08-25, and declined a trademark filing. Canonical assets are `quatopsy.brand/2`. Public opening, hosted CI, crates.io, signed binaries, website deployment, and production support remain distinct gates. Maturity status remains an overlay and never changes the canonical identity.
