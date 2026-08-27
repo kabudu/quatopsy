@@ -32,7 +32,7 @@ The canonical release lockup appears above the fold. The architecture image is g
 
 The approved description is:
 
-> Local-first diagnostics, forensic visualization, control simulation, and trajectory optimization for quaternion attitude data.
+> Find, explain, and visualize quaternion attitude failures, then evaluate controller and trajectory candidates locally.
 
 Approved topics are `attitude-control`, `gnc`, `quaternion`, `robotics`, `rust`, `simulation`, `spacecraft`, `trajectory-optimization`, and `visualization`.
 
