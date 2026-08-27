@@ -1,0 +1,56 @@
+name: Bug report
+description: Report reproducible incorrect or unexpected behavior.
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, proprietary telemetry, or sensitive incident bundles. Prefer a synthetic reproducer.
+  - type: input
+    id: version
+    attributes:
+      label: Quatopsy version or commit
+      placeholder: 0.1.0 or commit SHA
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform and Rust version
+      placeholder: macOS 15, rustc 1.97.0
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options: [analyze, repair, view, adapt, plan, control, investigate, verify-evidence, build or packaging, documentation]
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the exact command and a synthetic or redistributable fixture.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Data and safety check
+      options:
+        - label: I removed sensitive data and understand that Quatopsy output is advisory, not flight approval.
+          required: true

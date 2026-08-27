@@ -22,6 +22,7 @@ External independent validation, expert challenge, practitioner interviews, pilo
 6. Name/mark and relevant patent surfaces have the required owner/legal disposition for the intended visibility and jurisdictions.
 7. Installation artefacts, support posture, compatibility, and incident process agree with documentation.
 8. The release presentation contract below passes preview and post-publication checks.
+9. Root README, architecture visual, contribution policy, conduct policy, security reporting, support routes, issue forms, pull-request template, and repository metadata pass the open-source readiness check.
 
 ## Private repository delivery
 
@@ -50,6 +51,8 @@ Release credentials are the owner's local GitHub CLI authentication. No token, s
 ## Visibility and publication
 
 Repository visibility remains private until the owner explicitly approves public opening. Public repository visibility, hosted CI, crates.io, signed binaries, website deployment, and production support are distinct gates and authorisations. A private GitHub Release of checksummed local artefacts is authorised only through `scripts/publish-github-release.sh`. No release credential is stored in the repository.
+
+The versioned GitHub About description and topics live in `.github/repository-settings.json`. Applying that metadata while private does not authorise a visibility change. No homepage is advertised until a canonical project site exists.
 
 ## Brand gate
 

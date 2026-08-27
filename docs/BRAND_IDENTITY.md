@@ -49,6 +49,7 @@ The selected woven-lift mark uses three tapered ribbon planes. Violet and cerise
 - Wordmark typography: Space Grotesk SemiBold 600 with custom tracking. Canonical lockups contain deterministic vector outlines, not live text. The source font is not redistributed; its SHA-256 and SIL Open Font License provenance are recorded in `assets/brand/LICENSES/SPACE_GROTESK.md`.
 - Interface typography: the existing system UI and monospace stacks remain dependency-free. Space Grotesk may be used for designed campaign headings when separately licensed and packaged. IBM Plex Mono remains the recommended open monospace.
 - Diagrams and charts retain pass, findings, refused, and error as labelled states.
+- The canonical repository architecture visuals are `templates/diagram-workflow.svg` and its narrow composition `templates/diagram-workflow-narrow.svg`. They use the product palette to distinguish recorded evidence, canonical semantics, candidate-only paths, verdict ownership, and local outputs without using colour as the sole label.
 - Motion: non-essential animation disables under `prefers-reduced-motion`.
 - Machine-readable tokens: `tokens.json` and `tokens.css`.
 

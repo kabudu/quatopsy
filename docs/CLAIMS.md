@@ -1,6 +1,6 @@
 # Frozen public claims
 
-Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research repository.
+Status date: 2026-08-27. Version: `0.1.0`. Visibility: private research repository.
 
 ## Permitted statements
 
@@ -33,6 +33,10 @@ Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research reposito
 
 - `quatopsy investigate` creates a bounded local incident evidence directory from copied canonical or adapter-supported telemetry, optional uninterpreted context, canonical diagnostics, reproducers, repairs, static viewers, and optional plan/control candidates that receive separate kernel reports. `quatopsy.evidence/1` binds artifact paths, roles, sizes, and SHA-256 digests. `quatopsy verify-evidence` detects later bundle mutation within that contract.
 - The evidence manifest is not authenticated custody, a mission archive standard, proof that a logged command executed, flight approval, or permission to send a command. Bundles can contain sensitive copied data and receive no automatic redaction, encryption, upload, or retention management.
+
+## Unreleased M11
+
+- The product-led README, branded system architecture, community-health files, and GitHub About metadata are prepared and validated while the repository remains private. They improve discoverability and contribution readiness but do not imply public availability, hosted CI, package publication, trademark clearance, production support, or independent validation.
 
 ## Required non-claims
 

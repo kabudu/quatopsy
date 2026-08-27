@@ -1,107 +1,151 @@
-# Quatopsy
+<p align="center">
+  <img src="assets/brand/templates/release-lockup.svg" width="468" alt="Quatopsy">
+</p>
 
-Quatopsy is a candidate local-first product for diagnosing quaternion orientation trajectories before or after they drive a spacecraft, robot, simulator, or animation system. It combines a deterministic trajectory linter with a responsive forensic investigation console that links physical motion in `SO(3)` to a projected lift in `S^3`, canonical evidence, and unapplied repair candidates.
+<p align="center"><strong>See where rotations go wrong.</strong></p>
 
-## Candidate contribution
+<p align="center">Local-first diagnostics, forensic visualisation, control simulation, and trajectory optimisation for quaternion attitude data.</p>
 
-The narrow candidate contribution is a representation-aware diagnostic report that detects, explains, quantifies, reproduces, and proposes reversible repairs for topological and convention defects in sampled orientation trajectories. The first vertical is offline spacecraft attitude data in a documented CSV profile.
+<p align="center">
+  <a href="#quick-start">Quick start</a> |
+  <a href="#what-quatopsy-finds">Capabilities</a> |
+  <a href="#how-it-fits-together">Architecture</a> |
+  <a href="docs/INVESTIGATION_WORKFLOW.md">Incident workflow</a> |
+  <a href="CONTRIBUTING.md">Contributing</a>
+</p>
 
-Quatopsy does not claim to invent quaternions, sign canonicalisation, shortest-path interpolation, unwinding analysis, attitude visualisation, or quaternion trajectory smoothing. Novelty, safety, production readiness, and physical cost estimates remain separate evidence-gated claims.
+Quatopsy turns recorded orientation trajectories into deterministic, reviewable evidence. It catches quaternion defects that can look harmless in component plots but produce discontinuities, long-way rotations, convention mismatches, invalid rates, or misleading interpolation. Every finding links back to source samples, and every proposed repair remains separate from the measured input.
 
-## Status
+The project is designed for spacecraft GN&C engineers and is also useful for robotics, simulation, and graphics pipelines. It runs locally, requires no service or account, and does not collect telemetry.
 
-M10 adds a private, digest-bound incident investigation workflow around the shipped analyser, adapters, candidate planner, software controller, and viewer. M5 remains the private `0.1.0` release baseline. Canonical brand assets exist as `quatopsy.brand/2`. No safety qualification, public opening, signed publication, crates.io package, hosted CI, trademark clearance, or independent external validation is claimed.
+> [!IMPORTANT]
+> Quatopsy is advisory research software. A passing report is not flight approval, actuator permission, certification evidence, or proof of operational safety. Physical hardware, hard real-time execution, and orbit determination remain outside the supported boundary.
 
-The learning-laboratory concept is a separate future project and is not part of Quatopsy.
+## See the trajectory, not just the components
 
-## Local use
+The static investigation console keeps four views synchronized by source-sample identity:
+
+- the physical body-frame trace in `SO(3)`;
+- the quaternion representation lift through a projected `S3` view;
+- a quotient-angle timeline with finding-linked geometry;
+- canonical findings, raw values, derived values, and unapplied repair candidates.
+
+The viewer is generated as a local, dependency-free bundle. It does not recompute rules or reinterpret the canonical report.
+
+## What Quatopsy finds
+
+| Failure mode | Why it matters | Evidence |
+| --- | --- | --- |
+| Norm drift and zero quaternions | Invalid rotations can contaminate every downstream calculation | Norm residuals, refusal boundaries, reversible normalisation candidates |
+| Sign discontinuities | Equivalent orientations can still break interpolation and differentiation | Adjacent-sample dot products, lift continuity, sign-lift candidates |
+| Long-way commanded paths | A representation path can rotate unnecessarily through the double cover | Commanded versus physical path evidence |
+| Convention mismatches | Component order, frame direction, or rotation sense can silently invert meaning | Declared manifest plus independent matrix checks |
+| Time and rate inconsistency | Duplicate time, decreasing time, or incompatible angular velocity undermines dynamics | Timestamp and body-rate obligations |
+| Near-half-turn ambiguity | Numerical and sign choices become especially fragile near pi | Explicit near-pi findings without invented unique repairs |
+
+Supported rule IDs and their exact claim boundaries are frozen in [docs/CLAIMS.md](docs/CLAIMS.md).
+
+## Quick start
+
+Requirements: Rust 1.97 or newer and Python 3 for the repository checks.
 
 ```bash
-./scripts/ci-local.sh
-cargo run --bin quatopsy -- analyze \
-  --input fixtures/conformance/clean_slew/input.csv \
-  --manifest fixtures/conformance/clean_slew/manifest.json \
-  --report /tmp/quatopsy-report.json
+git clone https://github.com/kabudu/quatopsy.git
+cd quatopsy
+cargo build --release --locked
 
-cargo run --bin quatopsy -- repair \
-  --report /tmp/quatopsy-report.json \
+./target/release/quatopsy analyze \
   --input fixtures/conformance/sign_alternating/input.csv \
   --manifest fixtures/conformance/sign_alternating/manifest.json \
-  --repair-id repair:sign-lift:1 \
-  --output /tmp/quatopsy-repaired.csv
+  --report /tmp/quatopsy-report.json \
+  --repairs-dir /tmp/quatopsy-repairs \
+  --repro-dir /tmp/quatopsy-repro
 
-cargo run --bin quatopsy -- view \
+./target/release/quatopsy view \
   --report /tmp/quatopsy-report.json \
   --input fixtures/conformance/sign_alternating/input.csv \
   --manifest fixtures/conformance/sign_alternating/manifest.json \
   --output /tmp/quatopsy-view
-
-cargo run --bin quatopsy -- adapt \
-  --format tubin-str \
-  --input fixtures/public/tubin_str/source.csv \
-  --output-dir /tmp/quatopsy-tubin
 ```
 
-Build and verify a private incident bundle:
+The fixture intentionally exits with code `1` because findings were produced. Open `/tmp/quatopsy-view/index.html` locally to inspect them.
+
+Exit codes are stable: `0` pass, `1` findings, `2` refused, `3` error, and `64` usage error.
+
+## A complete incident bundle
+
+Use `investigate` when the work needs to be handed to another engineer or retained with its exact evidence:
 
 ```bash
-cargo run --bin quatopsy -- investigate \
-  --case-id local-sign-case \
+./target/release/quatopsy investigate \
+  --case-id sign-discontinuity-review \
   --input fixtures/conformance/sign_alternating/input.csv \
   --manifest fixtures/conformance/sign_alternating/manifest.json \
   --plan-problem fixtures/plan/spherical_rest_to_rest/problem.json \
   --control-problem fixtures/control/so3_rest_to_rest/problem.json \
   --output-dir /tmp/quatopsy-case
 
-cargo run --bin quatopsy -- verify-evidence \
+./target/release/quatopsy verify-evidence \
   --bundle /tmp/quatopsy-case
 ```
 
-`investigate` copies its inputs into a new no-clobber directory, keeps optional event and command histories as uninterpreted context, runs observed and candidate trajectories through the canonical kernel, and writes `quatopsy.evidence/1`. It never sends a command or opens hardware. Evidence bundles contain copied telemetry and inherit its sensitivity. See [Private investigation workflow](docs/INVESTIGATION_WORKFLOW.md).
+The no-clobber bundle preserves observed bytes, optional uninterpreted event/command/note context, canonical reports, reproducers, repairs, viewers, and separately analysed plan/control candidates. `quatopsy.evidence/1` binds relative paths, roles, sizes, and SHA-256 digests. It detects mutation but does not provide authenticated chain of custody.
 
-`quatopsy adapt --format mcap-json` and `--format spice-ck` convert uncompressed MCAP JSON poses and little-endian CK type 3 kernels into the same canonical CSV and manifest. They never assign a report `result`.
+## How it fits together
+
+<picture>
+  <source media="(max-width: 600px)" srcset="assets/brand/templates/diagram-workflow-narrow.svg">
+  <img src="assets/brand/templates/diagram-workflow.svg" alt="Quatopsy local-first system architecture">
+</picture>
+
+The central invariant is simple: adapters, planners, controllers, and viewers never own diagnostic verdicts. They emit declared trajectories or presentation artifacts; only the conformance kernel produces `pass`, `findings`, `refused`, or `error`.
+
+## Capability map
+
+| Surface | Shipped capability | Boundary |
+| --- | --- | --- |
+| `analyze` | Deterministic quaternion trajectory rules and canonical JSON reports | Advisory diagnostics only |
+| `repair` | Digest-bound normalisation and sign-lift candidates | Writes a separately named file; never overwrites source data |
+| `view` | Responsive, offline forensic console | Displays report evidence; never recomputes verdicts |
+| `adapt` | IDS Jason-1, ROS JSON, uncompressed MCAP JSON, SPICE CK type 3, and TUBIN STR inputs | Adapters declare provenance and cannot assign a result |
+| `plan` | Torque-limited rest-to-rest candidates, wheel/thruster/CMG models, keep-out constraints, and bounded direct shooting | Candidate generation; global optimality is not claimed |
+| `control` | Geometric SO(3) control, software GN&C, wheel allocation, SIL, host-CPU PIL, and loopback HIL | Software evidence only; physical actuator access is refused |
+| `investigate` | Reproducible local incident evidence bundles | Recorded-file workflow; no live telemetry or command path |
+
+## Design principles
+
+- **Local-first:** no hosted control plane, account, database, analytics, or required runtime network.
+- **Declared semantics:** frame, convention, component order, rotation sense, and time unit are inputs, not guesses.
+- **Verdict isolation:** one canonical kernel owns report results.
+- **Read-only evidence:** source trajectories are never modified; repairs and candidates are separately named.
+- **Fail closed:** unsupported semantics, malformed values, exhausted limits, and unsafe hardware modes cannot become pass.
+- **Reproducible:** reports bind tool version, numeric limits, input bytes, and manifests.
+
+## Build, test, and package
 
 ```bash
-cargo run --bin quatopsy -- plan \
-  --problem fixtures/plan/spherical_rest_to_rest/problem.json \
-  --output-dir /tmp/quatopsy-plan
+./scripts/ci-local.sh
+./scripts/package-local.sh dist
 ```
 
-`quatopsy plan` writes a candidate CSV, declared manifest, and `plan.json`. Residuals are checked by an independent oracle. The planner never assigns a report `result`. Run `analyze` on the generated files to obtain the only verdict.
+`ci-local.sh` is the authoritative gate while the repository remains private. It runs formatting, Clippy, all tests, adversarial checks, the million-sample performance budget, checksum packaging, licence inspection, brand validation, README/community checks, and release-presentation checks. Hosted CI remains disabled until the separately authorised public-opening change.
 
-```bash
-cargo run --bin quatopsy -- control \
-  --problem fixtures/control/so3_rest_to_rest/problem.json \
-  --output-dir /tmp/quatopsy-control
-```
+## Project status
 
-`quatopsy control` writes a closed-loop CSV, declared manifest, `control.json`, and optional `nav.json` / `guidance.json` audits. `execution` may be software-in-the-loop, host-CPU processor-in-the-loop, or loopback hardware-in-the-loop. Optional software GN&C blocks add a 6-state MEKF or UKF, time-tagged guidance, reaction-wheel allocation, and declared two-body geometry. Optional plant models add command-to-torque lag, residual dipole, gravity-gradient, gyro ARW, and star-tracker delay. An independent oracle monitor inhibits commands. The controller never assigns a report `result` and never opens a physical actuator. The systems-safety programme is [Control safety](docs/CONTROL_SAFETY.md).
-
-`quatopsy analyze --repro-dir <dir>` writes one context-bounded subdirectory per finding when a report has multiple findings. Each contains `slice.csv`, `manifest.json`, and `provenance.json`; a single finding uses those filenames directly in the requested directory. Export refuses above the compiled 1,024-slice disk-work limit without committing any requested output.
-
-Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
+Version `0.1.0` is a private research release. The implementation through M11 is complete within its documented scope, but the repository is not yet public, packages are not published to crates.io, binaries are not signed, and no production-support commitment is made. The evidence-based opening recommendation is recorded in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
 
 ## Documentation
 
-- [Frozen claims](docs/CLAIMS.md)
-- [Brand identity](docs/BRAND_IDENTITY.md)
-- [Release gate audit](docs/RELEASE_GATE.md)
-- [Product specification](docs/PRODUCT_SPECIFICATION.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Soundness case](docs/SOUNDNESS_CASE.md)
-- [Report protocol](docs/REPORT_PROTOCOL.md)
-- [Plan protocol](docs/PLAN_PROTOCOL.md)
-- [Control protocol](docs/CONTROL_PROTOCOL.md)
-- [Control safety](docs/CONTROL_SAFETY.md)
-- [Private investigation workflow](docs/INVESTIGATION_WORKFLOW.md)
-- [Public-opening decision](docs/PUBLIC_OPENING_DECISION.md)
-- [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
-- [Novelty and prior art](docs/NOVELTY.md)
-- [Validation](docs/VALIDATION.md)
-- [Release policy](docs/RELEASE.md)
-- [Spacecraft CSV profile](docs/SPACECRAFT_PROFILE.md)
-- [Requirements traceability](docs/REQUIREMENTS_TRACEABILITY.md)
+- Start with the [product specification](docs/PRODUCT_SPECIFICATION.md), [architecture](docs/ARCHITECTURE.md), and [incident workflow](docs/INVESTIGATION_WORKFLOW.md).
+- Read the [report protocol](docs/REPORT_PROTOCOL.md), [spacecraft CSV profile](docs/SPACECRAFT_PROFILE.md), [plan protocol](docs/PLAN_PROTOCOL.md), and [control protocol](docs/CONTROL_PROTOCOL.md) for machine-facing contracts.
+- Review the [soundness case](docs/SOUNDNESS_CASE.md), [control safety boundary](docs/CONTROL_SAFETY.md), [threat model](docs/THREAT_MODEL.md), and [frozen claims](docs/CLAIMS.md) before operational evaluation.
+- See the [implementation plan](docs/IMPLEMENTATION_PLAN.md), [validation record](docs/VALIDATION.md), and [requirements traceability](docs/REQUIREMENTS_TRACEABILITY.md) for engineering evidence.
+- The visual system and reusable assets are documented in [docs/BRAND_IDENTITY.md](docs/BRAND_IDENTITY.md).
 
-## Name audit
+## Community
 
-`Quatopsy` is the product name. It was searched on 2026-08-14 across general web results, GitHub repository names, npm, PyPI, and crates.io. No exact product or package collision was found. The owner declined a trademark filing. This is not trademark clearance, domain reservation, patent clearance, or a guarantee of worldwide availability. Residual collision risk is accepted until a later public-opening review.
+Contributions that improve correctness, adapters, fixtures, documentation, accessibility, or bounded performance are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Use [SUPPORT.md](SUPPORT.md) for help routes and [SECURITY.md](SECURITY.md) for private vulnerability reporting. Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Licence
+
+Quatopsy is licensed under the [Apache License 2.0](LICENSE). Third-party fixture and brand-font provenance is recorded beside the relevant assets and in [NOTICE](NOTICE).

@@ -157,6 +157,20 @@ This milestone packages Quatopsy's shipped capabilities into an operations-shape
 
 Exit: `./scripts/ci-local.sh`, the M10 CLI lifecycle suite, protocol and operational documentation, and a public-opening decision whose claims match the evidence.
 
+## M11: Open-source repository readiness
+
+This private milestone prepares the repository entry points and community contract for public scrutiny. It does not change visibility, enable hosted CI, publish packages, or broaden product claims.
+
+- [x] Replace the research-led README with a product-led entry point using the canonical wordmark, a concise value proposition, truthful capability boundaries, a fast first run, and clear documentation routes.
+- [x] Ship a branded, accessible system-architecture SVG that distinguishes observed evidence, verdict ownership, optional candidates, and local-only outputs.
+- [x] Add contribution, conduct, security-reporting, support, pull-request, and structured issue-reporting guidance suitable for an open-source engineering project.
+- [x] Correct stale public-facing legal and productisation copy without claiming trademark clearance or changing the Apache-2.0 licence.
+- [x] Define and validate repository About metadata and topic tags from a versioned local contract.
+- [x] Render and inspect the README and architecture asset at desktop and narrow widths, validate local links and SVG safety, and pass the authoritative local CI gate.
+- [x] Apply the approved About description and topics while retaining private visibility and disabled hosted CI.
+
+Exit: the community/readme check, browser visual QA, `./scripts/ci-local.sh`, private GitHub metadata verification, and an unchanged publication boundary.
+
 ## Optional post-release evidence track
 
 - [ ] Verify the canonical release page at desktop and narrow widths after an authorised publication.
