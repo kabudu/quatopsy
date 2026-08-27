@@ -7,10 +7,10 @@
 <p align="center">Local-first diagnostics, forensic visualisation, control simulation, and trajectory optimisation for quaternion attitude data.</p>
 
 <p align="center">
-  <a href="#quick-start">Quick start</a> ·
-  <a href="#what-quatopsy-finds">Capabilities</a> ·
-  <a href="#how-it-fits-together">Architecture</a> ·
-  <a href="docs/INVESTIGATION_WORKFLOW.md">Incident workflow</a> ·
+  <a href="#quick-start">Quick start</a> |
+  <a href="#what-quatopsy-finds">Capabilities</a> |
+  <a href="#how-it-fits-together">Architecture</a> |
+  <a href="docs/INVESTIGATION_WORKFLOW.md">Incident workflow</a> |
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 

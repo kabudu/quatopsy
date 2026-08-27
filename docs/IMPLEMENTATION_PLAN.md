@@ -161,13 +161,13 @@ Exit: `./scripts/ci-local.sh`, the M10 CLI lifecycle suite, protocol and operati
 
 This private milestone prepares the repository entry points and community contract for public scrutiny. It does not change visibility, enable hosted CI, publish packages, or broaden product claims.
 
-- [ ] Replace the research-led README with a product-led entry point using the canonical wordmark, a concise value proposition, truthful capability boundaries, a fast first run, and clear documentation routes.
-- [ ] Ship a branded, accessible system-architecture SVG that distinguishes observed evidence, verdict ownership, optional candidates, and local-only outputs.
-- [ ] Add contribution, conduct, security-reporting, support, pull-request, and structured issue-reporting guidance suitable for an open-source engineering project.
-- [ ] Correct stale public-facing legal and productisation copy without claiming trademark clearance or changing the Apache-2.0 licence.
-- [ ] Define and validate repository About metadata and topic tags from a versioned local contract.
-- [ ] Render and inspect the README and architecture asset at desktop and narrow widths, validate local links and SVG safety, and pass the authoritative local CI gate.
-- [ ] Apply the approved About description and topics while retaining private visibility and disabled hosted CI.
+- [x] Replace the research-led README with a product-led entry point using the canonical wordmark, a concise value proposition, truthful capability boundaries, a fast first run, and clear documentation routes.
+- [x] Ship a branded, accessible system-architecture SVG that distinguishes observed evidence, verdict ownership, optional candidates, and local-only outputs.
+- [x] Add contribution, conduct, security-reporting, support, pull-request, and structured issue-reporting guidance suitable for an open-source engineering project.
+- [x] Correct stale public-facing legal and productisation copy without claiming trademark clearance or changing the Apache-2.0 licence.
+- [x] Define and validate repository About metadata and topic tags from a versioned local contract.
+- [x] Render and inspect the README and architecture asset at desktop and narrow widths, validate local links and SVG safety, and pass the authoritative local CI gate.
+- [x] Apply the approved About description and topics while retaining private visibility and disabled hosted CI.
 
 Exit: the community/readme check, browser visual QA, `./scripts/ci-local.sh`, private GitHub metadata verification, and an unchanged publication boundary.
 

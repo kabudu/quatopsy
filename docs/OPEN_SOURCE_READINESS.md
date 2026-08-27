@@ -38,6 +38,8 @@ Approved topics are `attitude-control`, `gnc`, `quaternion`, `robotics`, `rust`,
 
 No homepage is set until a canonical project site exists. Repository visibility stays private and hosted CI stays disabled until the owner explicitly authorises the separate public-opening change.
 
+The description and nine topics were applied and read back from GitHub on 2026-08-27. The repository remained private, the homepage remained unset, and GitHub Actions was explicitly disabled at repository level.
+
 ## Opening handoff
 
 After M11, the public-opening increment should verify the M11 files on `master`, change visibility, immediately enable private vulnerability reporting, enable the minimal hosted form of the existing local gate, inspect the live public README and social preview, verify issue forms and security links from a logged-out context, and then re-evaluate the publication checklist. GitHub exposes public vulnerability reporting only after the repository is public, so visibility and that reporting control must be treated as one fail-closed sequence. The increment must not silently add package publication, signing, a website, or support commitments.
