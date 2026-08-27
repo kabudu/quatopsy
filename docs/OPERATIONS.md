@@ -2,7 +2,7 @@
 
 ## Deployment model
 
-Quatopsy V1 is a local command-line binary and static local viewer. It has no daemon, hosted control plane, account, database, or required network. The Rust CLI owns the job lifecycle. `quatopsy plan` is a separate candidate-generation job; it does not evaluate rules. `quatopsy control` is a separate closed-loop job; it does not evaluate rules or open a physical actuator. Infeasible or refused problems leave no output directory.
+Quatopsy V1 is a local command-line binary and static local viewer. It has no daemon, hosted control plane, account, database, or required network. The Rust CLI owns the job lifecycle. `quatopsy plan` is a separate candidate-generation job; it does not evaluate rules. `quatopsy control` is a separate closed-loop job; it does not evaluate rules or open a physical actuator. `quatopsy investigate` orchestrates those existing boundaries over recorded files and writes `evidence.json` last. Infeasible, refused, or handled failed investigations remove the output directory reserved by that invocation.
 
 ## Job lifecycle
 
@@ -32,6 +32,8 @@ The CLI emits a concise terminal summary with result, analysis identity, sample 
 
 Jobs are replayable from immutable inputs and configuration. Partial outputs are not committed. A repair is reproduced only from its source analysis identity and algorithm version. Downgrade and rollback retain open JSON reports. No backup service is needed because Quatopsy does not own source data.
 
+Investigation bundles are replayable from the copied source and candidate problems. `quatopsy verify-evidence --bundle <dir>` must pass before handover. A directory without `evidence.json` is incomplete. A digest match detects mutation but is not proof of source authenticity or custody.
+
 ## Capacity targets
 
 The supported analysis budget is one million samples in under 10 seconds and under 512 MiB peak RSS on the local CI host, excluding viewer generation. The compiled sample maximum remains 10 million. Evidence is the ignored release test `million_samples_meet_budget` run by `./scripts/ci-local.sh`. Browser geometry remains downsampled and is outside this budget.
@@ -42,4 +44,4 @@ Correctness incidents freeze affected public claims and releases, identify rule 
 
 ## Privacy and retention
 
-Quatopsy has no server-side retention. Users own inputs, reports, repairs, and optional local logs. Removal documentation names every local path. Future telemetry or hosted operation requires a new architecture, privacy analysis, and explicit authorization.
+Quatopsy has no server-side retention. Users own inputs, reports, repairs, optional local logs, and investigation bundles. A bundle contains copied telemetry plus any supplied event, command, and note files, so it inherits their highest sensitivity. Removal documentation names every local path. Future telemetry or hosted operation requires a new architecture, privacy analysis, and explicit authorization.

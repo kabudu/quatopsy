@@ -23,6 +23,7 @@ use quatopsy_schema::{
     report_schema_supported,
 };
 
+mod investigate;
 mod policy;
 
 const USAGE_EXIT: u8 = 64;
@@ -148,6 +149,44 @@ enum Commands {
         output_dir: PathBuf,
         #[arg(long, default_value_t = false)]
         overwrite: bool,
+    },
+    /// Build a private, digest-bound incident investigation evidence bundle.
+    Investigate {
+        /// Stable local case identifier: letters, digits, dot, underscore, or hyphen.
+        #[arg(long)]
+        case_id: String,
+        /// Canonical observed trajectory. It is copied, never modified.
+        #[arg(long)]
+        input: PathBuf,
+        /// Convention manifest for canonical CSV input. Mutually exclusive with --format.
+        #[arg(long)]
+        manifest: Option<PathBuf>,
+        /// Existing adapter format for an external input. Mutually exclusive with --manifest.
+        #[arg(long)]
+        format: Option<String>,
+        /// New evidence-bundle directory. Existing paths are refused.
+        #[arg(long)]
+        output_dir: PathBuf,
+        /// Optional event history, preserved as context but not interpreted.
+        #[arg(long)]
+        event_log: Option<PathBuf>,
+        /// Optional command history, preserved as context but not interpreted.
+        #[arg(long)]
+        command_log: Option<PathBuf>,
+        /// Optional operator notes, preserved as context but not interpreted.
+        #[arg(long)]
+        notes: Option<PathBuf>,
+        /// Optional planning problem evaluated as a separate candidate.
+        #[arg(long)]
+        plan_problem: Option<PathBuf>,
+        /// Optional control problem evaluated as a separate candidate.
+        #[arg(long)]
+        control_problem: Option<PathBuf>,
+    },
+    /// Verify every file and report binding in an investigation evidence bundle.
+    VerifyEvidence {
+        #[arg(long)]
+        bundle: PathBuf,
     },
     /// Isolated control-cycle worker used by processor-in-the-loop.
     #[command(name = "control-cycle-worker", hide = true)]
@@ -301,6 +340,39 @@ fn main() -> ExitCode {
             }
             ExitCode::SUCCESS
         }
+        Commands::Investigate {
+            case_id,
+            input,
+            manifest,
+            format,
+            output_dir,
+            event_log,
+            command_log,
+            notes,
+            plan_problem,
+            control_problem,
+        } => match investigate::run(
+            investigate::Request {
+                case_id,
+                input,
+                manifest,
+                format,
+                output_dir,
+                event_log,
+                command_log,
+                notes,
+                plan_problem,
+                control_problem,
+            },
+            &cancelled,
+        ) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(code) => code,
+        },
+        Commands::VerifyEvidence { bundle } => match investigate::verify(bundle) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(code) => code,
+        },
         Commands::ControlCycleWorker => match quatopsy_control::run_cycle_worker() {
             Ok(()) => ExitCode::SUCCESS,
             Err(err) => {

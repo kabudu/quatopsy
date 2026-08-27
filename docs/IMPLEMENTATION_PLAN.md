@@ -143,6 +143,20 @@ Owner productisation was approved. Trademark filing was declined. Public opening
 
 Exit: local CI including `python3 scripts/brandkit.py check`. Open boxes are not shipped.
 
+## M10: Private incident investigation evidence
+
+This milestone packages Quatopsy's shipped capabilities into an operations-shaped, offline investigation workflow. It remains advisory and does not add live telemetry, command transmission, physical hardware, or flight approval.
+
+- [x] Ground the workflow in primary spacecraft telemetry, anomaly-reconstruction, command/event-history, and automated-test practices.
+- [x] Add bounded `quatopsy investigate` ingestion for canonical CSV or an existing adapter, with immutable source capture and distinct uninterpreted event, command, and note context.
+- [x] Produce the observed report, repairs, reproducers, and local viewer in one no-clobber evidence directory.
+- [x] Optionally generate plan and control candidates, keep their documents outside verdict ownership, and analyse each generated trajectory through the kernel.
+- [x] Ship deterministic `quatopsy.evidence/1` artifact digests and `quatopsy verify-evidence` tamper detection.
+- [x] Prove external-adapter, anomaly, nominal, candidate-chain, determinism, no-clobber, tamper, and rollback behaviour through the released CLI.
+- [x] Record an evidence-based public-opening decision without changing repository visibility or enabling hosted CI.
+
+Exit: `./scripts/ci-local.sh`, the M10 CLI lifecycle suite, protocol and operational documentation, and a public-opening decision whose claims match the evidence.
+
 ## Optional post-release evidence track
 
 - [ ] Verify the canonical release page at desktop and narrow widths after an authorised publication.

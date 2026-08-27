@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quatopsy.invalid/schema/quatopsy.evidence.v1.json",
+  "title": "Quatopsy investigation evidence manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "case_id", "bundle_id", "tool", "observed", "candidates", "context", "artifacts", "boundaries"],
+  "properties": {
+    "schema": { "const": "quatopsy.evidence/1" },
+    "case_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,64}$" },
+    "bundle_id": { "$ref": "#/$defs/digest" },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "const": "quatopsy" },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "observed": { "$ref": "#/$defs/analysis" },
+    "candidates": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "analysis_id", "result"],
+        "properties": {
+          "kind": { "enum": ["plan", "control"] },
+          "analysis_id": { "$ref": "#/$defs/digest" },
+          "result": { "$ref": "#/$defs/result" }
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["interpreted", "event_log", "command_log", "notes"],
+      "properties": {
+        "interpreted": { "const": false },
+        "event_log": { "type": "boolean" },
+        "command_log": { "type": "boolean" },
+        "notes": { "type": "boolean" }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "role", "bytes", "sha256"],
+        "properties": {
+          "path": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$" },
+          "role": { "enum": ["observed-source", "uninterpreted-context", "static-viewer", "reproducer", "repair-candidate", "generated-candidate", "analysis"] },
+          "bytes": { "type": "integer", "minimum": 0 },
+          "sha256": { "$ref": "#/$defs/digest" }
+        }
+      }
+    },
+    "boundaries": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "result": { "enum": ["pass", "findings", "refused", "error"] },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["analysis_id", "result", "csv_sha256", "manifest_sha256"],
+      "properties": {
+        "analysis_id": { "$ref": "#/$defs/digest" },
+        "result": { "$ref": "#/$defs/result" },
+        "csv_sha256": { "$ref": "#/$defs/digest" },
+        "manifest_sha256": { "$ref": "#/$defs/digest" }
+      }
+    }
+  }
+}

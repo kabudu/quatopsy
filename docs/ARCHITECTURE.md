@@ -16,10 +16,13 @@ Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core
 8. `adapters`: converters into the canonical input contract, outside the semantic core (`ids-jason1`, `ros-json`, `tubin-str`, `mcap-json`, `spice-ck`).
 9. `plan`: offline candidate generator for a declared torque-limited rest-to-rest rigid body. It emits CSV, manifest, and `quatopsy.plan/1`, checks residuals through `quatopsy-oracle`, and cannot assign a report result. Algorithms are eigenaxis bang-coast-bang and bounded multiple shooting.
 10. `control`: geometric PD on SO(3). It emits CSV, manifest, and `quatopsy.control/1`, is inhibited by an independent oracle monitor, and cannot assign a report result or open a physical actuator. `sil` is in-process. `pil` isolates the cycle on the host CPU. `hil` uses a loopback actuator emulator. Optional software GN&C blocks add a 6-state MEKF or UKF (`quatopsy-nav`), time-tagged guidance (`quatopsy-guidance`), wheel allocation, and declared two-body geometry. Those blocks are not flight navigation and not a qualification record.
+11. `investigate`: bounded CLI orchestration that snapshots canonical or adapter-supported telemetry, preserves opaque operational context, runs the ordinary analysis/viewer path, optionally evaluates plan/control candidates, and closes the case with a deterministic `quatopsy.evidence/1` manifest. It has no verdict logic, live ingest, command path, or hardware path.
 
 ## Data flow
 
 Bytes are snapshotted and hashed before parsing. Parsing either yields a fully declared canonical sequence or a refusal. The kernel evaluates obligations against immutable validated samples. Repair proposals derive from that same snapshot. Reports are written to a temporary sibling file, flushed, and atomically renamed without clobber unless explicitly requested.
+
+An investigation reserves a new directory, copies source bytes before analysis, and writes `evidence.json` last. Absence of that manifest means the directory is incomplete. Handled failure removes only the directory atomically reserved by that invocation. Verification recomputes every artifact digest, role, size, report binding, and the bundle identity.
 
 ## Core invariants
 
@@ -30,6 +33,8 @@ Bytes are snapshotted and hashed before parsing. Parsing either yields a fully d
 - Original inputs are read-only and repair outputs are separately named.
 - CLI and viewer never reinterpret verdicts or recompute release-critical rules differently.
 - Rule-set and report versions are explicit and cannot silently drift.
+- Contextual command/event history cannot influence a report result, and a command-history row is not treated as proof of onboard execution.
+- An evidence bundle is complete only when `verify-evidence` accepts its manifest and every listed artifact.
 
 ## Deterministic identity
 
@@ -42,6 +47,8 @@ The semantic core uses IEEE 754 binary64 with documented operation ordering (w, 
 ## Resource governance
 
 The CLI defaults to 1 GiB input bytes, 10 million samples, 512 MiB working memory target, one analysis job, a bounded finding count per rule, and explicit wall-clock cancellation. Limits are configurable only within compiled safe maxima for the browser. Parsing is streaming; the validated quaternion series is contiguous; viewer geometry is downsampled with extrema and finding intervals retained.
+
+The investigation boundary is narrower: 256 MiB observed input, one million samples, 64 MiB per opaque context file, 16 MiB per candidate problem, 1,024 findings per rule, and a 120-second analysis deadline. Candidate stages run sequentially.
 
 ## Trust boundaries
 

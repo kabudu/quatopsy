@@ -11,6 +11,7 @@ The primary evaluator is a spacecraft guidance, navigation, and control engineer
 3. Advisory mode: surface findings in developer review with explicit disposition.
 4. Selective enforcement: fail CI on named stable rules and a brownfield baseline.
 5. Required mode: enforce a version-pinned policy with scoped, expiring overrides.
+6. Incident handover: create and verify a local evidence bundle from the exact recorded inputs, context, reports, candidates, and viewers used in review.
 
 An override records authority, rule, input scope, reason, issue link where available, creation time, expiry, and approving identity. Baselines acknowledge existing findings; they do not convert them into passes.
 
@@ -31,6 +32,7 @@ Adapters produce the canonical CSV and manifest plus provenance. They cannot ass
 | IDS Jason-1 ASCII | Published qbody layout | Offline `ids-jason1` converter | Shipped |
 | Offline plan JSON | Torque-limited rest-to-rest candidate | `quatopsy plan` then kernel analyze | Shipped |
 | Offline control JSON | Geometric PD closed-loop candidate, including host-CPU PIL and loopback HIL | `quatopsy control` then kernel analyze | Shipped |
+| Incident case directory | Recorded source, context, analysis, candidates, and viewer handover | `quatopsy investigate` plus `verify-evidence` | Shipped privately |
 | Foxglove | 3D pose and plots | Report/marker export, no verdict reinterpretation | Candidate |
 | Basilisk | Simulation and Vizard | Fixture/report adapter | Candidate |
 | SciPy / NumPy | Rotation analysis | Reference-oracle and import helpers | Candidate |
@@ -54,6 +56,8 @@ The first target is one million samples analysed in under 10 seconds and under 5
 ## Privacy and telemetry
 
 No telemetry is collected. Analysis is local and network-free. The CLI has no persistent or verbose logger; terminal diagnostics do not echo sample payload rows, while explicit user-supplied paths may appear in filesystem errors. Any future usage metrics or persistent logging require opt-in, schema disclosure, bounded retention, deletion, and a separate threat-model update.
+
+An investigation bundle is an explicit user-requested copy, not collected telemetry. It can contain sensitive source, events, commands, and notes. The manifest omits original paths, but the file content is not redacted or encrypted.
 
 ## Rollback and removal
 

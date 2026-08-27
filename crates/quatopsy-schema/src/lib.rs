@@ -9,6 +9,7 @@ use serde::{
 pub const REPORT_SCHEMA: &str = "quatopsy.report/1";
 pub const VIEW_SCHEMA: &str = "quatopsy.view/1";
 pub const MANIFEST_SCHEMA: &str = "quatopsy.manifest/1";
+pub const EVIDENCE_SCHEMA: &str = "quatopsy.evidence/1";
 pub const VIEW_MAX_POINTS: u64 = 4096;
 pub const VIEW_SAFE_MAX_POINTS: u64 = 16_384;
 pub const RULE_SET_VERSION: &str = "quatopsy.rules/1";
@@ -473,5 +474,13 @@ mod tests {
         );
         assert!(report_schema_supported(REPORT_SCHEMA));
         assert!(!report_schema_supported("quatopsy.report/99"));
+    }
+
+    #[test]
+    fn evidence_schema_file_matches_protocol_constant() {
+        let schema: serde_json::Value =
+            serde_json::from_str(include_str!("../schemas/quatopsy.evidence.v1.json")).unwrap();
+        assert_eq!(schema["properties"]["schema"]["const"], EVIDENCE_SCHEMA);
+        assert_eq!(schema["additionalProperties"], false);
     }
 }

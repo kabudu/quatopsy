@@ -6,6 +6,7 @@
 - RQ2: Can Quatopsy localise and explain supported defects more completely than matched library primitives and generic trajectory viewers at the same claim scope?
 - RQ3: Do repair candidates preserve declared physical orientation and provenance under independent mathematical oracles?
 - RQ4: Are results deterministic, bounded, portable, and understandable in the supported workflow?
+- RQ5: Can the shipped components form a reproducible incident handover without collapsing telemetry, ground command history, onboard event evidence, diagnostics, repairs, and generated candidates into one authority?
 
 ## Hypotheses and metrics
 
@@ -16,6 +17,7 @@
 | Aggregation fails closed | State under injected refusal/error | Any `pass` |
 | Reports are deterministic | Byte digest across repeated/platform runs | Any unexplained digest difference |
 | Diagnostic layer adds value over primitives | Complete supported defect explanation rate | No material gain at matched scope |
+| Incident handover preserves authority boundaries | Exact digest, role, report, and candidate separation under replay and tamper | Any accepted mutation, context-derived verdict, candidate-owned verdict, or source overwrite |
 
 ## Corpus
 
@@ -52,3 +54,7 @@ The 2026-08-16 forensic-console refinement regenerated the `sign_alternating` bu
 ## Optional post-release evidence
 
 Independent reproduction, practitioner interviews, pilots, adoption cohorts, and ecosystem ranking may be pursued after release. Their absence prohibits demand, preference, adoption, and independently validated claims only.
+
+## M10 private workflow evidence
+
+The released CLI lifecycle covers a nominal canonical case, an alternating-sign anomaly with reproducers and a separate repair, a public TUBIN STR adapter case, optional plan and control candidates, local viewers, deterministic repeated manifests, independent test-side digest reconstruction, verification success, post-write tamper refusal, existing-output preservation, and rollback after an invalid candidate problem. These prove local workflow mechanics and authority separation on the tested fixtures. They do not prove operational use on a complete mission incident.
