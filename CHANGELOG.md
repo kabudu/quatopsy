@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Prepared the private repository for open-source review with a product-led README, branded system architecture, community health files, validated repository metadata, and explicit publication boundaries.
+
 ### Added
 
 - Private `quatopsy investigate` and `quatopsy verify-evidence` workflows for bounded canonical or adapter-backed incident capture, opaque operations context, observed diagnostics, reproducers, repairs, separately analysed plan/control candidates, local viewers, and deterministic `quatopsy.evidence/1` integrity verification.

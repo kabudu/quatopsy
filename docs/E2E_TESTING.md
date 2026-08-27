@@ -28,6 +28,8 @@ Tests invoke the released CLI against files, inspect exit status and canonical r
 | E2E-19 | External telemetry investigation | TUBIN source snapshot, adapter provenance without `result`, canonical findings, viewer, and evidence manifest | Public licensed fixture plus adapter/kernel contracts |
 | E2E-20 | Evidence replay and tamper | Identical cases have identical manifests; changed context is refused by `verify-evidence` | Independent test-side SHA-256 reconstruction |
 | E2E-21 | Investigation failure containment | Existing output remains untouched and invalid candidate removes the newly reserved incomplete bundle | Filesystem snapshot |
+| E2E-22 | Open-source entry-point integrity | README local links resolve, community files exist, metadata is bounded, and architecture SVG is accessible and safe | Offline community/readme check |
+| E2E-23 | Repository presentation render | README and architecture remain legible at desktop and narrow widths with no overflow, missing assets, or weakened boundaries | Browser visual inspection |
 
 ## Determinism and portability
 

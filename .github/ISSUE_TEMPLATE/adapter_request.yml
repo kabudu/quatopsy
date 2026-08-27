@@ -1,0 +1,40 @@
+name: Adapter request
+description: Request support for a recorded orientation-data format.
+title: "adapter: "
+labels: [enhancement]
+body:
+  - type: input
+    id: format
+    attributes:
+      label: Format and version
+      placeholder: CCSDS OEM extension, vendor CSV revision 3
+    validations:
+      required: true
+  - type: input
+    id: specification
+    attributes:
+      label: Public specification
+      description: Provide an authoritative URL where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: semantics
+    attributes:
+      label: Orientation semantics
+      description: Describe component order, frame direction, rotation sense, time scale, units, and missing-value behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Redistributable fixture
+      description: Explain the source and licence of a small public sample, or how a representative synthetic sample can be generated.
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Adapter boundary
+      options:
+        - label: I understand adapters emit canonical inputs and provenance but cannot assign diagnostic results.
+          required: true

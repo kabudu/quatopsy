@@ -145,6 +145,9 @@ python3 "$root/scripts/check-supply-chain.py"
 log "brand system"
 python3 "$root/scripts/brandkit.py" check
 
+log "README and community health"
+python3 "$root/scripts/check-community.py"
+
 log "curated release notes"
 python3 "$root/scripts/check-release-notes.py"
 bash "$root/scripts/preview-release-notes.sh" "$tmp/release-notes-preview.html"

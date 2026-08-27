@@ -32,6 +32,7 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 | REL-3 | Use curated release notes and rendered desktop/narrow preview | Release owner | Preview and live inspection | Release URL/screenshots | implemented |
 | REL-4 | Reject Unicode U+2014 across tracked text and release metadata | Local CI | Repository scan | CI log | verified |
 | REL-5 | Make a public-opening recommendation from private technical evidence without changing visibility or broadening publication authority | Owner/release policy | M10 gate audit | `PUBLIC_OPENING_DECISION.md` | verified |
+| REL-6 | Prepare product, architecture, community, security, support, and repository metadata entry points before public opening | Maintainers | Offline community/readme check plus desktop/narrow render inspection | M11 PR evidence | verified |
 | UX-1 | Synchronise all views by sample identity with bounded finding navigation | Viewer | Public-workflow bundle tests and browser interaction | Visual workflow evidence | verified |
 | UX-2 | Distinguish raw, derived, repaired, representation, and physical states | Viewer | Viewer layer and caption tests | UI evidence | verified |
 | UX-3 | Never use colour as the sole result signal | Viewer | Text state, contrast checks, and browser accessibility snapshot | Accessibility report | verified |

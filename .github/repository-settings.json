@@ -1,0 +1,18 @@
+{
+  "schema": "quatopsy.repository-settings/1",
+  "description": "Local-first diagnostics, forensic visualization, control simulation, and trajectory optimization for quaternion attitude data.",
+  "homepage": "",
+  "topics": [
+    "attitude-control",
+    "gnc",
+    "quaternion",
+    "robotics",
+    "rust",
+    "simulation",
+    "spacecraft",
+    "trajectory-optimization",
+    "visualization"
+  ],
+  "visibility_until_public_opening": "private",
+  "hosted_ci_until_public_opening": "disabled"
+}

@@ -315,32 +315,134 @@ def result_icon_svg(kind: str, fill: str) -> str:
 
 
 def workflow_diagram_svg() -> str:
-    dark = TOKENS["palette"]["dark"]
-    boxes = [
-        (8, 18, "CSV"),
-        (70, 18, "analyze"),
-        (140, 18, "report"),
-        (210, 18, "view"),
-    ]
-    parts = [f'<rect width="280" height="48" fill="{dark["bg"]}"/>']
-    for x, y, label in boxes:
-        parts.append(
-            f'<rect x="{x}" y="{y}" width="52" height="20" fill="none" '
-            f'stroke="{dark["accent"]}" stroke-width="1.2"/>'
-            f'<text x="{x + 26}" y="{y + 14}" text-anchor="middle" fill="{dark["ink"]}" '
-            f'font-size="7" font-family=\'{TOKENS["type"]["mono"]}\'>{label}</text>'
-        )
-    parts.append(
-        f'<path d="M60 28 H70 M122 28 H140 M192 28 H210" stroke="{dark["muted"]}" '
-        f'stroke-width="1"/>'
-    )
-    return (
-        '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 48" '
-        'role="img" aria-label="Quatopsy workflow">'
-        + "".join(parts)
-        + "</svg>\n"
-    )
+    return '''<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+<title id="title">Quatopsy local-first system architecture</title>
+<desc id="desc">Recorded orientation evidence enters adapters and a canonical schema. The analysis kernel alone owns diagnostic verdicts. Repairs, reproducers, viewers, plans, controls, and a digest-bound investigation bundle remain separate local outputs with no physical command path.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#09070d"/><stop offset="0.55" stop-color="#100a18"/><stop offset="1" stop-color="#160b20"/></linearGradient>
+  <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b5cf6"/><stop offset="0.48" stop-color="#c778ff"/><stop offset="1" stop-color="#d946ef"/></linearGradient>
+  <linearGradient id="cerise" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#58104f"/><stop offset="0.55" stop-color="#b21eaa"/><stop offset="1" stop-color="#ec48c6"/></linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#f5c96a"/><stop offset="0.55" stop-color="#fff1d6"/><stop offset="1" stop-color="#fff8e8"/></linearGradient>
+  <radialGradient id="halo"><stop stop-color="#c778ff" stop-opacity="0.18"/><stop offset="1" stop-color="#c778ff" stop-opacity="0"/></radialGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#8f8298"/></marker>
+</defs>
+<rect width="1200" height="720" rx="28" fill="url(#bg)"/>
+<path d="M0 82 H1200 M0 640 H1200" stroke="#3a2b43" stroke-width="1"/>
+<g opacity="0.18" stroke="#8b6d98" stroke-width="1"><path d="M80 118 H1120 M80 180 H1120 M80 242 H1120 M80 304 H1120 M80 366 H1120 M80 428 H1120 M80 490 H1120 M80 552 H1120"/><path d="M140 104 V610 M300 104 V610 M460 104 V610 M620 104 V610 M780 104 V610 M940 104 V610 M1100 104 V610"/></g>
+<circle cx="600" cy="335" r="210" fill="url(#halo)"/>
+<g transform="translate(38 21) scale(1.15)"><path d="M4.7 14 C3.1 9 6 5 11 4.8 C16 4.6 20.9 7.8 23.8 12.2 C19.8 9.4 15.3 7.1 11.3 7.3 C7.7 7.5 6.2 10.2 7 13.8 C8 18.1 12.5 22.8 18.6 25.9 C12.2 24.3 6.4 19.9 4.7 14 Z" fill="url(#violet)"/><path d="M20.2 5.8 C25 7.1 28 11.3 27.7 16.2 C27.3 21.4 22.4 24.5 16.3 25.8 C20.5 23 24 20.2 25.1 16.6 C26.2 13 24.3 8.9 20.2 5.8 Z M17.8 25.2 C21.1 26.2 23.8 25.4 26.3 23.1 C23.8 26.8 20.7 28 17.7 27.2 C14.7 26.4 12.3 25.7 10.4 24.3 C13 24.7 15.5 24.3 17.8 25.2 Z" fill="url(#cerise)"/><path d="M6 23.1 C9.7 18.1 15.7 14 21.7 14.1 C23.5 14.1 24.8 14.7 25.6 15.6 C21.1 15.4 16.8 16.6 13 18.5 C9.8 20.1 7.3 22.1 6 23.1 Z" fill="url(#gold)"/></g>
+<text x="86" y="46" fill="#fff1d6" font-size="25" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif" letter-spacing="2">QUATOPSY</text>
+<text x="245" y="45" fill="#b9aebf" font-size="14" font-family="ui-monospace, monospace" letter-spacing="1.2">LOCAL-FIRST ORIENTATION FORENSICS</text>
+<text x="1150" y="44" text-anchor="end" fill="#f5c96a" font-size="12" font-family="ui-monospace, monospace">NO NETWORK / NO ACTUATOR I/O</text>
+
+<text x="74" y="130" fill="#c778ff" font-size="12" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">01 / RECORDED EVIDENCE</text>
+<rect x="64" y="151" width="252" height="142" rx="18" fill="#110f17" stroke="#55415f" stroke-width="1.5"/>
+<text x="88" y="184" fill="#fff1d6" font-size="19" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Orientation sources</text>
+<g fill="#b9aebf" font-size="14" font-family="ui-monospace, monospace"><text x="88" y="218">CSV + declared manifest</text><text x="88" y="246">ROS / MCAP / SPICE CK</text><text x="88" y="274">TUBIN / IDS exports</text></g>
+
+<text x="430" y="130" fill="#c778ff" font-size="12" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">02 / CANONICAL BOUNDARY</text>
+<rect x="420" y="151" width="300" height="142" rx="18" fill="#17101f" stroke="url(#violet)" stroke-width="2"/>
+<text x="444" y="184" fill="#fff1d6" font-size="19" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Declared trajectory</text>
+<text x="444" y="214" fill="#f5c96a" font-size="13" font-family="ui-monospace, monospace">quatopsy.manifest/1</text>
+<g fill="#b9aebf" font-size="14" font-family="ui-monospace, monospace"><text x="444" y="245">frames + convention + units</text><text x="444" y="273">immutable bytes + bounded ingest</text></g>
+
+<text x="824" y="130" fill="#c778ff" font-size="12" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">03 / VERDICT OWNER</text>
+<rect x="814" y="151" width="322" height="142" rx="18" fill="#17101f" stroke="url(#gold)" stroke-width="2"/>
+<circle cx="1095" cy="188" r="44" fill="#c778ff" opacity="0.13" filter="url(#glow)"/>
+<text x="838" y="184" fill="#fff1d6" font-size="19" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Conformance kernel</text>
+<text x="838" y="214" fill="#f5c96a" font-size="13" font-family="ui-monospace, monospace">quatopsy.report/1</text>
+<g fill="#b9aebf" font-size="14" font-family="ui-monospace, monospace"><text x="838" y="245">deterministic rules + oracles</text><text x="838" y="273">pass / findings / refused / error</text></g>
+
+<path d="M316 222 H405" fill="none" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/><path d="M720 222 H799" fill="none" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="360" y="210" text-anchor="middle" fill="#8f8298" font-size="11" font-family="ui-monospace, monospace">adapt</text><text x="760" y="210" text-anchor="middle" fill="#8f8298" font-size="11" font-family="ui-monospace, monospace">analyse</text>
+
+<text x="74" y="355" fill="#ec48c6" font-size="12" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">OPTIONAL CANDIDATE PLANE</text>
+<rect x="64" y="376" width="312" height="156" rx="18" fill="#110f17" stroke="#55415f" stroke-width="1.5"/>
+<text x="88" y="410" fill="#fff1d6" font-size="18" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Plan + control</text>
+<g fill="#b9aebf" font-size="14" font-family="ui-monospace, monospace"><text x="88" y="442">torque-limited candidate</text><text x="88" y="470">SIL / host PIL / loopback HIL</text><text x="88" y="498">MEKF / UKF / guidance / wheels</text></g>
+<rect x="418" y="376" width="300" height="156" rx="18" fill="#110f17" stroke="#55415f" stroke-width="1.5" stroke-dasharray="6 6"/>
+<text x="442" y="410" fill="#fff1d6" font-size="18" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Generated trajectory</text>
+<text x="442" y="442" fill="#ec48c6" font-size="13" font-family="ui-monospace, monospace">NO SELF-ASSIGNED RESULT</text>
+<g fill="#b9aebf" font-size="14" font-family="ui-monospace, monospace"><text x="442" y="474">separately named output</text><text x="442" y="502">returns through canonical analysis</text></g>
+<path d="M376 454 H403" fill="none" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/><path d="M718 422 C780 422 762 300 880 300" fill="none" stroke="#ec48c6" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#arrow)"/>
+
+<text x="824" y="355" fill="#f5c96a" font-size="12" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">04 / LOCAL EVIDENCE PRODUCTS</text>
+<rect x="814" y="376" width="322" height="156" rx="18" fill="#110f17" stroke="#55415f" stroke-width="1.5"/>
+<g font-family="ui-monospace, monospace" font-size="13"><rect x="838" y="402" width="120" height="34" rx="9" fill="#21182a" stroke="#725980"/><text x="898" y="424" text-anchor="middle" fill="#fff1d6">static viewer</text><rect x="972" y="402" width="140" height="34" rx="9" fill="#21182a" stroke="#725980"/><text x="1042" y="424" text-anchor="middle" fill="#fff1d6">repro slices</text><rect x="838" y="450" width="120" height="34" rx="9" fill="#21182a" stroke="#725980"/><text x="898" y="472" text-anchor="middle" fill="#fff1d6">repairs</text><rect x="972" y="450" width="140" height="34" rx="9" fill="#21182a" stroke="#725980"/><text x="1042" y="472" text-anchor="middle" fill="#fff1d6">evidence.json</text></g>
+<text x="975" y="512" text-anchor="middle" fill="#b9aebf" font-size="12" font-family="ui-monospace, monospace">digest-bound / offline / reviewable</text>
+<path d="M975 293 V361" fill="none" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/>
+
+<rect x="64" y="574" width="1072" height="46" rx="12" fill="#130f19" stroke="#3f3048"/>
+<circle cx="92" cy="597" r="7" fill="#fff1d6"/><text x="108" y="602" fill="#b9aebf" font-size="12" font-family="ui-monospace, monospace">observed bytes</text>
+<path d="M244 597 H272" stroke="url(#violet)" stroke-width="5" stroke-linecap="round"/><text x="286" y="602" fill="#b9aebf" font-size="12" font-family="ui-monospace, monospace">canonical semantics</text>
+<path d="M472 597 H500" stroke="#ec48c6" stroke-width="3" stroke-dasharray="5 4"/><text x="514" y="602" fill="#b9aebf" font-size="12" font-family="ui-monospace, monospace">candidate only</text>
+<path d="M660 597 H688" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/><text x="702" y="602" fill="#b9aebf" font-size="12" font-family="ui-monospace, monospace">verdict boundary</text>
+<text x="1110" y="602" text-anchor="end" fill="#f5c96a" font-size="12" font-family="ui-monospace, monospace">ADVISORY, NOT FLIGHT APPROVAL</text>
+<text x="64" y="674" fill="#8f8298" font-size="12" font-family="ui-monospace, monospace">SOURCE INPUTS REMAIN READ-ONLY</text>
+<text x="1136" y="674" text-anchor="end" fill="#8f8298" font-size="12" font-family="ui-monospace, monospace">PHYSICAL HARDWARE / HARD REAL-TIME / ORBIT DETERMINATION: REFUSED</text>
+</svg>
+'''
+
+
+def workflow_diagram_narrow_svg() -> str:
+    return '''<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1180" role="img" aria-labelledby="title desc">
+<title id="title">Quatopsy local-first system architecture for narrow displays</title>
+<desc id="desc">Recorded orientation sources become a declared canonical trajectory. The conformance kernel alone owns verdicts. Local viewer, repair, reproducer, and evidence outputs remain separate. Optional plan and control candidates return through canonical analysis, with no network or physical command path.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#09070d"/><stop offset="0.55" stop-color="#100a18"/><stop offset="1" stop-color="#160b20"/></linearGradient>
+  <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b5cf6"/><stop offset="0.48" stop-color="#c778ff"/><stop offset="1" stop-color="#d946ef"/></linearGradient>
+  <linearGradient id="cerise" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#58104f"/><stop offset="0.55" stop-color="#b21eaa"/><stop offset="1" stop-color="#ec48c6"/></linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#f5c96a"/><stop offset="0.55" stop-color="#fff1d6"/><stop offset="1" stop-color="#fff8e8"/></linearGradient>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#8f8298"/></marker>
+</defs>
+<rect width="720" height="1180" rx="28" fill="url(#bg)"/>
+<g opacity="0.16" stroke="#8b6d98"><path d="M40 120 H680 M40 220 H680 M40 320 H680 M40 420 H680 M40 520 H680 M40 620 H680 M40 720 H680 M40 820 H680 M40 920 H680 M40 1020 H680"/><path d="M120 100 V1060 M240 100 V1060 M360 100 V1060 M480 100 V1060 M600 100 V1060"/></g>
+<g transform="translate(38 28) scale(1.25)"><path d="M4.7 14 C3.1 9 6 5 11 4.8 C16 4.6 20.9 7.8 23.8 12.2 C19.8 9.4 15.3 7.1 11.3 7.3 C7.7 7.5 6.2 10.2 7 13.8 C8 18.1 12.5 22.8 18.6 25.9 C12.2 24.3 6.4 19.9 4.7 14 Z" fill="url(#violet)"/><path d="M20.2 5.8 C25 7.1 28 11.3 27.7 16.2 C27.3 21.4 22.4 24.5 16.3 25.8 C20.5 23 24 20.2 25.1 16.6 C26.2 13 24.3 8.9 20.2 5.8 Z M17.8 25.2 C21.1 26.2 23.8 25.4 26.3 23.1 C23.8 26.8 20.7 28 17.7 27.2 C14.7 26.4 12.3 25.7 10.4 24.3 C13 24.7 15.5 24.3 17.8 25.2 Z" fill="url(#cerise)"/><path d="M6 23.1 C9.7 18.1 15.7 14 21.7 14.1 C23.5 14.1 24.8 14.7 25.6 15.6 C21.1 15.4 16.8 16.6 13 18.5 C9.8 20.1 7.3 22.1 6 23.1 Z" fill="url(#gold)"/></g>
+<text x="92" y="59" fill="#fff1d6" font-size="28" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif" letter-spacing="2">QUATOPSY</text>
+<text x="680" y="56" text-anchor="end" fill="#f5c96a" font-size="13" font-family="ui-monospace, monospace">LOCAL / OFFLINE / ADVISORY</text>
+
+<text x="64" y="130" fill="#c778ff" font-size="14" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">01 / RECORDED EVIDENCE</text>
+<rect x="52" y="150" width="616" height="126" rx="18" fill="#110f17" stroke="#55415f" stroke-width="2"/>
+<text x="80" y="190" fill="#fff1d6" font-size="23" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Orientation sources</text>
+<text x="80" y="230" fill="#b9aebf" font-size="17" font-family="ui-monospace, monospace">CSV + ROS + MCAP + SPICE CK + TUBIN + IDS</text>
+<text x="80" y="255" fill="#8f8298" font-size="15" font-family="ui-monospace, monospace">recorded bytes / declared format / read-only</text>
+<path d="M360 276 V316" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/>
+
+<text x="64" y="342" fill="#c778ff" font-size="14" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">02 / CANONICAL BOUNDARY</text>
+<rect x="52" y="362" width="616" height="126" rx="18" fill="#17101f" stroke="url(#violet)" stroke-width="3"/>
+<text x="80" y="402" fill="#fff1d6" font-size="23" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Declared trajectory</text>
+<text x="80" y="440" fill="#f5c96a" font-size="16" font-family="ui-monospace, monospace">quatopsy.manifest/1</text>
+<text x="80" y="466" fill="#b9aebf" font-size="16" font-family="ui-monospace, monospace">frames + convention + units + bounded ingest</text>
+<path d="M360 488 V528" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/>
+
+<text x="64" y="554" fill="#f5c96a" font-size="14" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">03 / SOLE VERDICT OWNER</text>
+<rect x="52" y="574" width="616" height="136" rx="18" fill="#17101f" stroke="url(#gold)" stroke-width="3"/>
+<text x="80" y="614" fill="#fff1d6" font-size="23" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Conformance kernel</text>
+<text x="80" y="652" fill="#f5c96a" font-size="16" font-family="ui-monospace, monospace">quatopsy.report/1</text>
+<text x="80" y="680" fill="#b9aebf" font-size="16" font-family="ui-monospace, monospace">pass / findings / refused / error</text>
+
+<text x="64" y="765" fill="#ec48c6" font-size="14" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">OPTIONAL CANDIDATES</text>
+<rect x="52" y="785" width="292" height="136" rx="18" fill="#110f17" stroke="#55415f" stroke-width="2"/>
+<text x="76" y="825" fill="#fff1d6" font-size="21" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Plan + control</text>
+<text x="76" y="860" fill="#b9aebf" font-size="15" font-family="ui-monospace, monospace">software candidates</text>
+<text x="76" y="890" fill="#ec48c6" font-size="14" font-family="ui-monospace, monospace">NO RESULT FIELD</text>
+<rect x="376" y="785" width="292" height="136" rx="18" fill="#110f17" stroke="#55415f" stroke-width="2"/>
+<text x="400" y="825" fill="#fff1d6" font-size="21" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Local products</text>
+<text x="400" y="860" fill="#b9aebf" font-size="15" font-family="ui-monospace, monospace">viewer / repair / repro</text>
+<text x="400" y="890" fill="#b9aebf" font-size="15" font-family="ui-monospace, monospace">digest-bound evidence</text>
+<path d="M198 785 C198 735 260 735 300 710" fill="none" stroke="#ec48c6" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M522 710 V770" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/>
+
+<rect x="52" y="968" width="616" height="98" rx="16" fill="#130f19" stroke="#3f3048"/>
+<text x="80" y="1004" fill="#f5c96a" font-size="16" font-family="ui-monospace, monospace">ADVISORY, NOT FLIGHT APPROVAL</text>
+<text x="80" y="1038" fill="#b9aebf" font-size="15" font-family="ui-monospace, monospace">NO NETWORK / NO PHYSICAL ACTUATOR I/O</text>
+<text x="52" y="1125" fill="#8f8298" font-size="13" font-family="ui-monospace, monospace">SOURCE INPUTS REMAIN READ-ONLY</text>
+<text x="668" y="1125" text-anchor="end" fill="#8f8298" font-size="13" font-family="ui-monospace, monospace">CANDIDATES RETURN THROUGH ANALYSIS</text>
+</svg>
+'''
 
 
 def chart_states_svg() -> str:
@@ -873,6 +975,7 @@ def tree() -> dict[str, bytes]:
     put("source/icons/result-refused.svg", result_icon_svg("refused", dark["refused"]))
     put("source/icons/result-error.svg", result_icon_svg("error", dark["error"]))
     put("templates/diagram-workflow.svg", workflow_diagram_svg())
+    put("templates/diagram-workflow-narrow.svg", workflow_diagram_narrow_svg())
     put("templates/chart-states.svg", chart_states_svg())
     put(
         "templates/release-lockup.svg",

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1180" role="img" aria-labelledby="title desc">
+<title id="title">Quatopsy local-first system architecture for narrow displays</title>
+<desc id="desc">Recorded orientation sources become a declared canonical trajectory. The conformance kernel alone owns verdicts. Local viewer, repair, reproducer, and evidence outputs remain separate. Optional plan and control candidates return through canonical analysis, with no network or physical command path.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#09070d"/><stop offset="0.55" stop-color="#100a18"/><stop offset="1" stop-color="#160b20"/></linearGradient>
+  <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b5cf6"/><stop offset="0.48" stop-color="#c778ff"/><stop offset="1" stop-color="#d946ef"/></linearGradient>
+  <linearGradient id="cerise" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#58104f"/><stop offset="0.55" stop-color="#b21eaa"/><stop offset="1" stop-color="#ec48c6"/></linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#f5c96a"/><stop offset="0.55" stop-color="#fff1d6"/><stop offset="1" stop-color="#fff8e8"/></linearGradient>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#8f8298"/></marker>
+</defs>
+<rect width="720" height="1180" rx="28" fill="url(#bg)"/>
+<g opacity="0.16" stroke="#8b6d98"><path d="M40 120 H680 M40 220 H680 M40 320 H680 M40 420 H680 M40 520 H680 M40 620 H680 M40 720 H680 M40 820 H680 M40 920 H680 M40 1020 H680"/><path d="M120 100 V1060 M240 100 V1060 M360 100 V1060 M480 100 V1060 M600 100 V1060"/></g>
+<g transform="translate(38 28) scale(1.25)"><path d="M4.7 14 C3.1 9 6 5 11 4.8 C16 4.6 20.9 7.8 23.8 12.2 C19.8 9.4 15.3 7.1 11.3 7.3 C7.7 7.5 6.2 10.2 7 13.8 C8 18.1 12.5 22.8 18.6 25.9 C12.2 24.3 6.4 19.9 4.7 14 Z" fill="url(#violet)"/><path d="M20.2 5.8 C25 7.1 28 11.3 27.7 16.2 C27.3 21.4 22.4 24.5 16.3 25.8 C20.5 23 24 20.2 25.1 16.6 C26.2 13 24.3 8.9 20.2 5.8 Z M17.8 25.2 C21.1 26.2 23.8 25.4 26.3 23.1 C23.8 26.8 20.7 28 17.7 27.2 C14.7 26.4 12.3 25.7 10.4 24.3 C13 24.7 15.5 24.3 17.8 25.2 Z" fill="url(#cerise)"/><path d="M6 23.1 C9.7 18.1 15.7 14 21.7 14.1 C23.5 14.1 24.8 14.7 25.6 15.6 C21.1 15.4 16.8 16.6 13 18.5 C9.8 20.1 7.3 22.1 6 23.1 Z" fill="url(#gold)"/></g>
+<text x="92" y="59" fill="#fff1d6" font-size="28" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif" letter-spacing="2">QUATOPSY</text>
+<text x="680" y="56" text-anchor="end" fill="#f5c96a" font-size="13" font-family="ui-monospace, monospace">LOCAL / OFFLINE / ADVISORY</text>
+
+<text x="64" y="130" fill="#c778ff" font-size="14" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">01 / RECORDED EVIDENCE</text>
+<rect x="52" y="150" width="616" height="126" rx="18" fill="#110f17" stroke="#55415f" stroke-width="2"/>
+<text x="80" y="190" fill="#fff1d6" font-size="23" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Orientation sources</text>
+<text x="80" y="230" fill="#b9aebf" font-size="17" font-family="ui-monospace, monospace">CSV + ROS + MCAP + SPICE CK + TUBIN + IDS</text>
+<text x="80" y="255" fill="#8f8298" font-size="15" font-family="ui-monospace, monospace">recorded bytes / declared format / read-only</text>
+<path d="M360 276 V316" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/>
+
+<text x="64" y="342" fill="#c778ff" font-size="14" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">02 / CANONICAL BOUNDARY</text>
+<rect x="52" y="362" width="616" height="126" rx="18" fill="#17101f" stroke="url(#violet)" stroke-width="3"/>
+<text x="80" y="402" fill="#fff1d6" font-size="23" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Declared trajectory</text>
+<text x="80" y="440" fill="#f5c96a" font-size="16" font-family="ui-monospace, monospace">quatopsy.manifest/1</text>
+<text x="80" y="466" fill="#b9aebf" font-size="16" font-family="ui-monospace, monospace">frames + convention + units + bounded ingest</text>
+<path d="M360 488 V528" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/>
+
+<text x="64" y="554" fill="#f5c96a" font-size="14" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">03 / SOLE VERDICT OWNER</text>
+<rect x="52" y="574" width="616" height="136" rx="18" fill="#17101f" stroke="url(#gold)" stroke-width="3"/>
+<text x="80" y="614" fill="#fff1d6" font-size="23" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Conformance kernel</text>
+<text x="80" y="652" fill="#f5c96a" font-size="16" font-family="ui-monospace, monospace">quatopsy.report/1</text>
+<text x="80" y="680" fill="#b9aebf" font-size="16" font-family="ui-monospace, monospace">pass / findings / refused / error</text>
+
+<text x="64" y="765" fill="#ec48c6" font-size="14" font-weight="700" font-family="ui-monospace, monospace" letter-spacing="2">OPTIONAL CANDIDATES</text>
+<rect x="52" y="785" width="292" height="136" rx="18" fill="#110f17" stroke="#55415f" stroke-width="2"/>
+<text x="76" y="825" fill="#fff1d6" font-size="21" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Plan + control</text>
+<text x="76" y="860" fill="#b9aebf" font-size="15" font-family="ui-monospace, monospace">software candidates</text>
+<text x="76" y="890" fill="#ec48c6" font-size="14" font-family="ui-monospace, monospace">NO RESULT FIELD</text>
+<rect x="376" y="785" width="292" height="136" rx="18" fill="#110f17" stroke="#55415f" stroke-width="2"/>
+<text x="400" y="825" fill="#fff1d6" font-size="21" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">Local products</text>
+<text x="400" y="860" fill="#b9aebf" font-size="15" font-family="ui-monospace, monospace">viewer / repair / repro</text>
+<text x="400" y="890" fill="#b9aebf" font-size="15" font-family="ui-monospace, monospace">digest-bound evidence</text>
+<path d="M198 785 C198 735 260 735 300 710" fill="none" stroke="#ec48c6" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M522 710 V770" stroke="#8f8298" stroke-width="2" marker-end="url(#arrow)"/>
+
+<rect x="52" y="968" width="616" height="98" rx="16" fill="#130f19" stroke="#3f3048"/>
+<text x="80" y="1004" fill="#f5c96a" font-size="16" font-family="ui-monospace, monospace">ADVISORY, NOT FLIGHT APPROVAL</text>
+<text x="80" y="1038" fill="#b9aebf" font-size="15" font-family="ui-monospace, monospace">NO NETWORK / NO PHYSICAL ACTUATOR I/O</text>
+<text x="52" y="1125" fill="#8f8298" font-size="13" font-family="ui-monospace, monospace">SOURCE INPUTS REMAIN READ-ONLY</text>
+<text x="668" y="1125" text-anchor="end" fill="#8f8298" font-size="13" font-family="ui-monospace, monospace">CANDIDATES RETURN THROUGH ANALYSIS</text>
+</svg>

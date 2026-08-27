@@ -30,3 +30,7 @@ M10 demonstrates a usable and bounded private investigation path, including one 
 Create a separate public-opening increment that changes repository visibility, enables minimal hosted CI using the same local gate, checks public issue/security/contact metadata, previews the canonical release page, and verifies the public URL after publication. Do not combine package publication, binary signing, website deployment, or production-support promises with that change.
 
 Until that explicit approval, `REL-2`, the M9 public-opening boxes, and post-publication verification remain open.
+
+## M11 readiness addendum
+
+M11 closes the repository-presentation and community-health gaps identified after the technical recommendation: a product-led README, branded architecture visual, contribution and conduct policies, private security reporting, support boundaries, issue and pull-request templates, and versioned GitHub About metadata. These improvements strengthen the conditional go recommendation but do not execute it. Visibility and hosted CI remain unchanged until explicit owner approval.

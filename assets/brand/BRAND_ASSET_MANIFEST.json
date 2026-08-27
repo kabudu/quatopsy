@@ -374,9 +374,19 @@
       "export_command": "python3 scripts/brandkit.py export"
     },
     {
+      "path": "templates/diagram-workflow-narrow.svg",
+      "sha256": "ca9536a70c54d92ecfc8ee7fb9e3919fef996375110442f8478a4b5405b15c9f",
+      "bytes": 6913,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
       "path": "templates/diagram-workflow.svg",
-      "sha256": "fe81a1c1253cda94e746c06afda926167513c7bfe9b6756fdf687ac9e033aa4a",
-      "bytes": 1268,
+      "sha256": "2348ef4d60553bfdf6800ff0e21d1848ae2849216f36079a3a0385714a33f01a",
+      "bytes": 9893,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",

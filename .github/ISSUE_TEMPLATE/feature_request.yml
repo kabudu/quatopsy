@@ -1,0 +1,40 @@
+name: Feature proposal
+description: Propose a bounded capability or workflow improvement.
+title: "feature: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the real engineering workflow and failure mode, not only the proposed implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: State what a user should be able to observe or complete.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Representative evidence
+      description: Link public formats, standards, fixtures, or reproducible examples where available.
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Safety and scope boundaries
+      description: Identify implications for verdict ownership, source mutation, hardware, performance, privacy, or protocol compatibility.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and the implementation plan.
+          required: true
+        - label: This proposal does not rely on Quatopsy providing flight approval or physical actuator authorization.
+          required: true
