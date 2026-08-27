@@ -4,7 +4,7 @@
 
 <p align="center"><strong>See where rotations go wrong.</strong></p>
 
-<p align="center">Local-first diagnostics, forensic visualisation, control simulation, and trajectory optimisation for quaternion attitude data.</p>
+<p align="center">Find, explain, and visualise quaternion attitude failures, then evaluate controller and trajectory candidates locally.</p>
 
 <p align="center">
   <a href="#quick-start">Quick start</a> |
@@ -14,9 +14,9 @@
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
-Quatopsy turns recorded orientation trajectories into deterministic, reviewable evidence. It catches quaternion defects that can look harmless in component plots but produce discontinuities, long-way rotations, convention mismatches, invalid rates, or misleading interpolation. Every finding links back to source samples, and every proposed repair remains separate from the measured input.
+Quatopsy helps engineers find, explain, visualise, and safely investigate failures in recorded orientation data. It checks quaternion trajectories for defects that can look harmless in component plots but cause sudden jumps, unnecessary rotations, convention mismatches, invalid rates, or misleading interpolation. Every finding links back to the original samples, and every proposed repair remains separate from the measured input.
 
-The project is designed for spacecraft GN&C engineers and is also useful for robotics, simulation, and graphics pipelines. It runs locally, requires no service or account, and does not collect telemetry.
+It is built primarily for spacecraft guidance, navigation, and control engineers, with the same analysis also applicable to robotics, simulation, and graphics pipelines. Quatopsy runs locally, requires no service or account, and does not collect telemetry. Its bounded planning and control tools can generate candidates for software evaluation, but they cannot command physical hardware.
 
 > [!IMPORTANT]
 > Quatopsy is advisory research software. A passing report is not flight approval, actuator permission, certification evidence, or proof of operational safety. Physical hardware, hard real-time execution, and orbit determination remain outside the supported boundary.
@@ -25,8 +25,8 @@ The project is designed for spacecraft GN&C engineers and is also useful for rob
 
 The static investigation console keeps four views synchronized by source-sample identity:
 
-- the physical body-frame trace in `SO(3)`;
-- the quaternion representation lift through a projected `S3` view;
+- the physical orientation path in three-dimensional rotation space (`SO(3)`);
+- the corresponding quaternion path on the four-dimensional unit sphere, shown through a projected `S3` view;
 - a quotient-angle timeline with finding-linked geometry;
 - canonical findings, raw values, derived values, and unapplied repair candidates.
 
@@ -132,7 +132,7 @@ The central invariant is simple: adapters, planners, controllers, and viewers ne
 
 ## Project status
 
-Version `0.1.0` is a private research release. The implementation through M11 is complete within its documented scope, but the repository is not yet public, packages are not published to crates.io, binaries are not signed, and no production-support commitment is made. The evidence-based opening recommendation is recorded in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
+Version `0.1.0` is early-stage research software. The implementation through M11 is complete within its documented scope, but packages are not published to crates.io, binaries are not signed, and no production-support commitment is made. The evidence-based opening recommendation is recorded in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
 
 ## Documentation
 

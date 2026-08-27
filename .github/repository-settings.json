@@ -1,6 +1,6 @@
 {
   "schema": "quatopsy.repository-settings/1",
-  "description": "Local-first diagnostics, forensic visualization, control simulation, and trajectory optimization for quaternion attitude data.",
+  "description": "Find, explain, and visualize quaternion attitude failures, then evaluate controller and trajectory candidates locally.",
   "homepage": "",
   "topics": [
     "attitude-control",
