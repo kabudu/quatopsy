@@ -29,6 +29,11 @@ Status date: 2026-08-15. Version: `0.1.0`. Visibility: private research reposito
 
 - Canonical Quatopsy marks, tokens, and lockups exist as `quatopsy.brand/2`. The viewer uses the woven-lift ribbon symbol. The CLI about line carries the tagline. This is not trademark clearance and not public opening.
 
+## Unreleased M10
+
+- `quatopsy investigate` creates a bounded local incident evidence directory from copied canonical or adapter-supported telemetry, optional uninterpreted context, canonical diagnostics, reproducers, repairs, static viewers, and optional plan/control candidates that receive separate kernel reports. `quatopsy.evidence/1` binds artifact paths, roles, sizes, and SHA-256 digests. `quatopsy verify-evidence` detects later bundle mutation within that contract.
+- The evidence manifest is not authenticated custody, a mission archive standard, proof that a logged command executed, flight approval, or permission to send a command. Bundles can contain sensitive copied data and receive no automatic redaction, encryption, upload, or retention management.
+
 ## Required non-claims
 
 Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, production-ready, complete, optimal, or independently validated. Do not state that a `pass` result is flight approval, actuator permission, or energy optimality. Do not state that a feasible plan or a tracked SIL candidate is globally optimal, dynamically verified under uncertainty, or authorised for command. Do not state that commanded-path findings measure control effort or mission risk. Do not state that the candidate name is a cleared trademark. Do not state that the TUBIN excerpt is a mission reconstruction or that adapters certify source conventions.
@@ -42,4 +47,4 @@ Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, pr
 
 ## Evidence map
 
-Behavioural evidence lives in the conformance fixtures, hostile and lifecycle tests, million-sample release check, local CI log, and this claims freeze. Optional independent reproduction does not block this release and is not claimed.
+Behavioural evidence lives in the conformance fixtures, hostile and lifecycle tests, M10 investigation and tamper tests, million-sample release check, local CI log, and this claims freeze. Optional independent reproduction does not block this release and is not claimed.

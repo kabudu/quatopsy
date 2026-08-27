@@ -24,6 +24,10 @@ Tests invoke the released CLI against files, inspect exit status and canonical r
 | E2E-14 | Host-CPU PIL then analyze | Isolated controller process; kernel `pass`; no control `result` | Independent SO(3) error and command monitor |
 | E2E-16 | Declared-plant loopback HIL then analyze | Command-to-torque lag, residual dipole, gravity-gradient, gyro ARW; kernel `pass`; no control `result` | Independent lag, magnetic, and gravity-gradient oracles; motor vs environmental `h` |
 | E2E-17 | Profile-track control then analyze | Time-varying `ω_d`; MEKF audit; kernel `pass`; no `result` on control/nav/guidance | Independent reference kinematics, NIS, and allocation oracles |
+| E2E-18 | Full incident investigation | Observed findings, reproducers, repair candidates, plan/control candidates, three static viewers, and one digest-bound bundle | Public CLI lifecycle plus per-artifact digest recomputation |
+| E2E-19 | External telemetry investigation | TUBIN source snapshot, adapter provenance without `result`, canonical findings, viewer, and evidence manifest | Public licensed fixture plus adapter/kernel contracts |
+| E2E-20 | Evidence replay and tamper | Identical cases have identical manifests; changed context is refused by `verify-evidence` | Independent test-side SHA-256 reconstruction |
+| E2E-21 | Investigation failure containment | Existing output remains untouched and invalid candidate removes the newly reserved incomplete bundle | Filesystem snapshot |
 
 ## Determinism and portability
 
@@ -40,6 +44,8 @@ Test local binary copy/installation and removal, repeated-analysis compatibility
 ## Privacy sinks
 
 Automated tests capture stdout, stderr, reports, and temporary files. Default operation must not echo CSV payload rows to stderr and the generated viewer must contain a deny-by-default CSP, no remote URLs, and no network or storage APIs. Browser execution verifies the static bundle requests only its three local files. Crash-diagnostic capture remains outside V1 because the CLI installs no crash reporter or persistent logger.
+
+Investigation tests additionally inspect copied source bytes, adapter provenance, opaque context classification, candidate verdict separation, source-path omission, artifact roles and sizes, bundle identity, replay equality, tamper refusal, and cleanup. The tests use only local fixtures and open no network or hardware interface.
 
 ## Chaos and hostile cases
 

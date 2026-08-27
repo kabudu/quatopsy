@@ -25,8 +25,12 @@ This increment therefore authorises only a private GitHub Release of checksummed
 
 ## Brand
 
-Productisation is not approved. The restrained research identity in `docs/BRAND_IDENTITY.md` is the intended presentation. No canonical marks are produced or claimed complete.
+This historical M5 audit preceded owner productisation approval. The later owner decision and canonical `quatopsy.brand/2` system are recorded in `docs/BRAND_IDENTITY.md` and ADR 0006. That later decision did not itself authorise public opening.
 
 ## Residual accepted limitations
 
-Kernel numeric behaviour is locked by `quatopsy.numeric/1` and fixture oracles, not by an external audit. Million-sample evidence is a synthetic identity series on the local CI host. Third-party flight telemetry is not redistributed.
+Kernel numeric behaviour is locked by `quatopsy.numeric/1` and fixture oracles, not by an external audit. Million-sample evidence is a synthetic identity series on the local CI host. The CC BY 4.0 TUBIN STR excerpt added after M5 is redistributed with source and licence provenance. It is an adapter evaluation slice, not a mission reconstruction.
+
+## M10 addendum
+
+The 2026-08-27 M10 evidence and public-opening rubric are recorded in `docs/PUBLIC_OPENING_DECISION.md`. They support a conditional recommendation for claim-bounded research visibility. Repository visibility and hosted CI remain unchanged pending explicit owner execution approval.

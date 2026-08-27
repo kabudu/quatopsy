@@ -23,11 +23,15 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 | INT-7 | Make M6 weighted objectives and solver classification behaviorally truthful | Planner objective and direct-shooting protocol | Pointing-weight sensitivity, legacy solver alias, plan-then-analyze tests | Planner unit and CLI tests | verified |
 | INT-8 | Bound M7/M8 history, guidance, schedules, worker IPC, and cancellation | Controller, guidance, PIL/HIL isolation | Binary-search paths, input caps, worker framing, in-loop cancellation tests | Control and guidance unit tests | verified |
 | INT-9 | Align delayed measurements and emit reproducible estimator/control audits | Navigator and canonical control/nav protocols | Stale-star refusal, delayed tracking, per-update NIS/NEES, repeat-run equality | Nav/control unit tests | verified |
+| INT-10 | Package recorded canonical or adapter-supported telemetry, opaque operations context, canonical analysis, and separately analysed candidates into one private workflow | CLI investigation orchestration | Full incident and TUBIN adapter lifecycle tests | `quatopsy.evidence/1` bundle | verified |
+| SEC-4 | Bind evidence artifacts by relative path, role, size, and digest and detect tamper without trusting contextual logs | CLI evidence verifier | Test-side digest reconstruction and post-write tamper test | Evidence verification output | verified |
+| OPS-3 | Reserve incident output without clobber and remove newly created incomplete bundles after handled failure | CLI investigation lifecycle | Existing-output and invalid-candidate rollback tests | Filesystem lifecycle report | verified |
 | PERF-1 | Analyse one million samples under registered time and memory targets | Kernel/CLI | Frozen benchmark | Benchmark report | verified |
 | REL-1 | Run repository-owned local CI as the authoritative private-repo gate | Maintainers | `./scripts/ci-local.sh` | Recorded PR result | verified |
 | REL-2 | Require explicit user approval before hosted CI activation | Owner | Repository audit | Release checklist | planned |
 | REL-3 | Use curated release notes and rendered desktop/narrow preview | Release owner | Preview and live inspection | Release URL/screenshots | implemented |
 | REL-4 | Reject Unicode U+2014 across tracked text and release metadata | Local CI | Repository scan | CI log | verified |
+| REL-5 | Make a public-opening recommendation from private technical evidence without changing visibility or broadening publication authority | Owner/release policy | M10 gate audit | `PUBLIC_OPENING_DECISION.md` | verified |
 | UX-1 | Synchronise all views by sample identity with bounded finding navigation | Viewer | Public-workflow bundle tests and browser interaction | Visual workflow evidence | verified |
 | UX-2 | Distinguish raw, derived, repaired, representation, and physical states | Viewer | Viewer layer and caption tests | UI evidence | verified |
 | UX-3 | Never use colour as the sole result signal | Viewer | Text state, contrast checks, and browser accessibility snapshot | Accessibility report | verified |

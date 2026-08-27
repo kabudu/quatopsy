@@ -2,7 +2,7 @@
 
 ## Assets
 
-Source trajectory confidentiality and integrity; semantic correctness of findings; report and repair provenance; local filesystem integrity; availability of the developer workstation; release and dependency integrity; and clarity of safety limitations.
+Source trajectory confidentiality and integrity; semantic correctness of findings; report, repair, and investigation-bundle provenance; contextual event/command/note confidentiality; local filesystem integrity; availability of the developer workstation; release and dependency integrity; and clarity of safety limitations.
 
 ## Adversaries and failures
 
@@ -10,7 +10,7 @@ Inputs may be malicious, corrupted, ambiguous, extremely large, numerically adve
 
 ## Trust boundaries
 
-All input files, manifests, adapters, planner problems, controller problems, report files, viewer bundles, and future integrations are untrusted at entry. The Rust kernel, rule registry, canonical serializer, and release artefacts form the primary trusted computing base. The browser is sandboxed and non-authoritative. The planner and controller are outside verdict ownership. No production credentials are required.
+All input files, manifests, adapters, planner problems, controller problems, contextual logs, evidence manifests, report files, viewer bundles, and future integrations are untrusted at entry. The Rust kernel, rule registry, canonical serializer, and release artefacts form the primary trusted computing base. The browser is sandboxed and non-authoritative. Investigation orchestration, the planner, and the controller are outside verdict ownership. No production credentials are required.
 
 ## Security invariants
 
@@ -20,6 +20,8 @@ All input files, manifests, adapters, planner problems, controller problems, rep
 - Parsers enforce byte, row, field, numeric, time, memory, and finding limits.
 - Errors, timeouts, unsupported cases, and partial results never become pass.
 - Reports bind evidence to immutable input and policy digests.
+- Investigation manifests bind sorted relative paths, roles, sizes, and digests; verification rejects missing, added, changed, or role-drifted files.
+- Context files are opaque evidence and cannot affect verdicts or prove command execution.
 - Default operation performs no network access or telemetry.
 - Viewer content is escaped, has a restrictive content security policy, and loads no remote resources.
 
@@ -31,7 +33,7 @@ Archives, ROS bags, MCAP, and SPICE files are handled only by isolated adapters 
 
 ## Privacy
 
-Reports include only evidence needed for a finding and can redact file paths. Crash logs exclude samples by default. Temporary files use restrictive permissions. Browser storage is disabled unless a later version documents a local-only preference store. No cloud upload exists in the initial architecture.
+Reports include only evidence needed for a finding and can redact file paths. Investigation bundles deliberately copy telemetry and optional context, omit original source paths from the manifest, and inherit the supplied data's sensitivity. Crash logs exclude samples by default. Temporary files use restrictive permissions. Browser storage is disabled unless a later version documents a local-only preference store. No cloud upload exists in the initial architecture.
 
 ## Supply chain
 
@@ -39,9 +41,8 @@ Dependencies are minimised, pinned, licensed, audited, and reviewed for unsafe c
 
 ## Residual risks
 
-Memory safety does not guarantee mathematical correctness. Floating-point boundary behaviour, convention declarations, misleading user interpretation, maliciously valid worst-case inputs, and compromised build tooling remain. These receive conformance oracles, explicit refusals, resource bounds, copy controls, and release gates rather than hidden assurances.
+Memory safety does not guarantee mathematical correctness. Floating-point boundary behaviour, convention declarations, misleading user interpretation, maliciously valid worst-case inputs, compromised build tooling, unauthenticated source capture, and disclosure through copied case context remain. These receive conformance oracles, explicit refusals, resource bounds, copy controls, verification, and release gates rather than hidden assurances.
 
 ## Out of scope
 
 Flight certification, live actuator command, classified-data handling accreditation, protection against a fully compromised host, and correctness of undeclared external adapters are outside V1.
-

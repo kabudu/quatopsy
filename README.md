@@ -10,7 +10,7 @@ Quatopsy does not claim to invent quaternions, sign canonicalisation, shortest-p
 
 ## Status
 
-M5 is a private `0.1.0` research release with frozen claims and checksummed local artefacts. Canonical brand assets exist as `quatopsy.brand/2`. No safety qualification, public opening, signed publication, crates.io package, hosted CI, trademark clearance, or independent external validation is claimed.
+M10 adds a private, digest-bound incident investigation workflow around the shipped analyser, adapters, candidate planner, software controller, and viewer. M5 remains the private `0.1.0` release baseline. Canonical brand assets exist as `quatopsy.brand/2`. No safety qualification, public opening, signed publication, crates.io package, hosted CI, trademark clearance, or independent external validation is claimed.
 
 The learning-laboratory concept is a separate future project and is not part of Quatopsy.
 
@@ -41,6 +41,23 @@ cargo run --bin quatopsy -- adapt \
   --input fixtures/public/tubin_str/source.csv \
   --output-dir /tmp/quatopsy-tubin
 ```
+
+Build and verify a private incident bundle:
+
+```bash
+cargo run --bin quatopsy -- investigate \
+  --case-id local-sign-case \
+  --input fixtures/conformance/sign_alternating/input.csv \
+  --manifest fixtures/conformance/sign_alternating/manifest.json \
+  --plan-problem fixtures/plan/spherical_rest_to_rest/problem.json \
+  --control-problem fixtures/control/so3_rest_to_rest/problem.json \
+  --output-dir /tmp/quatopsy-case
+
+cargo run --bin quatopsy -- verify-evidence \
+  --bundle /tmp/quatopsy-case
+```
+
+`investigate` copies its inputs into a new no-clobber directory, keeps optional event and command histories as uninterpreted context, runs observed and candidate trajectories through the canonical kernel, and writes `quatopsy.evidence/1`. It never sends a command or opens hardware. Evidence bundles contain copied telemetry and inherit its sensitivity. See [Private investigation workflow](docs/INVESTIGATION_WORKFLOW.md).
 
 `quatopsy adapt --format mcap-json` and `--format spice-ck` convert uncompressed MCAP JSON poses and little-endian CK type 3 kernels into the same canonical CSV and manifest. They never assign a report `result`.
 
@@ -76,6 +93,8 @@ Exit codes: `0` pass, `1` findings, `2` refused, `3` error, `64` usage error.
 - [Plan protocol](docs/PLAN_PROTOCOL.md)
 - [Control protocol](docs/CONTROL_PROTOCOL.md)
 - [Control safety](docs/CONTROL_SAFETY.md)
+- [Private investigation workflow](docs/INVESTIGATION_WORKFLOW.md)
+- [Public-opening decision](docs/PUBLIC_OPENING_DECISION.md)
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
 - [Novelty and prior art](docs/NOVELTY.md)
 - [Validation](docs/VALIDATION.md)

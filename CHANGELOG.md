@@ -4,6 +4,7 @@
 
 ### Added
 
+- Private `quatopsy investigate` and `quatopsy verify-evidence` workflows for bounded canonical or adapter-backed incident capture, opaque operations context, observed diagnostics, reproducers, repairs, separately analysed plan/control candidates, local viewers, and deterministic `quatopsy.evidence/1` integrity verification.
 - Canonical product brand `quatopsy.brand/2` with the owner-selected woven-lift ribbon mark, outlined Space Grotesk wordmark, violet/cerise/ivory palette, tokens, lockups, deterministic PNG exports, and local CI validation. `quatopsy.brand/1` remains identifiable in repository history.
 - `quatopsy control` for a geometric PD controller on SO(3), with independent command inhibition, estimator freshness contracts, saturation and safe fallback, host-CPU processor-in-the-loop, loopback hardware-in-the-loop, declared software plant models, a software GN&C plane (MEKF/UKF, guidance profiles, wheel allocation, declared two-body geometry), a fail-closed hardware-use gate, deterministic robustness trials, no physical actuator I/O, and no report `result`.
 - `quatopsy plan` for a torque-limited rest-to-rest candidate, with independent Euler/kinematics residuals, body-rate columns, actuator and keep-out models, behaviorally tested weighted objectives, bounded nonlinear direct shooting, declared-actuator perturbation campaigns, infeasibility on constraint violation, and no report `result`.
