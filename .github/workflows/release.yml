@@ -24,8 +24,9 @@ jobs:
           fetch-depth: 0
       - uses: dtolnay/rust-toolchain@35a842e360814583e976785eeda0bd0655cb8e83 # 1.97.0 action
         with:
-          toolchain: 1.97.1
           components: rustfmt, clippy
+      - name: Bootstrap locked dependencies
+        run: cargo fetch --locked
       - name: Bind tag, master, Cargo, and changelog
         run: |
           version="${GITHUB_REF_NAME#v}"

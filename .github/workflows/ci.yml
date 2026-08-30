@@ -23,8 +23,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dtolnay/rust-toolchain@35a842e360814583e976785eeda0bd0655cb8e83 # 1.97.0 action
         with:
-          toolchain: 1.97.1
           components: rustfmt, clippy
+      - name: Bootstrap locked dependencies
+        run: cargo fetch --locked
       - name: Authoritative quality gate
         run: ./scripts/ci-local.sh
       - name: Validate all Cargo publication payloads

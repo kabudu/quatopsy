@@ -23,10 +23,12 @@ allowed = {
 workspace = {"quatopsy", "quatopsy-adapt", "quatopsy-control", "quatopsy-core", "quatopsy-guidance", "quatopsy-nav", "quatopsy-oracle", "quatopsy-plan", "quatopsy-schema"}
 proc = subprocess.run(
     ["cargo", "metadata", "--format-version", "1", "--locked", "--offline", "--manifest-path", str(root / "Cargo.toml")],
-    check=True,
     capture_output=True,
     text=True,
 )
+if proc.returncode != 0:
+    print(proc.stderr, file=sys.stderr, end="")
+    raise SystemExit("supply-chain: locked offline Cargo metadata failed")
 meta = json.loads(proc.stdout)
 resolved = {node["id"] for node in meta["resolve"]["nodes"]}
 errors = []
