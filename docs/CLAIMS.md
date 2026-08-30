@@ -28,7 +28,7 @@ Status date: 2026-08-30. Version: `0.1.0`. Visibility: private research reposito
 
 ## Unreleased M9
 
-- Canonical Quatopsy marks, tokens, and lockups exist as `quatopsy.brand/2`. The viewer uses the woven-lift ribbon symbol. The CLI about line carries the tagline. This is not trademark clearance and not public opening.
+- Canonical Quatopsy marks, tokens, and lockups exist as `quatopsy.brand/2`. The viewer uses the woven-lift ribbon symbol. The CLI about line carries the tagline. This is not public opening.
 
 ## Unreleased M10
 
@@ -37,18 +37,18 @@ Status date: 2026-08-30. Version: `0.1.0`. Visibility: private research reposito
 
 ## Unreleased M11
 
-- The product-led README, branded system architecture, community-health files, and GitHub About metadata are prepared and validated while the repository remains private. They improve discoverability and contribution readiness but do not imply public availability, hosted CI, package publication, trademark clearance, production support, or independent validation.
+- The product-led README, branded system architecture, community-health files, and GitHub About metadata are prepared and validated while the repository remains private. They improve discoverability and contribution readiness but do not imply public availability, hosted CI, package publication, production support, or independent validation.
 
 ## Required non-claims
 
-Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, production-ready, complete, optimal, or independently validated. Do not state that a `pass` result is flight approval, actuator permission, or energy optimality. Do not state that a feasible plan or a tracked SIL candidate is globally optimal, dynamically verified under uncertainty, or authorised for command. Do not state that commanded-path findings measure control effort or mission risk. Do not state that the candidate name is a cleared trademark. Do not state that the TUBIN excerpt is a mission reconstruction or that adapters certify source conventions.
+Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, production-ready, complete, optimal, or independently validated. Do not state that a `pass` result is flight approval, actuator permission, or energy optimality. Do not state that a feasible plan or a tracked SIL candidate is globally optimal, dynamically verified under uncertainty, or authorised for command. Do not state that commanded-path findings measure control effort or mission risk. Do not state that the TUBIN excerpt is a mission reconstruction or that adapters certify source conventions.
 
 ## Out of V1 supported scope
 
 - Automatic convention inference and automatic convention repair remain refused.
 - Hardware command, hard real-time execution, target-processor PIL, physical-actuator HIL, and flight assurance remain refused. Host-CPU PIL and loopback HIL are software evidence only. The controller does not open actuator devices.
 - Hosted CI, crates.io publication, signed binaries, public repository visibility, websites, and production support remain distinct unauthorised gates.
-- Full visual brand assets exist as `quatopsy.brand/2`. They do not authorise public opening, trademark claims, or production support.
+- Full visual brand assets exist as `quatopsy.brand/2`. They do not authorise public opening or production support.
 
 ## Evidence map
 

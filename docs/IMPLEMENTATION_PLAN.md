@@ -58,7 +58,7 @@ Exit: supported scope passes adversarial, portability, lifecycle, performance, a
 
 ## M5: Product release gate
 
-- [x] Resolve every stop-ship correctness, security, privacy, compatibility, and legal/name risk.
+- [x] Resolve every stop-ship correctness, security, privacy, compatibility, licence, and provenance risk.
 - [x] Freeze evidence-bounded public claims and curated release presentation.
 - [x] Produce and validate the full brand system only if productisation is approved.
 - [x] Generate and validate release-note previews at desktop and narrow widths before publication.
@@ -129,9 +129,9 @@ Exit: local CI plus the rest-to-rest fixtures and a profile-tracking fixture. Op
 
 ## M9: Product brand system
 
-Owner productisation was approved. Trademark filing was declined. Public opening remains a later gate.
+Owner productisation and the canonical Quatopsy identity were approved. Public opening remains a later gate.
 
-- [x] Record owner productisation approval and the decision to keep `Quatopsy` without a trademark filing, without claiming clearance.
+- [x] Record owner productisation and canonical product-name approval.
 - [x] Construct and score the initial three mark directions; preserve the superseded antipodal paired-point decision as historical evidence.
 - [x] Incorporate owner visual review and ship the selected woven-lift revision as `quatopsy.brand/2`.
 - [x] Ship versioned sources, Space Grotesk outline provenance, exports, tokens, templates, licences, and a digest manifest.
@@ -164,7 +164,7 @@ This private milestone prepares the repository entry points and community contra
 - [x] Replace the research-led README with a product-led entry point using the canonical wordmark, a concise value proposition, truthful capability boundaries, a fast first run, and clear documentation routes.
 - [x] Ship a branded, accessible system-architecture SVG that distinguishes observed evidence, verdict ownership, optional candidates, and local-only outputs.
 - [x] Add contribution, conduct, security-reporting, support, pull-request, and structured issue-reporting guidance suitable for an open-source engineering project.
-- [x] Correct stale public-facing legal and productisation copy without claiming trademark clearance or changing the Apache-2.0 licence.
+- [x] Correct stale public-facing productisation copy without changing the Apache-2.0 licence.
 - [x] Define and validate repository About metadata and topic tags from a versioned local contract.
 - [x] Render and inspect the README and architecture asset at desktop and narrow widths, validate local links and SVG safety, and pass the authoritative local CI gate.
 - [x] Apply the approved About description and topics while retaining private visibility and disabled hosted CI.

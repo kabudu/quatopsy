@@ -8,7 +8,7 @@ Hosted CI is disabled by policy while the repository is private. Adding or enabl
 
 ## Stop-ship gates
 
-A release stops for any unresolved critical or high correctness flaw in supported semantics; error or refusal capable of becoming pass; repair that lacks independent equivalence evidence; unbounded supported input path; source overwrite or partial-output risk; credential, privacy, path, viewer-content, or supply-chain exposure; incompatible protocol drift; missing deterministic local CI evidence; unsupported public claim; missing licence/provenance; material name or patent concern requiring legal disposition; or inconsistent release metadata.
+A release stops for any unresolved critical or high correctness flaw in supported semantics; error or refusal capable of becoming pass; repair that lacks independent equivalence evidence; unbounded supported input path; source overwrite or partial-output risk; credential, privacy, path, viewer-content, or supply-chain exposure; incompatible protocol drift; missing deterministic local CI evidence; unsupported public claim; missing licence/provenance; material patent concern; or inconsistent release metadata.
 
 External independent validation, expert challenge, practitioner interviews, pilots, adoption cohorts, customer discovery, and ecosystem ranking are optional. They do not block implementation, product completion, publication, or release. Their absence blocks only claims that require those forms of evidence.
 
@@ -19,7 +19,7 @@ External independent validation, expert challenge, practitioner interviews, pilo
 3. Dependencies, licences, lockfiles, build provenance, and artefact digests pass supply-chain review.
 4. Traceability maps every supported requirement to behavioural evidence.
 5. Public claims match evidence and state explicit non-claims.
-6. Name/mark and relevant patent surfaces have the required owner/legal disposition for the intended visibility and jurisdictions.
+6. Relevant patent surfaces have the required owner disposition for the intended release scope.
 7. Installation artefacts, support posture, compatibility, and incident process agree with documentation.
 8. The release presentation contract below passes preview and post-publication checks.
 9. Root README, architecture visual, contribution policy, conduct policy, security reporting, support routes, issue forms, pull-request template, and repository metadata pass the open-source readiness check.
@@ -56,4 +56,4 @@ The versioned GitHub About description and topics live in `.github/repository-se
 
 ## Brand gate
 
-A restrained research presentation may accompany a claim-bounded release. The owner approved productisation of the enduring brand on 2026-08-19, approved the woven-lift redesign on 2026-08-25, and declined a trademark filing. Canonical assets are `quatopsy.brand/2`. Public opening, hosted CI, crates.io, signed binaries, website deployment, and production support remain distinct gates. Maturity status remains an overlay and never changes the canonical identity.
+A restrained research presentation may accompany a claim-bounded release. The owner approved productisation of the enduring brand on 2026-08-19, approved the woven-lift redesign on 2026-08-25, and accepted the Quatopsy identity for public open-source use on 2026-08-30. Canonical assets are `quatopsy.brand/2`. Public opening, hosted CI, crates.io, signed binaries, website deployment, and production support remain distinct gates. Maturity status remains an overlay and never changes the canonical identity.

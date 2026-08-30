@@ -36,3 +36,7 @@ Until that explicit approval, `REL-2`, the M9 public-opening boxes, and post-pub
 M11 closes the repository-presentation and community-health gaps identified after the technical recommendation: a product-led README, branded architecture visual, contribution and conduct policies, private security reporting, support boundaries, issue and pull-request templates, and versioned GitHub About metadata. These improvements strengthen the conditional go recommendation but do not execute it. Visibility and hosted CI remain unchanged until explicit owner approval.
 
 The About description and topics are now applied while private. GitHub Actions is explicitly disabled. GitHub permits public vulnerability reporting only for public repositories, so the opening sequence must change visibility, enable that reporting control immediately, and verify its logged-out path before announcing availability.
+
+## Public identity disposition
+
+On 2026-08-30, after reviewing the completed point-in-time name and ecosystem due diligence, the owner approved `Quatopsy` as the public open-source project identity. No further name-approval gate blocks public opening. This disposition does not itself change repository visibility or enable hosted CI.

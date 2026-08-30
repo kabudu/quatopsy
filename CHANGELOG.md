@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Recorded owner approval of the Quatopsy name for public open-source use, removed obsolete name-clearance caveats from repository documentation, and added a regression check.
 - Positioned Quatopsy as early-stage, production-quality research software for local advisory evaluation while preserving the certification, independent-validation, flight-use, support, and production-readiness boundaries.
 - Simplified the README introduction, audience statement, specialist notation, project maturity language, and GitHub About description for first-time product comprehension.
 - Prepared the private repository for open-source review with a product-led README, branded system architecture, community health files, validated repository metadata, and explicit publication boundaries.
@@ -34,7 +35,7 @@
 
 ### Claims
 
-These close the previously deferred V1 gaps. They do not claim flight safety, TUBIN reconstruction, novelty, trademark clearance, or independent external validation. The unreleased planner is a candidate generator, not a certified or globally optimal trajectory. The unreleased controller is not flight software, not hard real-time, not a qualified processor, and not actuator permission. The brand system is not public opening.
+These close the previously deferred V1 gaps. They do not claim flight safety, TUBIN reconstruction, novelty, or independent external validation. The unreleased planner is a candidate generator, not a certified or globally optimal trajectory. The unreleased controller is not flight software, not hard real-time, not a qualified processor, and not actuator permission. The brand system is not public opening.
 
 ## 0.1.0 - 2026-08-15
 

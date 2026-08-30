@@ -40,5 +40,4 @@ No reviewed result yet demonstrated the entire narrow diagnostic contract, but a
 
 Until the systematic matrix and matched evaluation complete, use `candidate contribution` and never `novel`. If a close system is found, update the matrix immediately, narrow or retract the hypothesis, retain the negative result, and do not rename combination as invention. Production readiness, safety, user value, and adoption remain separate claims.
 
-External independent challenge is optional. Its absence does not block implementation or release, but it prevents claims of independent reproduction or consensus. Patent clearance still requires qualified legal review before any later public opening. Trademark filing was declined by the owner; residual name risk is recorded as R10.
-
+External independent challenge is optional. Its absence does not block implementation or release, but it prevents claims of independent reproduction or consensus. The point-in-time prior-art and patent-surface research is recorded; Quatopsy makes no novelty or patentability claim.

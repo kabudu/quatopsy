@@ -33,7 +33,7 @@ The proposed claim is bounded to supported rule conformance, not safe flight. Th
 
 ## Residual risks
 
-Novelty remains unestablished; the patent search is preliminary; the owner declined a trademark filing, so name clearance is absent for any later public opening; user comprehension of representation versus physical motion is untested in a practitioner study; and kernel numeric behaviour is locked by `quatopsy.numeric/1` and fixture oracles, not by an independent external audit. These risks constrain public claims. The private `0.1.0` release accepts them by remaining private, unsigned, unpublished to crates.io, and claim-bounded.
+Novelty remains unestablished; the patent search is preliminary; user comprehension of representation versus physical motion is untested in a practitioner study; and kernel numeric behaviour is locked by `quatopsy.numeric/1` and fixture oracles, not by an independent external audit. These risks constrain public claims. The private `0.1.0` release accepts them by remaining private, unsigned, unpublished to crates.io, and claim-bounded.
 
 ## Documents tailored
 
@@ -41,4 +41,4 @@ Novelty remains unestablished; the patent search is preliminary; the owner decli
 
 ## Completion statement
 
-M5 records a private `0.1.0` research release: Apache-2.0 licence, frozen claims, curated notes, supply-chain allowlist, and a fail-closed GitHub Release path. M9 records `quatopsy.brand/2` after owner productisation and redesign approval without a trademark filing. Public opening, hosted CI, and crates.io remain distinct unauthorised gates.
+M5 records a private `0.1.0` research release: Apache-2.0 licence, frozen claims, curated notes, supply-chain allowlist, and a fail-closed GitHub Release path. M9 records `quatopsy.brand/2` after owner productisation and redesign approval. Public opening, hosted CI, and crates.io remain distinct unauthorised gates.
