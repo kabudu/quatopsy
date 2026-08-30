@@ -1172,11 +1172,12 @@ def check() -> int:
         errors.append("overlay template missing overlay copy")
     if b"Private research overlay" in symbol:
         errors.append("canonical symbol contains overlay copy")
-    viewer_css = (ROOT / "viewer" / "viewer.css").read_text(encoding="utf-8")
+    viewer_root = ROOT / "crates" / "quatopsy-cli" / "viewer"
+    viewer_css = (viewer_root / "viewer.css").read_text(encoding="utf-8")
     for token in (dark["bg"], dark["ink"], dark["accent"]):
         if token not in viewer_css:
             errors.append(f"viewer.css missing token {token}")
-    viewer_html = (ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    viewer_html = (viewer_root / "index.html").read_text(encoding="utf-8")
     if 'aria-label="Quatopsy"' not in viewer_html:
         errors.append("viewer mark missing accessible name")
     if f'data-brand-version="{BRAND_VERSION}"' not in viewer_html:

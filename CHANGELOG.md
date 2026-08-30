@@ -6,9 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-30
+
 ### Fixed
 
 - Honoured crates.io server-directed new-crate cooldown deadlines with bounded automatic backoff instead of exhausting fixed-interval retries.
+- Included the embedded static viewer in the installable Cargo package and made payload inspection require all three viewer assets.
 
 ## [0.2.0] - 2026-08-30
 
@@ -47,6 +50,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Added the frozen spacecraft CSV profile, commanded-path unwinding diagnostics, one-million-sample performance gate, lifecycle compatibility tests, and checksummed local packaging.
 - Added the Apache-2.0 licence, supply-chain allowlist, frozen public claims, curated private release notes, and fail-closed release policy.
 
-[Unreleased]: https://github.com/kabudu/quatopsy/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/kabudu/quatopsy/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/kabudu/quatopsy/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kabudu/quatopsy/compare/b6e0ffe...v0.2.0
 [0.1.0]: https://github.com/kabudu/quatopsy/commit/b6e0ffe
