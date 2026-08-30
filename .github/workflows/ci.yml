@@ -24,8 +24,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@35a842e360814583e976785eeda0bd0655cb8e83 # 1.97.0 action
         with:
           components: rustfmt, clippy
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.4.1
+          cache: npm
+          cache-dependency-path: website/package-lock.json
       - name: Bootstrap locked dependencies
-        run: cargo fetch --locked
+        run: |
+          cargo fetch --locked
+          npm --prefix website ci --ignore-scripts
       - name: Authoritative quality gate
         run: ./scripts/ci-local.sh
       - name: Validate all Cargo publication payloads

@@ -137,8 +137,8 @@ Owner productisation and the canonical Quatopsy identity were approved. M12 late
 - [x] Ship versioned sources, Space Grotesk outline provenance, exports, tokens, templates, licences, and a digest manifest.
 - [x] Validate contrast, SVG safety, overlay separation, prohibited-claim copy, and deterministic export in local CI.
 - [x] Apply the symbol and tagline on the local viewer and CLI without weakening CSP or report ownership.
-- [ ] Public repository visibility.
-- [ ] Hosted CI.
+- [x] Public repository visibility.
+- [x] Hosted CI.
 - [ ] crates.io, signed binaries, website, and production support.
 
 Exit: local CI including `python3 scripts/brandkit.py check`. Open boxes are not shipped.
@@ -179,13 +179,28 @@ This milestone executes the authorised public opening and establishes review-gat
 - [x] Convert `CHANGELOG.md` to Keep a Changelog 1.1.0 with Semantic Versioning, release links, and an automated preparation and validation tool.
 - [x] Define the `0.2.0` lockstep Cargo workspace, publishable package metadata, exact versioned internal dependencies, and the installable `quatopsy` package.
 - [x] Add SHA-pinned, least-privilege hosted CI, release preparation, tag publication, checksum-idempotence, and Dependabot configuration.
-- [ ] Change repository visibility to public and verify anonymous clone and public README presentation.
-- [ ] Enable public vulnerability reporting, repository security features, and protected `master` controls.
-- [ ] Run the hosted `quality` job successfully on the public `master` commit.
-- [ ] Publish and checksum-verify all nine `0.2.0` Cargo packages and the changelog-derived GitHub Release.
-- [ ] Record post-publication evidence, update repository state documentation, and close superseded private-only gates.
+- [x] Change repository visibility to public and verify anonymous clone and public README presentation.
+- [x] Enable public vulnerability reporting, repository security features, and protected `master` controls.
+- [x] Run the hosted `quality` job successfully on the public `master` commit.
+- [x] Publish and checksum-verify all nine `0.2.1` Cargo packages and the changelog-derived GitHub Release.
+- [x] Record post-publication evidence, update repository state documentation, and close superseded private-only gates.
 
 Exit: local CI, Cargo package dry runs, workflow security review, public repository and security-control verification, passing hosted CI, crates.io checksum verification, GitHub Release inspection, and anonymous clone/readme checks.
+
+## M13: Static project website
+
+This milestone adds a presentation-only GitHub Pages entry point. It does not add hosted analysis, uploads, accounts, telemetry, or verdict ownership.
+
+- [x] Define the static-site trust boundary and record the Tailwind build-time exception in ADR 0007.
+- [x] Build a distinctive, responsive product narrative from canonical `quatopsy.brand/2` assets and evidence-bounded claims.
+- [x] Include the problem, diagnostic rules, architecture, incident workflow, planning and control candidate boundaries, installation path, and unsupported physical-use boundary.
+- [x] Ship complete canonical, Open Graph, X card, JSON-LD, robots, sitemap, favicon, and social-preview metadata.
+- [x] Add a pinned, least-privilege GitHub Pages workflow and website dependency updates.
+- [x] Add deterministic HTML structure, accessibility-contract, local-resource, payload, responsive-motion, and SEO validation to the authoritative gate.
+- [x] Pass desktop and narrow browser QA for layout, keyboard access, reduced motion, console errors, and horizontal overflow.
+- [ ] Deploy from reviewed `master`, verify the live site and social metadata, then set and read back the repository homepage URL.
+
+Exit: local and hosted CI, desktop and narrow visual QA, live GitHub Pages verification, and repository homepage read-back.
 
 ## Optional post-release evidence track
 

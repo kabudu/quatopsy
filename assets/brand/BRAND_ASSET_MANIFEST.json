@@ -314,6 +314,16 @@
       "export_command": "python3 scripts/brandkit.py export"
     },
     {
+      "path": "source/quatopsy-lockup-universal.svg",
+      "sha256": "673c0bb4f99ef3d18ebca0067f48758159f81714905cf2902b8034e9da91e107",
+      "bytes": 9405,
+      "licence": "Apache-2.0",
+      "creator": "scripts/brandkit.py",
+      "tool": "scripts/brandkit.py",
+      "allowed_use": "product identity, documentation, viewer, and release presentation",
+      "export_command": "python3 scripts/brandkit.py export"
+    },
+    {
       "path": "source/quatopsy-symbol-mono.svg",
       "sha256": "9e23f7ac7052fd3b30595b5ae762baec2e32f58999e34e6c037f573f15ef16ca",
       "bytes": 802,

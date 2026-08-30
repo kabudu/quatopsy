@@ -1,6 +1,6 @@
 # Frozen public claims
 
-Status date: 2026-08-30. Version: `0.2.0`. Visibility: public open-source research repository.
+Status date: 2026-08-30. Version: `0.2.1`. Visibility: public open-source research repository.
 
 ## Permitted statements
 
@@ -44,6 +44,10 @@ Status date: 2026-08-30. Version: `0.2.0`. Visibility: public open-source resear
 - Quatopsy is publicly developed with hosted CI that runs the authoritative local gate. Versioned Cargo packages and GitHub Releases are produced only from reviewed `vX.Y.Z` tags whose Cargo metadata and Keep a Changelog section agree.
 - Cargo publication, a passing hosted check, or a GitHub Release does not imply flight approval, certification, physical actuator authority, independent validation, or a production support commitment.
 
+## M13
+
+- The static GitHub Pages site presents Quatopsy's product workflow, architecture, supported capabilities, installation path, and advisory boundary. It performs no analysis, accepts no uploads, collects no telemetry, and owns no diagnostic verdict.
+
 ## Required non-claims
 
 Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, production-ready, complete, optimal, or independently validated. Do not state that a `pass` result is flight approval, actuator permission, or energy optimality. Do not state that a feasible plan or a tracked SIL candidate is globally optimal, dynamically verified under uncertainty, or authorised for command. Do not state that commanded-path findings measure control effort or mission risk. Do not state that the TUBIN excerpt is a mission reconstruction or that adapters certify source conventions.
@@ -52,7 +56,7 @@ Do not state or imply that Quatopsy is novel, safe, flight-proven, certified, pr
 
 - Automatic convention inference and automatic convention repair remain refused.
 - Hardware command, hard real-time execution, target-processor PIL, physical-actuator HIL, and flight assurance remain refused. Host-CPU PIL and loopback HIL are software evidence only. The controller does not open actuator devices.
-- Signed standalone binaries, websites, and production support remain separate gates.
+- Signed standalone binaries and production support remain separate gates. The static project website is presentation-only and is not a hosted analysis service.
 - Full visual brand assets exist as `quatopsy.brand/2`. They do not authorise public opening or production support.
 
 ## Evidence map

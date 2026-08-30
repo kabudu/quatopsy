@@ -32,9 +32,15 @@ REQUIRED = [
     ROOT / ".github" / "workflows" / "ci.yml",
     ROOT / ".github" / "workflows" / "prepare-release.yml",
     ROOT / ".github" / "workflows" / "release.yml",
+    ROOT / ".github" / "workflows" / "pages.yml",
     ROOT / "CHANGELOG.md",
     ROOT / "scripts" / "release.py",
     ROOT / "scripts" / "publish-crates.sh",
+    ROOT / "scripts" / "build-site.sh",
+    ROOT / "scripts" / "check-site.py",
+    ROOT / "website" / "index.html",
+    ROOT / "website" / "input.css",
+    ROOT / "website" / "package-lock.json",
     SETTINGS,
     ARCHITECTURE,
     ARCHITECTURE_NARROW,
@@ -51,8 +57,8 @@ for path in REQUIRED:
 
 readme = README.read_text(encoding="utf-8")
 required_readme = [
-    "assets/brand/source/quatopsy-lockup-horizontal.svg",
-    "assets/brand/source/quatopsy-lockup-light.svg",
+    "assets/brand/source/quatopsy-lockup-universal.svg",
+    "https://kabudu.github.io/quatopsy/",
     "See where rotations go wrong.",
     "## Quick start",
     "## What Quatopsy finds",
@@ -102,6 +108,8 @@ if settings.get("hosted_ci") != "enabled":
     fail("repository settings must require hosted CI")
 if settings.get("release_registry") != "crates.io":
     fail("repository settings must bind Cargo releases to crates.io")
+if settings.get("homepage") != "https://kabudu.github.io/quatopsy/":
+    fail("repository settings must bind the canonical GitHub Pages homepage")
 
 for architecture in [ARCHITECTURE, ARCHITECTURE_NARROW]:
     svg = architecture.read_text(encoding="utf-8")

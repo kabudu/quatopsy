@@ -1,0 +1,72 @@
+@import "tailwindcss";
+@source "./index.html";
+
+@theme {
+  --color-night: #09070d;
+  --color-panel: #110d18;
+  --color-panel-high: #191222;
+  --color-line: #35263f;
+  --color-line-bright: #594069;
+  --color-ink: #fff1d6;
+  --color-muted: #b9aebf;
+  --color-violet: #8b5cf6;
+  --color-orchid: #c778ff;
+  --color-cerise: #ec48c6;
+  --color-inspection: #f5c96a;
+  --color-pass: #74e6a1;
+  --color-findings: #ff7770;
+  --font-sans: "Space Grotesk", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+html { scroll-behavior: smooth; }
+body { overflow-x: hidden; }
+
+.page-grid {
+  background-image:
+    linear-gradient(rgb(199 120 255 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(199 120 255 / 5%) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 88%);
+}
+
+.hero-glow {
+  background:
+    radial-gradient(circle at 30% 38%, rgb(139 92 246 / 20%), transparent 32%),
+    radial-gradient(circle at 70% 62%, rgb(236 72 198 / 15%), transparent 30%),
+    radial-gradient(circle at 48% 48%, rgb(245 201 106 / 7%), transparent 52%);
+}
+
+.spectrum-text {
+  color: transparent;
+  background: linear-gradient(95deg, #fff1d6 8%, #c778ff 48%, #ec48c6 76%, #f5c96a);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.glass {
+  background: linear-gradient(145deg, rgb(25 18 34 / 92%), rgb(17 13 24 / 82%));
+  box-shadow: 0 38px 110px rgb(0 0 0 / 38%);
+  backdrop-filter: blur(18px);
+}
+
+.mark-drift { animation: mark-drift 8s ease-in-out infinite; }
+.trace-pulse { animation: trace-pulse 4.5s ease-in-out infinite; }
+
+@keyframes mark-drift {
+  50% { transform: translateY(-10px) rotate(1.5deg); }
+}
+
+@keyframes trace-pulse {
+  50% { opacity: .58; transform: scale(.985); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .mark-drift, .trace-pulse { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .spectrum-text { color: CanvasText; background: none; }
+  .glass { background: Canvas; }
+}
