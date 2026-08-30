@@ -1,9 +1,5 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/source/quatopsy-lockup-horizontal.svg">
-    <source media="(prefers-color-scheme: light)" srcset="assets/brand/source/quatopsy-lockup-light.svg">
-    <img src="assets/brand/source/quatopsy-lockup-light.svg" width="468" alt="Quatopsy">
-  </picture>
+  <img src="assets/brand/source/quatopsy-lockup-universal.svg" width="468" alt="Quatopsy">
 </p>
 
 <p align="center"><strong>See where rotations go wrong.</strong></p>
@@ -19,6 +15,7 @@
 </p>
 
 <p align="center">
+  <a href="https://kabudu.github.io/quatopsy/">Website</a> |
   <a href="#quick-start">Quick start</a> |
   <a href="#what-quatopsy-finds">Capabilities</a> |
   <a href="#how-it-fits-together">Architecture</a> |

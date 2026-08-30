@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added a responsive, accessible, SEO-complete static GitHub Pages website with a reproducible, least-privilege deployment pipeline.
+
+### Fixed
+
+- Added a transparent universal-host wordmark that remains legible when repository renderers do not honour light and dark responsive image selection.
+
 ## [0.2.1] - 2026-08-30
 
 ### Fixed

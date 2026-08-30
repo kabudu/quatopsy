@@ -148,6 +148,9 @@ python3 "$root/scripts/brandkit.py" check
 log "README and community health"
 python3 "$root/scripts/check-community.py"
 
+log "static project website"
+bash "$root/scripts/build-site.sh" "$root/target/site-ci"
+
 log "Keep a Changelog release contract"
 python3 "$root/scripts/release.py" check
 bash "$root/scripts/preview-release-notes.sh" "$tmp/release-notes-preview.html"

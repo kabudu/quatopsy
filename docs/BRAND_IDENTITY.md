@@ -42,7 +42,7 @@ The selected woven-lift mark uses three tapered ribbon planes. Violet and cerise
 
 ## Visual system
 
-- Lockups: horizontal, stacked, symbol, wordmark, monochrome, reversed, small-size, and light.
+- Lockups: horizontal, stacked, symbol, wordmark, monochrome, reversed, small-size, light, and transparent universal-host.
 - Primary palette: aubergine black, ultraviolet, orchid, indigo, cerise, warm ivory, and pale gold. Semantic result colours remain separate and must never be inferred from ribbon colour.
 - Palettes: dark, light, monochrome, reversed, high-contrast, and forced-colour tokens in `assets/brand/tokens/`.
 - Result states use colour plus a shape plus a text label: pass circle, findings diamond, refused triangle, error square.
@@ -56,6 +56,7 @@ The selected woven-lift mark uses three tapered ribbon planes. Violet and cerise
 ## Usage rules
 
 - Use the full-colour mark on aubergine black or another near-black field. Use `quatopsy-lockup-light.svg` on light surfaces, and the mono or reversed variants when colour reproduction is uncertain.
+- Use `quatopsy-lockup-universal.svg` on third-party surfaces such as repository renderers where the viewer may switch between light and dark themes but cannot be trusted to honour responsive image selection.
 - Use the dedicated `quatopsy-symbol-small.svg` below 32 px. It removes the ivory inspection ribbon and enlarges the two-path silhouette. Do not mechanically shrink the full mark below 32 px.
 - Minimum symbol size is 16 px. Minimum horizontal lockup width is 156 px. Preserve clear space equal to 6 units on the mark's 32-unit construction grid.
 - Do not rotate, reflect, add nodes, add an orbit, recolour individual ribbons outside approved variants, apply glow or shadow, or use the identity gradient to encode pass/fail state.

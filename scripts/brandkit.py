@@ -277,6 +277,23 @@ def lockup_horizontal_svg(ink: str, accent: str, bg: str | None = None) -> str:
     )
 
 
+def lockup_universal_svg() -> str:
+    """Transparent lockup that remains legible on both light and dark hosts."""
+    dark = TOKENS["palette"]["dark"]
+    light = TOKENS["palette"]["light"]
+    symbol = symbol_svg(dark["ink"], dark["accent"]).split("\n", 2)[-1].rsplit("</svg>", 1)[0]
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 32" '
+        'role="img" aria-label="Quatopsy">\n'
+        f'<g transform="translate(0,0)">{symbol}</g>'
+        f'<g transform="translate(40,0)" fill="{dark["ink"]}" stroke="{light["ink"]}" '
+        'stroke-width="0.65" stroke-linejoin="round" paint-order="stroke fill">'
+        f"{wordmark_paths()}</g>\n"
+        "</svg>\n"
+    )
+
+
 def lockup_stacked_svg(ink: str, accent: str, bg: str | None = None) -> str:
     symbol = symbol_svg(ink, accent).split("\n", 2)[-1].rsplit("</svg>", 1)[0]
     background = f'<rect width="108" height="64" fill="{bg}"/>' if bg else ""
@@ -950,6 +967,7 @@ def tree() -> dict[str, bytes]:
         "source/quatopsy-lockup-horizontal.svg",
         lockup_horizontal_svg(dark["ink"], dark["accent"]),
     )
+    put("source/quatopsy-lockup-universal.svg", lockup_universal_svg())
     put(
         "source/quatopsy-lockup-horizontal-mono.svg",
         lockup_horizontal_svg(mono["ink"], mono["accent"]),

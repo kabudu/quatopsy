@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en-GB" class="overflow-x-hidden bg-night scroll-smooth">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Quatopsy finds, explains, and visualises quaternion attitude failures, then evaluates controller and trajectory candidates locally.">
+    <meta name="theme-color" content="#09070d">
+    <meta name="color-scheme" content="dark">
+    <link rel="canonical" href="https://kabudu.github.io/quatopsy/">
+    <meta property="og:title" content="Quatopsy | See where rotations go wrong">
+    <meta property="og:description" content="Local-first quaternion trajectory diagnostics, evidence-bound investigation, and advisory plan and control evaluation.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kabudu.github.io/quatopsy/">
+    <meta property="og:image" content="https://kabudu.github.io/quatopsy/assets/quatopsy-social.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Quatopsy woven-lift symbol and wordmark">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Quatopsy | See where rotations go wrong">
+    <meta name="twitter:description" content="Local-first quaternion trajectory diagnostics and advisory candidate evaluation.">
+    <meta name="twitter:image" content="https://kabudu.github.io/quatopsy/assets/quatopsy-social.png">
+    <title>Quatopsy | Quaternion trajectory diagnostics</title>
+    <link rel="icon" href="assets/favicon-32.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-180.png">
+    <link rel="stylesheet" href="styles.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Quatopsy","applicationCategory":"DeveloperApplication","softwareVersion":"0.2.1","description":"Local-first quaternion trajectory diagnostics and advisory candidate evaluation.","url":"https://kabudu.github.io/quatopsy/","downloadUrl":"https://crates.io/crates/quatopsy","license":"https://www.apache.org/licenses/LICENSE-2.0","codeRepository":"https://github.com/kabudu/quatopsy"}</script>
+  </head>
+  <body class="m-0 bg-night font-sans text-ink antialiased selection:bg-orchid selection:text-night">
+    <a class="fixed -top-24 left-4 z-50 rounded-xl bg-ink px-5 py-3 font-bold text-night focus:top-4" href="#main">Skip to content</a>
+
+    <header class="relative z-30 mx-auto flex h-22 w-[calc(100%-2rem)] max-w-[1240px] items-center justify-between">
+      <a class="flex items-center gap-3 no-underline" href="#top" aria-label="Quatopsy home">
+        <img src="assets/quatopsy-symbol.svg" width="42" height="42" alt="">
+        <span class="text-lg font-extrabold tracking-[.16em]">QUATOPSY</span>
+      </a>
+      <nav class="flex items-center gap-3 text-sm font-semibold text-muted sm:gap-7" aria-label="Primary navigation">
+        <a class="hidden no-underline transition-colors hover:text-ink focus-visible:text-ink sm:block" href="#capabilities">Capabilities</a>
+        <a class="hidden no-underline transition-colors hover:text-ink focus-visible:text-ink md:block" href="#architecture">Architecture</a>
+        <a class="rounded-full border border-line px-4 py-2 text-ink no-underline transition-colors hover:border-orchid focus-visible:border-orchid" href="https://github.com/kabudu/quatopsy">View source</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="relative mx-auto grid min-h-[730px] w-[calc(100%-2rem)] max-w-[1240px] items-center gap-14 py-16 lg:grid-cols-[1.08fr_.92fr] lg:py-24" id="top">
+        <div class="page-grid pointer-events-none absolute inset-x-[-15vw] top-0 -z-20 h-[760px]"></div>
+        <div class="hero-glow pointer-events-none absolute inset-x-[-15vw] top-0 -z-10 h-[760px]"></div>
+        <div class="relative z-10">
+          <p class="mb-6 flex items-center gap-3 text-xs font-extrabold uppercase tracking-[.22em] text-orchid"><span class="h-2 w-2 rounded-full bg-orchid shadow-[0_0_18px_#c778ff]"></span>Local-first orientation forensics</p>
+          <h1 class="mb-7 max-w-4xl text-[clamp(3.7rem,8vw,7.4rem)] leading-[.9] font-black tracking-[-.075em]">See where <span class="spectrum-text">rotations</span> go wrong.</h1>
+          <p class="max-w-2xl text-lg leading-8 text-[#d0c4d4] sm:text-xl">Find, explain, and visualise quaternion attitude failures. Preserve the original evidence. Evaluate repair, trajectory, and controller candidates without handing software authority over physical hardware.</p>
+          <div class="mt-9 flex flex-wrap gap-3">
+            <a class="inline-flex min-h-12 items-center gap-6 rounded-full bg-ink px-6 font-extrabold text-night no-underline transition-colors hover:bg-inspection focus-visible:bg-inspection" href="https://github.com/kabudu/quatopsy#quick-start">Run your first analysis <span aria-hidden="true">↗</span></a>
+            <a class="inline-flex min-h-12 items-center gap-6 rounded-full border border-line-bright px-6 font-extrabold no-underline transition-colors hover:border-orchid focus-visible:border-orchid" href="https://crates.io/crates/quatopsy">Install from crates.io <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs text-muted" aria-label="Project facts">
+            <span><b class="text-pass">●</b> v0.2.1</span>
+            <span>Apache-2.0</span>
+            <span>Rust 1.97+</span>
+            <span>No account</span>
+            <span>No telemetry</span>
+          </div>
+        </div>
+
+        <div class="relative mx-auto w-full max-w-[570px] lg:max-w-none" aria-label="Quatopsy evidence flow preview">
+          <div class="glass relative overflow-hidden rounded-[2rem] border border-line/90 p-4 sm:p-6">
+            <div class="mb-4 flex items-center justify-between border-b border-line/70 pb-4 font-mono text-[.68rem] uppercase tracking-[.16em] text-muted"><span>quatopsy.report/1</span><span class="text-findings">Findings · 03</span></div>
+            <img class="trace-pulse mx-auto block max-h-[620px] w-full object-cover object-top" src="assets/architecture-narrow.svg" width="720" height="1180" alt="Recorded attitude evidence flows through explicit semantics and the conformance kernel to canonical findings, while repairs, plans, and control outputs remain separate candidates.">
+          </div>
+          <img class="mark-drift absolute -right-5 -bottom-7 w-25 drop-shadow-[0_24px_40px_rgba(199,120,255,.26)] sm:-right-8 sm:w-32" src="assets/quatopsy-symbol.svg" width="128" height="128" alt="">
+        </div>
+      </section>
+
+      <section class="mx-auto w-[calc(100%-2rem)] max-w-[1240px] border-t border-line/70 py-24" aria-labelledby="failure-heading">
+        <div class="grid gap-8 lg:grid-cols-[1fr_.8fr] lg:gap-24">
+          <div><p class="mb-5 text-xs font-extrabold uppercase tracking-[.22em] text-orchid">What component plots hide</p><h2 class="text-[clamp(2.7rem,5vw,4.4rem)] leading-[1.01] font-black tracking-[-.06em]" id="failure-heading">Equivalent numbers can describe very different engineering stories.</h2></div>
+          <p class="self-end text-lg leading-8 text-muted">Quatopsy keeps representation, physical motion, declared convention, time, and dynamics separate. A report tells you which obligation failed, where it failed, and what evidence supports that conclusion.</p>
+        </div>
+        <div class="mt-14 grid overflow-hidden rounded-3xl border border-line/80 sm:grid-cols-2 lg:grid-cols-3">
+          <article class="min-h-52 border-b border-line/70 bg-panel p-7 sm:border-r"><span class="font-mono text-xs text-orchid">QAT-NORM-001</span><h3 class="mt-11 mb-3 text-xl font-extrabold">Norm drift</h3><p class="text-sm leading-6 text-muted">Expose invalid rotations before they contaminate downstream calculations.</p></article>
+          <article class="min-h-52 border-b border-line/70 bg-panel p-7 lg:border-r"><span class="font-mono text-xs text-orchid">QAT-SIGN-001</span><h3 class="mt-11 mb-3 text-xl font-extrabold">Sign discontinuity</h3><p class="text-sm leading-6 text-muted">Separate antipodal representation jumps from physical attitude motion.</p></article>
+          <article class="min-h-52 border-b border-line/70 bg-panel p-7 sm:border-r lg:border-r-0"><span class="font-mono text-xs text-orchid">QAT-CONV-001</span><h3 class="mt-11 mb-3 text-xl font-extrabold">Convention mismatch</h3><p class="text-sm leading-6 text-muted">Check declared quaternion semantics against supplied rotation matrices.</p></article>
+          <article class="min-h-52 border-b border-line/70 bg-panel p-7 lg:border-b-0 lg:border-r"><span class="font-mono text-xs text-orchid">QAT-OMEGA-001</span><h3 class="mt-11 mb-3 text-xl font-extrabold">Rate inconsistency</h3><p class="text-sm leading-6 text-muted">Compare body angular velocity with quotient-aware quaternion kinematics.</p></article>
+          <article class="min-h-52 border-b border-line/70 bg-panel p-7 sm:border-r sm:border-b-0"><span class="font-mono text-xs text-orchid">QAT-UNWIND-001</span><h3 class="mt-11 mb-3 text-xl font-extrabold">Long-way command</h3><p class="text-sm leading-6 text-muted">Contrast a commanded path with the quotient-shortest orientation baseline.</p></article>
+          <article class="min-h-52 bg-panel p-7"><span class="font-mono text-xs text-orchid">QAT-PI-001</span><h3 class="mt-11 mb-3 text-xl font-extrabold">Half-turn ambiguity</h3><p class="text-sm leading-6 text-muted">Surface fragile near-pi intervals without inventing a unique repair.</p></article>
+        </div>
+      </section>
+
+      <section class="mx-auto w-[calc(100%-2rem)] max-w-[1380px] py-24" id="architecture" aria-labelledby="architecture-heading">
+        <div class="mx-auto mb-12 max-w-4xl text-center"><p class="mb-5 text-xs font-extrabold uppercase tracking-[.22em] text-orchid">One local evidence chain</p><h2 class="text-[clamp(2.7rem,5vw,4.5rem)] leading-[1.01] font-black tracking-[-.06em]" id="architecture-heading">Observed data stays observed. Candidates stay candidates.</h2><p class="mx-auto mt-6 max-w-3xl text-lg leading-8 text-muted">The conformance kernel owns diagnostic verdicts. Adapters declare provenance, the viewer presents canonical evidence, and optional repair, planning, and control paths remain separately named outputs.</p></div>
+        <figure class="m-0 overflow-x-auto rounded-[2rem] border border-line/80 bg-panel shadow-[0_50px_120px_rgba(0,0,0,.35)]" tabindex="0">
+          <picture><source media="(max-width: 760px)" srcset="assets/architecture-narrow.svg"><img class="mx-auto min-w-[860px] max-md:min-w-0" src="assets/architecture.svg" width="1200" height="720" loading="lazy" alt="Quatopsy local-first architecture: recorded inputs and declared semantics enter adapters and the conformance kernel; canonical findings feed the static viewer and evidence bundle; repair, plan, and controller outputs remain optional candidates and are analysed separately."></picture>
+          <figcaption class="border-t border-line/70 px-6 py-4 text-sm text-muted">Nothing is uploaded. Original trajectory inputs are read-only. A passing report is advisory evidence, not flight approval.</figcaption>
+        </figure>
+      </section>
+
+      <section class="mx-auto w-[calc(100%-2rem)] max-w-[1240px] border-t border-line/70 py-24" id="capabilities" aria-labelledby="capabilities-heading">
+        <div class="mb-14 max-w-4xl"><p class="mb-5 text-xs font-extrabold uppercase tracking-[.22em] text-orchid">From symptom to handover</p><h2 class="text-[clamp(2.7rem,5vw,4.5rem)] leading-[1.01] font-black tracking-[-.06em]" id="capabilities-heading">A forensic workflow, not a quaternion playground.</h2></div>
+        <div class="grid gap-4 lg:grid-cols-12">
+          <article class="glass rounded-3xl border border-line p-8 lg:col-span-7"><span class="font-mono text-xs uppercase tracking-[.16em] text-inspection">Diagnose</span><h3 class="mt-5 text-3xl font-black tracking-tight">Canonical findings linked to exact samples.</h3><p class="mt-4 max-w-2xl leading-7 text-muted">Analyse declared CSV semantics with a closed rule registry, stable result states, deterministic identity, bounded resources, and privacy-conscious reproducers.</p><div class="mt-8 grid grid-cols-3 gap-3 text-center font-mono text-xs"><span class="rounded-xl border border-line px-3 py-3"><b class="block text-xl text-pass">0</b>pass</span><span class="rounded-xl border border-line px-3 py-3"><b class="block text-xl text-findings">1</b>findings</span><span class="rounded-xl border border-line px-3 py-3"><b class="block text-xl text-inspection">2</b>refused</span></div></article>
+          <article class="rounded-3xl border border-line bg-gradient-to-br from-[#251331] to-panel p-8 lg:col-span-5"><span class="font-mono text-xs uppercase tracking-[.16em] text-inspection">Visualise</span><h3 class="mt-5 text-3xl font-black tracking-tight">Physical SO(3), projected S3, and time in sync.</h3><p class="mt-4 leading-7 text-muted">A dependency-free static console keeps geometry, findings, evidence, raw values, and proposed state aligned by source-sample identity.</p><div class="mt-8 flex items-end justify-center gap-7" aria-hidden="true"><img class="w-28 rounded-2xl border border-line" src="assets/study-lifted-path.png" width="512" height="512" loading="lazy" alt=""><img class="w-36 rounded-2xl border border-line" src="assets/study-quotient-lens.png" width="512" height="512" loading="lazy" alt=""></div></article>
+          <article class="rounded-3xl border border-line bg-panel p-8 lg:col-span-4"><span class="font-mono text-xs uppercase tracking-[.16em] text-orchid">Investigate</span><h3 class="mt-5 text-2xl font-black">Digest-bound incident evidence.</h3><p class="mt-4 leading-7 text-muted">Copy source material, diagnostics, reproducers, viewers, and optional candidates into one verifiable local handover.</p></article>
+          <article class="rounded-3xl border border-line bg-panel p-8 lg:col-span-4"><span class="font-mono text-xs uppercase tracking-[.16em] text-orchid">Plan</span><h3 class="mt-5 text-2xl font-black">Bounded trajectory candidates.</h3><p class="mt-4 leading-7 text-muted">Generate torque-limited rest-to-rest paths with declared actuator, keep-out, objective, and uncertainty models. Optimality is not claimed.</p></article>
+          <article class="rounded-3xl border border-line bg-panel p-8 lg:col-span-4"><span class="font-mono text-xs uppercase tracking-[.16em] text-orchid">Control</span><h3 class="mt-5 text-2xl font-black">Software-only GN&amp;C evaluation.</h3><p class="mt-4 leading-7 text-muted">Exercise geometric control, MEKF or UKF navigation, guidance, wheel allocation, SIL, host-CPU PIL, and loopback HIL without physical actuator authority.</p></article>
+        </div>
+      </section>
+
+      <section class="mx-auto grid w-[calc(100%-2rem)] max-w-[1240px] gap-12 py-24 lg:grid-cols-[.8fr_1.2fr]" aria-labelledby="start-heading">
+        <div><p class="mb-5 text-xs font-extrabold uppercase tracking-[.22em] text-orchid">Start with one trajectory</p><h2 class="text-[clamp(2.7rem,5vw,4.4rem)] leading-[1.01] font-black tracking-[-.06em]" id="start-heading">Install. Declare. Inspect.</h2><p class="mt-6 text-lg leading-8 text-muted">Rust 1.97 or newer is the only runtime requirement. Quatopsy runs locally and writes explicit, separately named evidence.</p><a class="mt-7 inline-block font-extrabold text-orchid underline decoration-orchid/50 underline-offset-6" href="https://github.com/kabudu/quatopsy#quick-start">Open the complete quick start ↗</a></div>
+        <div class="overflow-hidden rounded-3xl border border-line bg-[#070609] shadow-[0_35px_90px_rgba(0,0,0,.35)]">
+          <div class="flex items-center gap-2 border-b border-line px-5 py-4" aria-hidden="true"><span class="h-2.5 w-2.5 rounded-full bg-findings"></span><span class="h-2.5 w-2.5 rounded-full bg-inspection"></span><span class="h-2.5 w-2.5 rounded-full bg-pass"></span></div>
+          <pre class="m-0 overflow-x-auto p-6 font-mono text-[.82rem] leading-7 text-[#d7cadb]" tabindex="0"><code><span class="text-muted"># Install the released CLI</span>
+<span class="text-orchid">cargo install</span> quatopsy --locked
+
+<span class="text-muted"># Analyse declared quaternion evidence</span>
+<span class="text-orchid">quatopsy analyze</span> \
+  --input trajectory.csv \
+  --manifest manifest.json \
+  --report report.json
+
+<span class="text-pass">result: findings</span>
+<span class="text-muted">rule QAT-SIGN-001: finding (3)</span></code></pre>
+        </div>
+      </section>
+
+      <section class="mx-auto w-[calc(100%-2rem)] max-w-[1240px] py-24" aria-labelledby="boundary-heading">
+        <div class="grid gap-12 rounded-[2rem] border border-[#6b3f72] bg-gradient-to-br from-[#28122e] via-[#17101e] to-panel p-8 sm:p-14 lg:grid-cols-[1fr_.72fr]">
+          <div><p class="mb-5 text-xs font-extrabold uppercase tracking-[.22em] text-inspection">Advisory by design</p><h2 class="text-[clamp(2.6rem,5vw,4.2rem)] leading-[1.02] font-black tracking-[-.06em]" id="boundary-heading">Evidence for engineering judgement. Never permission to command.</h2><p class="mt-6 text-lg leading-8 text-[#ccbcd0]">Quatopsy is early-stage, production-quality research software for local advisory evaluation. It is not flight approval, certification evidence, independent validation, or a production support commitment.</p></div>
+          <ul class="grid list-none content-start gap-3 p-0 text-sm font-bold text-[#d8c9dc]"><li class="rounded-xl border border-[#5c3b63] px-4 py-3">Physical actuator command refused</li><li class="rounded-xl border border-[#5c3b63] px-4 py-3">Hard real-time execution refused</li><li class="rounded-xl border border-[#5c3b63] px-4 py-3">Orbit determination out of scope</li><li class="rounded-xl border border-[#5c3b63] px-4 py-3">Original trajectories remain read-only</li></ul>
+        </div>
+      </section>
+
+      <section class="mx-auto flex w-[calc(100%-2rem)] max-w-[1240px] flex-col items-center border-t border-line/70 py-28 text-center">
+        <img class="mb-8 w-24 drop-shadow-[0_24px_42px_rgba(199,120,255,.25)]" src="assets/quatopsy-symbol.svg" width="96" height="96" loading="lazy" alt="">
+        <p class="mb-5 text-xs font-extrabold uppercase tracking-[.22em] text-orchid">Follow the evidence</p>
+        <h2 class="max-w-5xl text-[clamp(3rem,6vw,5.6rem)] leading-[.96] font-black tracking-[-.065em]">A rotation failure should be explainable down to the sample.</h2>
+        <div class="mt-10 flex flex-wrap justify-center gap-3"><a class="inline-flex min-h-12 items-center gap-6 rounded-full bg-ink px-6 font-extrabold text-night no-underline hover:bg-inspection" href="https://github.com/kabudu/quatopsy">Explore the repository <span aria-hidden="true">↗</span></a><a class="inline-flex min-h-12 items-center gap-6 rounded-full border border-line-bright px-6 font-extrabold no-underline hover:border-orchid" href="https://github.com/kabudu/quatopsy/releases/latest">Read the latest release <span aria-hidden="true">↗</span></a></div>
+      </section>
+    </main>
+
+    <footer class="mx-auto flex w-[calc(100%-2rem)] max-w-[1240px] flex-col justify-between gap-3 border-t border-line/70 py-9 text-sm text-muted sm:flex-row">
+      <strong class="text-ink">Quatopsy</strong><span>See where rotations go wrong.</span><span><a class="hover:text-ink" href="https://github.com/kabudu/quatopsy/blob/master/LICENSE">Apache-2.0</a> · <a class="hover:text-ink" href="https://github.com/kabudu/quatopsy/blob/master/SECURITY.md">Security</a> · No telemetry</span>
+    </footer>
+  </body>
+</html>

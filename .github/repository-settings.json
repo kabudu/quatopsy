@@ -1,7 +1,7 @@
 {
   "schema": "quatopsy.repository-settings/2",
   "description": "Find, explain, and visualize quaternion attitude failures, then evaluate controller and trajectory candidates locally.",
-  "homepage": "",
+  "homepage": "https://kabudu.github.io/quatopsy/",
   "topics": [
     "attitude-control",
     "gnc",

@@ -36,9 +36,9 @@ The approved description is:
 
 Approved topics are `attitude-control`, `gnc`, `quaternion`, `robotics`, `rust`, `simulation`, `spacecraft`, `trajectory-optimization`, and `visualization`.
 
-No homepage is set until a canonical project site exists. M12 records the owner's authorisation for public visibility, hosted CI, and crates.io release operations.
+The canonical project site is `https://kabudu.github.io/quatopsy/`. It is a static presentation surface and does not provide hosted analysis. M12 records the owner's authorisation for public visibility, hosted CI, and crates.io release operations.
 
-The description and nine topics were applied and read back from GitHub on 2026-08-27. The repository remained private, the homepage remained unset, and GitHub Actions was explicitly disabled at repository level.
+The description and nine topics were applied and read back from GitHub on 2026-08-27. Public visibility, hosted CI, and Cargo releases were subsequently authorised and executed under M12. M13 adds the verified GitHub Pages homepage.
 
 ## Opening execution
 
