@@ -1,10 +1,11 @@
 # Frozen public claims
 
-Status date: 2026-08-27. Version: `0.1.0`. Visibility: private research repository.
+Status date: 2026-08-30. Version: `0.1.0`. Visibility: private research repository.
 
 ## Permitted statements
 
 - Quatopsy is a local-first, advisory quaternion trajectory linter plus a non-authoritative static viewer.
+- Quatopsy may be described as early-stage, production-quality research software for local advisory evaluation. "Production-quality" describes engineering discipline within the declared scope; it does not claim production readiness, certification, independent validation, a support SLA, or flight suitability.
 - For declared `quatopsy.manifest/1` inputs and enabled V1 rules, reports follow `quatopsy.report/1` and the deterministic numeric profile `quatopsy.numeric/1`.
 - Supported rules are `QAT-NORM-001`, `QAT-TIME-001`, `QAT-LIFT-001`, `QAT-SIGN-001`, `QAT-RATE-001`, `QAT-PI-001`, `QAT-REPAIR-001`, `QAT-UNWIND-001` when commanded columns are declared, `QAT-CONV-001` when rotation-matrix columns are declared, and `QAT-OMEGA-001` when angular-velocity columns are declared.
 - Sign-lift repair candidates preserve represented orientation under the independent rotation-matrix oracle used in tests.

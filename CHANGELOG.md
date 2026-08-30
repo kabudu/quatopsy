@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Positioned Quatopsy as early-stage, production-quality research software for local advisory evaluation while preserving the certification, independent-validation, flight-use, support, and production-readiness boundaries.
 - Simplified the README introduction, audience statement, specialist notation, project maturity language, and GitHub About description for first-time product comprehension.
 - Prepared the private repository for open-source review with a product-led README, branded system architecture, community health files, validated repository metadata, and explicit publication boundaries.
 
