@@ -38,8 +38,8 @@ Approved topics are `attitude-control`, `gnc`, `quaternion`, `robotics`, `rust`,
 
 The canonical project site is `https://kabudu.github.io/quatopsy/`. It is a static presentation surface and does not provide hosted analysis. M12 records the owner's authorisation for public visibility, hosted CI, and crates.io release operations.
 
-The description and nine topics were applied and read back from GitHub on 2026-08-27. Public visibility, hosted CI, and Cargo releases were subsequently authorised and executed under M12. M13 adds the verified GitHub Pages homepage.
+The description and nine topics were applied and read back from GitHub on 2026-08-27. Public visibility, hosted CI, and Cargo releases were subsequently authorised and executed under M12. The M13 site was deployed from reviewed `master` by Pages run `33287788648`; its live metadata and HTTPS response were verified before the canonical homepage URL was applied and read back from GitHub.
 
 ## Opening execution
 
-M12 verifies the M11 files on `master`, changes visibility, immediately enables private vulnerability reporting and repository protections, enables the hosted form of the existing local gate, inspects the live public README and social preview, verifies issue forms and security links anonymously, and publishes the reviewed lockstep Cargo release. Signing, a website, support commitments, hardware authority, and certification remain outside this opening.
+M12 verifies the M11 files on `master`, changes visibility, immediately enables private vulnerability reporting and repository protections, enables the hosted form of the existing local gate, inspects the live public README and social preview, verifies issue forms and security links anonymously, and publishes the reviewed lockstep Cargo release. M13 adds the presentation-only project website. Signing, support commitments, hardware authority, and certification remain outside this opening.
