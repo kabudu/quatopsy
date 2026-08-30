@@ -57,7 +57,8 @@ for path in REQUIRED:
 
 readme = README.read_text(encoding="utf-8")
 required_readme = [
-    "assets/brand/source/quatopsy-lockup-universal.svg",
+    "assets/brand/source/quatopsy-lockup-light.svg#gh-light-mode-only",
+    "assets/brand/source/quatopsy-lockup-horizontal.svg#gh-dark-mode-only",
     "https://kabudu.github.io/quatopsy/",
     "See where rotations go wrong.",
     "## Quick start",

@@ -55,7 +55,7 @@ The selected woven-lift mark uses three tapered ribbon planes. Violet and cerise
 
 ## Usage rules
 
-- Use the full-colour mark on aubergine black or another near-black field. Use `quatopsy-lockup-light.svg` on light surfaces, and the mono or reversed variants when colour reproduction is uncertain.
+- Use the full-colour mark on aubergine black or another near-black field. On light surfaces, use `quatopsy-lockup-light.svg`: its inspection streak and wordmark are black while the violet and cerise ribbons retain the approved colour signature. Use the mono or reversed variants when colour reproduction is uncertain.
 - Use `quatopsy-lockup-universal.svg` on third-party surfaces such as repository renderers where the viewer may switch between light and dark themes but cannot be trusted to honour responsive image selection.
 - Use the dedicated `quatopsy-symbol-small.svg` below 32 px. It removes the ivory inspection ribbon and enlarges the two-path silhouette. Do not mechanically shrink the full mark below 32 px.
 - Minimum symbol size is 16 px. Minimum horizontal lockup width is 156 px. Preserve clear space equal to 6 units on the mark's 32-unit construction grid.

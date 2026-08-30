@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Added a transparent universal-host wordmark that remains legible when repository renderers do not honour light and dark responsive image selection.
+- Use a dedicated black-wordmark, black-streak lockup on GitHub light mode while retaining the full-colour lockup in dark mode.
 
 ## [0.2.1] - 2026-08-30
 
