@@ -198,7 +198,7 @@ This milestone adds a presentation-only GitHub Pages entry point. It does not ad
 - [x] Add a pinned, least-privilege GitHub Pages workflow and website dependency updates.
 - [x] Add deterministic HTML structure, accessibility-contract, local-resource, payload, responsive-motion, and SEO validation to the authoritative gate.
 - [x] Pass desktop and narrow browser QA for layout, keyboard access, reduced motion, console errors, and horizontal overflow.
-- [ ] Deploy from reviewed `master`, verify the live site and social metadata, then set and read back the repository homepage URL.
+- [x] Deploy from reviewed `master`, verify the live site and social metadata, then set and read back the repository homepage URL.
 
 Exit: local and hosted CI, desktop and narrow visual QA, live GitHub Pages verification, and repository homepage read-back.
 
