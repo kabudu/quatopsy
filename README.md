@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="assets/brand/source/quatopsy-lockup-universal.svg" width="468" alt="Quatopsy">
+  <img src="assets/brand/source/quatopsy-lockup-light.svg#gh-light-mode-only" width="468" alt="Quatopsy">
+  <img src="assets/brand/source/quatopsy-lockup-horizontal.svg#gh-dark-mode-only" width="468" alt="Quatopsy">
 </p>
 
 <p align="center"><strong>See where rotations go wrong.</strong></p>

@@ -190,7 +190,9 @@ RIBBON_B = "M20.2 5.8 C25.0 7.1 28.0 11.3 27.7 16.2 C27.3 21.4 22.4 24.5 16.3 25
 RIBBON_C = "M6.0 23.1 C9.7 18.1 15.7 14.0 21.7 14.1 C23.5 14.1 24.8 14.7 25.6 15.6 C21.1 15.4 16.8 16.6 13.0 18.5 C9.8 20.1 7.3 22.1 6.0 23.1 Z"
 
 
-def symbol_body(*, mono: str | None = None, small: bool = False) -> str:
+def symbol_body(
+    *, mono: str | None = None, small: bool = False, inspection_ink: str | None = None
+) -> str:
     if mono:
         return f'<path d="{RIBBON_A}" fill="{mono}"/><path d="{RIBBON_B}" fill="{mono}"/><path d="{RIBBON_C}" fill="{mono}"/>'
     if small:
@@ -200,6 +202,11 @@ def symbol_body(*, mono: str | None = None, small: bool = False) -> str:
             f'<path d="{RIBBON_B}" fill="#d52eb2"/>'
             '</g>'
         )
+    inspection = (
+        f'<path d="{RIBBON_C}" fill="{inspection_ink}"/>'
+        if inspection_ink
+        else f'<path d="{RIBBON_C}" fill="url(#qc)"/>'
+    )
     return (
         '<defs>'
         '<linearGradient id="qa" gradientUnits="userSpaceOnUse" x1="5" y1="6" x2="20" y2="26"><stop stop-color="#8b5cf6"/><stop offset="0.48" stop-color="#b445eb"/><stop offset="1" stop-color="#d946ef"/></linearGradient>'
@@ -208,14 +215,23 @@ def symbol_body(*, mono: str | None = None, small: bool = False) -> str:
         '</defs>'
         f'<path d="{RIBBON_A}" fill="url(#qa)"/>'
         f'<path d="{RIBBON_B}" fill="url(#qb)"/>'
-        f'<path d="{RIBBON_C}" fill="url(#qc)"/>'
+        + inspection
     )
 
 
-def symbol_svg(ink: str, accent: str, *, small: bool = False, bg: str | None = None) -> str:
+def symbol_svg(
+    ink: str,
+    accent: str,
+    *,
+    small: bool = False,
+    bg: str | None = None,
+    inspection_ink: str | None = None,
+) -> str:
     del accent
     mono = ink if ink in {"#111111", "#f4f4f4"} else None
-    return svg_wrap(symbol_body(mono=mono, small=small), bg=bg)
+    return svg_wrap(
+        symbol_body(mono=mono, small=small, inspection_ink=inspection_ink), bg=bg
+    )
 
 
 def direction_lifted_path() -> str:
@@ -263,8 +279,18 @@ def wordmark_svg(ink: str, width: int = 108, height: int = 32) -> str:
     )
 
 
-def lockup_horizontal_svg(ink: str, accent: str, bg: str | None = None) -> str:
-    symbol = symbol_svg(ink, accent).split("\n", 2)[-1].rsplit("</svg>", 1)[0]
+def lockup_horizontal_svg(
+    ink: str,
+    accent: str,
+    bg: str | None = None,
+    *,
+    inspection_ink: str | None = None,
+) -> str:
+    symbol = (
+        symbol_svg(ink, accent, inspection_ink=inspection_ink)
+        .split("\n", 2)[-1]
+        .rsplit("</svg>", 1)[0]
+    )
     background = f'<rect width="156" height="32" fill="{bg}"/>' if bg else ""
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -980,7 +1006,12 @@ def tree() -> dict[str, bytes]:
         "source/quatopsy-lockup-stacked.svg",
         lockup_stacked_svg(dark["ink"], dark["accent"]),
     )
-    put("source/quatopsy-lockup-light.svg", lockup_horizontal_svg(light["ink"], light["accent"]))
+    put(
+        "source/quatopsy-lockup-light.svg",
+        lockup_horizontal_svg(
+            light["ink"], light["accent"], inspection_ink=light["ink"]
+        ),
+    )
     put("source/directions/lifted-path.svg", direction_lifted_path())
     put(
         "source/directions/antipodal-paired-point.svg",

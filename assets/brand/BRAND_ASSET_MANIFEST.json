@@ -295,8 +295,8 @@
     },
     {
       "path": "source/quatopsy-lockup-light.svg",
-      "sha256": "30f4fcc1af40f02cef429e3e8a0767be5970347ee88dbf78de79499ddc744534",
-      "bytes": 9318,
+      "sha256": "18686eb19cf54b65cb4c86c538515fa289e77e82e060b35031bcb17f6f5cbad1",
+      "bytes": 9317,
       "licence": "Apache-2.0",
       "creator": "scripts/brandkit.py",
       "tool": "scripts/brandkit.py",
