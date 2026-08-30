@@ -2,7 +2,7 @@
 
 ## Productisation state
 
-Owner productisation was approved on 2026-08-19. The owner declined a trademark filing as unnecessary for current needs. `Quatopsy` remains the product name. That decision is not trademark clearance, not a worldwide availability guarantee, and not public opening.
+Owner productisation was approved on 2026-08-19. `Quatopsy` is the approved product name, and the owner accepted it for public open-source use on 2026-08-30. Public opening remains a separate execution gate.
 
 The canonical visual system is `quatopsy.brand/2`. Public opening, hosted CI, crates.io, signed binaries, and production support remain later distinct gates. `quatopsy.brand/1` is superseded but remains recoverable from repository history and its release commit.
 
@@ -10,7 +10,7 @@ The canonical visual system is `quatopsy.brand/2`. Public opening, hosted CI, cr
 
 Name: `Quatopsy`, combining quaternion and examination. Pronunciation: `kwot-op-see`. Category: orientation-trajectory diagnostics. Purpose: make hidden rotation-path defects inspectable and reproducible. Tagline: `See where rotations go wrong.`
 
-The name was searched on 2026-08-14 across general web results, GitHub repository names, npm, PyPI, and crates.io without an exact material collision. Fallback candidates retained for re-audit before any later public opening are `Quatlint` and `Attiscope`. Residual collision risk is accepted by the owner for private use without a trademark filing (R10).
+The name was searched on 2026-08-14 across general web results, GitHub repository names, npm, PyPI, and crates.io without an exact material collision. The completed search and owner approval establish `Quatopsy` as the canonical public project identity.
 
 ## Audiences and language
 
@@ -68,4 +68,4 @@ Canonical assets live under `assets/brand/`. `python3 scripts/brandkit.py export
 
 ## Governance
 
-Roles: product, research claims, engineering, security, accessibility, brand/design, and legal. The owner currently holds each role and recorded productisation approval, the `/2` redesign approval, and the trademark-filing decline separately from public opening. Brand sources version as `quatopsy.brand/2`, independent of the software protocol. Do not silently replace released manifests.
+Roles: product, research claims, engineering, security, accessibility, and brand/design. The owner currently holds each role and recorded productisation approval, public-name approval, and the `/2` redesign approval separately from public opening. Brand sources version as `quatopsy.brand/2`, independent of the software protocol. Do not silently replace released manifests.

@@ -14,14 +14,14 @@ Audit date: 2026-08-15. Auditor role: engineering (owner). Scope: private `0.1.0
 | Deterministic local CI | Pass | `./scripts/ci-local.sh` recorded on each implementation PR |
 | Public claims | Pass | `docs/CLAIMS.md` freeze; curated notes fail closed on prohibited phrases |
 | Licence and provenance | Pass | Apache-2.0 `LICENSE`/`NOTICE`, crate metadata, package checksums |
-| Name and patent | Pass for private visibility | Candidate name retained; no public opening; no patentability claim |
+| Prior art and patent surfaces | Pass | Point-in-time diligence recorded; no novelty or patentability claim |
 | Release metadata | Pass | Workspace version `0.1.0`, curated notes, changelog, `publish = false` |
 
-## Legal name and patent disposition
+## Prior-art disposition
 
-`Quatopsy` remains a point-in-time candidate from the 2026-08-14 search. Similarity, trademark classes, domains, and international markets are not cleared. Patent surfaces in the prior-art matrix are recorded and are not a freedom-to-operate opinion.
+The recorded point-in-time search covers adjacent products, open-source projects, literature, and patent surfaces. The owner approved the Quatopsy identity for public open-source use on 2026-08-30. The project makes no novelty or patentability claim.
 
-This increment therefore authorises only a private GitHub Release of checksummed local artefacts. It does not authorise public repository visibility, crates.io, signed binaries, hosted CI, a website, or production support. Those remain distinct gates after legal review.
+This historical increment authorises only a private GitHub Release of checksummed local artefacts. It does not authorise public repository visibility, crates.io, signed binaries, hosted CI, a website, or production support. Those remain distinct gates.
 
 ## Brand
 

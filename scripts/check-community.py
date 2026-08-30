@@ -51,6 +51,7 @@ required_readme = [
     "assets/brand/templates/diagram-workflow.svg",
     "assets/brand/templates/diagram-workflow-narrow.svg",
     "Quatopsy is advisory research software.",
+    "early-stage, production-quality research software for local advisory evaluation",
     "CONTRIBUTING.md",
     "SECURITY.md",
 ]
@@ -116,6 +117,17 @@ for architecture in [ARCHITECTURE, ARCHITECTURE_NARROW]:
 notice = (ROOT / "NOTICE").read_text(encoding="utf-8")
 if "not cleared for public productisation" in notice:
     fail("NOTICE still contains superseded productisation copy")
+
+project_authored_docs = [
+    *ROOT.glob("*.md"),
+    *ROOT.joinpath("docs").rglob("*.md"),
+    *ROOT.joinpath(".github").rglob("*.md"),
+    ROOT / "NOTICE",
+]
+obsolete_name_caveat = "trade" + "mark"
+for path in project_authored_docs:
+    if obsolete_name_caveat in path.read_text(encoding="utf-8").casefold():
+        fail(f"obsolete name-clearance caveat in {path.relative_to(ROOT)}")
 
 print(f"community-check: {len(REQUIRED)} required files")
 print(f"community-check: {len(local_targets)} README links and assets")

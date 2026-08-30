@@ -6,13 +6,13 @@ Accepted on 2026-08-19.
 
 ## Context
 
-M5 shipped a restrained research identity because productisation was not approved. On 2026-08-19 the owner approved productisation and declined a trademark filing as unnecessary. Public opening remains a later gate. A full visual system was still required before that gate.
+M5 shipped a restrained research identity because productisation was not approved. On 2026-08-19 the owner approved productisation. Public opening remains a later gate. A full visual system was still required before that gate.
 
 Three mark directions were required: a lifted-path diagnostic trace, an antipodal paired-point system, and a quotient-space inspection lens.
 
 ## Decision
 
-Keep the product name `Quatopsy`. Record that this is not trademark clearance.
+Keep the product name `Quatopsy`.
 
 Select the antipodal paired-point mark. It states the representation-versus-physical mechanism, stays legible at 16 px, and avoids medical or spacecraft cliches. The owner assessed exported candidates against a five-point scale, where 5 is strongest. The small-size score was judged from each 16 px raster export; the other scores were judged from the source direction at 32 and 512 px.
 
@@ -30,4 +30,4 @@ Wire the symbol into the local viewer as inline SVG so `img-src 'none'` CSP rema
 
 ## Consequences
 
-Public opening, hosted CI, crates.io, signed binaries, and production support stay closed. Residual name-collision risk remains until a later rename or legal review if the owner later wants public distribution. Polished marks must not be read as flight approval; claim scans and overlay separation remain in CI.
+Public opening, hosted CI, crates.io, signed binaries, and production support stay closed. Polished marks must not be read as flight approval; claim scans and overlay separation remain in CI.

@@ -66,6 +66,6 @@ M7 adds `quatopsy control`, a geometric PD controller on SO(3). Independent orac
 
 M8 adds a software GN&C plane: MEKF/UKF attitude navigation with NIS/NEES audit, time-tagged guidance, reference tracking, reaction-wheel allocation, and declared two-body geometry. It is not orbit determination, not a certified estimator, and not permission to command hardware.
 
-M9 adds the enduring product brand, revised as `quatopsy.brand/2`: woven-lift ribbon mark, outlined Space Grotesk wordmark, tokens, lockups, and local CI validation. It is not trademark clearance and not public opening.
+M9 adds the enduring product brand, revised as `quatopsy.brand/2`: woven-lift ribbon mark, outlined Space Grotesk wordmark, tokens, lockups, and local CI validation. It is not public opening.
 
 M10 adds `quatopsy investigate` and `quatopsy verify-evidence`. The investigation command creates a private, no-clobber incident directory from canonical or adapter-supported recorded telemetry, optional uninterpreted event/command/notes context, canonical analysis, reproducers, repair candidates, viewer output, and optional separately analysed plan/control candidates. `quatopsy.evidence/1` binds the files by digest. It is not a live mission-control, chain-of-custody, authentication, or flight-approval system.

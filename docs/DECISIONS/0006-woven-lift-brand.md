@@ -18,4 +18,4 @@ Keep the result-state palette independent from the identity ribbons. Retain mono
 
 ## Consequences
 
-`quatopsy.brand/1` remains available through repository history and PR 15, but `/2` is canonical. The richer identity is still not evidence of safety, production maturity, trademark clearance, public opening, or independent validation. Gradient artwork must degrade to the monochrome form where gradients, colour, or adequate contrast cannot be guaranteed.
+`quatopsy.brand/1` remains available through repository history and PR 15, but `/2` is canonical. The richer identity is still not evidence of safety, production maturity, public opening, or independent validation. Gradient artwork must degrade to the monochrome form where gradients, colour, or adequate contrast cannot be guaranteed.
