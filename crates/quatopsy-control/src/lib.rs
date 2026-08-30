@@ -1482,7 +1482,11 @@ fn render_csv(rows: &[CsvRow]) -> String {
 fn digest_hex(bytes: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(bytes);
-    format!("{:x}", hasher.finalize())
+    hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
 }
 
 #[cfg(test)]
@@ -1948,6 +1952,14 @@ mod tests {
         assert_eq!(first.control, second.control);
         assert_eq!(first.nav, second.nav);
         assert_eq!(first.guidance, second.guidance);
+    }
+
+    #[test]
+    fn digest_hex_remains_canonical_across_sha2_api_versions() {
+        assert_eq!(
+            digest_hex(b"abc"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
     }
 
     #[test]
