@@ -24,6 +24,8 @@ After the release pull request is reviewed and merged, an annotated `vX.Y.Z` tag
 
 Publication is idempotent. If a package version already exists, the workflow requires its crates.io checksum to match the locally packaged crate. A mismatch stops the release. New packages are polled until crates.io exposes the expected checksum before dependent packages proceed. The GitHub Release is created or refreshed only after all Cargo packages are verified.
 
+When crates.io returns a new-crate rate limit, the publisher reads its `try again after` timestamp and resumes after that deadline with a clock-skew margin. Automatic waiting is capped at 30 cumulative minutes per package. A malformed or excessive delay, checksum conflict, ambiguous remote state, authentication failure, or unclassified publish error stops the release rather than retrying blindly.
+
 The release workflow requires both `QUATOPSY_RELEASE_AUTHORIZE=1`, which is set only inside the tag workflow, and the repository `CARGO_REGISTRY_TOKEN` secret. The token is exposed only to the publication step and is never written to the repository or artifacts. Local publication without both controls fails closed.
 
 ## Public repository controls
