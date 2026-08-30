@@ -1,59 +1,33 @@
 # Release policy
 
-## Current state
+## Release model
 
-Quatopsy `0.1.0` is a private research release: local CLI, viewer, frozen spacecraft CSV profile, checksummed local packaging, Apache-2.0 licence, and curated GitHub Release notes. It has no public repository visibility, hosted CI, signed binaries, crates.io publication, website, or production support. The private repository uses `./scripts/ci-local.sh` as the authoritative local CI gate for every milestone and pull request.
+Quatopsy uses one lockstep Semantic Version across nine Cargo packages. The installable package is `quatopsy`; the supporting packages are `quatopsy-schema`, `quatopsy-oracle`, `quatopsy-nav`, `quatopsy-guidance`, `quatopsy-adapt`, `quatopsy-core`, `quatopsy-plan`, and `quatopsy-control`. Internal dependencies carry both an exact registry version and a local workspace path.
 
-Hosted CI is disabled by policy while the repository is private. Adding or enabling hosted CI requires explicit user approval at a later public-opening gate. Absent hosted checks are policy-compliant, not passing hosted CI.
+The repository is the source of truth. `CHANGELOG.md` follows Keep a Changelog 1.1.0, retains an empty `[Unreleased]` section after each release, uses ISO dates, and links every release to its Git history. GitHub Release notes are rendered from the matching changelog section instead of being maintained separately.
 
-## Stop-ship gates
+## Quality gates
 
-A release stops for any unresolved critical or high correctness flaw in supported semantics; error or refusal capable of becoming pass; repair that lacks independent equivalence evidence; unbounded supported input path; source overwrite or partial-output risk; credential, privacy, path, viewer-content, or supply-chain exposure; incompatible protocol drift; missing deterministic local CI evidence; unsupported public claim; missing licence/provenance; material patent concern; or inconsistent release metadata.
+`./scripts/ci-local.sh` is the authoritative implementation gate locally and on GitHub-hosted CI. It runs formatting, Clippy, the complete workspace tests, CLI smoke coverage, the million-sample budget, local checksum packaging, supply-chain inspection, brand and community validation, the release contract, and a fail-closed publication check.
 
-External independent validation, expert challenge, practitioner interviews, pilots, adoption cohorts, customer discovery, and ecosystem ranking are optional. They do not block implementation, product completion, publication, or release. Their absence blocks only claims that require those forms of evidence.
+A release stops for any unresolved critical or high correctness flaw in supported semantics; error or refusal capable of becoming pass; repair that lacks independent equivalence evidence; unbounded supported input path; source overwrite or partial-output risk; credential, privacy, path, viewer-content, or supply-chain exposure; incompatible protocol drift; failing local or hosted CI; unsupported public claim; missing licence or provenance; material patent concern; package drift; changelog drift; or inconsistent release metadata.
 
-## Release gates
+## Preparing a release
 
-1. Supported rule semantics pass conformance, mutation, adversarial, deterministic, and portability checks.
-2. Resource limits, output-set rollback, cancellation, local binary removal, report compatibility, and documented privacy sinks pass E2E tests. Cross-version executable downgrade testing begins when a second supported version exists.
-3. Dependencies, licences, lockfiles, build provenance, and artefact digests pass supply-chain review.
-4. Traceability maps every supported requirement to behavioural evidence.
-5. Public claims match evidence and state explicit non-claims.
-6. Relevant patent surfaces have the required owner disposition for the intended release scope.
-7. Installation artefacts, support posture, compatibility, and incident process agree with documentation.
-8. The release presentation contract below passes preview and post-publication checks.
-9. Root README, architecture visual, contribution policy, conduct policy, security reporting, support routes, issue forms, pull-request template, and repository metadata pass the open-source readiness check.
+Normal changes add human-readable entries under `[Unreleased]`. The `Prepare release` workflow accepts a stable `major.minor.patch` version, runs `scripts/release.py prepare`, updates `Cargo.toml`, `Cargo.lock`, and `CHANGELOG.md`, executes the authoritative gate, and opens a `codex/release-vX.Y.Z` pull request. It never tags or publishes from an unreviewed branch.
 
-## Private repository delivery
+The preparation script rejects an empty `[Unreleased]` section, non-increasing versions, malformed dates, inconsistent internal package versions, missing changelog links, and non-SemVer release identifiers.
 
-Implementation increments begin on an updated clean `master`, use scoped `codex/` branches, run the exact local CI command at the final reviewed commit, record its result in the pull request, receive review, squash-merge, fast-forward local `master`, and delete the merged local branch. No GitHub Actions workflow is added without the explicit approval gate.
+## Publishing a release
 
-## Curated release notes
+After the release pull request is reviewed and merged, an annotated `vX.Y.Z` tag on `master` triggers `.github/workflows/release.yml`. The workflow binds the tag to the Cargo workspace and changelog, proves the tagged commit is contained in `master`, reruns the authoritative gate, and publishes packages in dependency order through `scripts/publish-crates.sh`.
 
-Versioned curated release notes live under `.github/release-notes/vX.Y.Z.md`. `scripts/check-release-notes.py` fails closed if the matching curated title or body is missing, malformed, mismatched to the workspace version, hard-wrapped, or contains prohibited claims. `scripts/publish-github-release.sh` refuses unless `QUATOPSY_RELEASE_AUTHORIZE=1` and the GitHub repository is still private. It never falls back to a raw changelog body and never publishes crates.
+Publication is idempotent. If a package version already exists, the workflow requires its crates.io checksum to match the locally packaged crate. A mismatch stops the release. New packages are polled until crates.io exposes the expected checksum before dependent packages proceed. The GitHub Release is created or refreshed only after all Cargo packages are verified.
 
-The release title format is `Quatopsy vX.Y.Z: <short human theme>`. The body contains one opening summary, three to five material changes, explicit claim or compatibility boundaries, one primary install path, and links to detailed evidence and the changelog.
+The release workflow requires both `QUATOPSY_RELEASE_AUTHORIZE=1`, which is set only inside the tag workflow, and the repository `CARGO_REGISTRY_TOKEN` secret. The token is exposed only to the publication step and is never written to the repository or artifacts. Local publication without both controls fails closed.
 
-Do not hard-wrap release prose at a fixed column. Each prose paragraph and list item occupies one physical source line. The body must not duplicate the release title, add a redundant `Release Notes` heading, paste a raw changelog/date heading, enumerate automatically rendered assets, or expose an internal implementation inventory.
+## Public repository controls
 
-`CHANGELOG.md` remains package history and is linked rather than pasted into the public release.
+Pull requests and `master` run the same hosted `quality` job. `master` requires that status, blocks force pushes and deletion, and retains review through pull requests. Dependency updates cover Cargo and GitHub Actions. Public vulnerability reporting is enabled, and security reports follow `SECURITY.md`.
 
-## Presentation verification
-
-Before publication, create a rendered preview of the exact title and body at desktop and narrow widths. Check hierarchy, list indentation, code fences, wrapping, links, install command, placeholder and prohibited-claim scans, and asset behaviour. After publication, inspect the canonical release URL and correct metadata immediately if it differs from the approved preview.
-
-Local CI and release automation scan all tracked text and release metadata and reject Unicode U+2014. Canonical release notes are also checked for hard wrapping and required content.
-
-## Credentials path
-
-Release credentials are the owner's local GitHub CLI authentication. No token, signing key, or crates.io credential is stored in the repository. `scripts/publish-github-release.sh` is the only GitHub Release entry point and requires `QUATOPSY_RELEASE_AUTHORIZE=1`. crates.io remains blocked by workspace `publish = false`.
-
-## Visibility and publication
-
-Repository visibility remains private until the owner explicitly approves public opening. Public repository visibility, hosted CI, crates.io, signed binaries, website deployment, and production support are distinct gates and authorisations. A private GitHub Release of checksummed local artefacts is authorised only through `scripts/publish-github-release.sh`. No release credential is stored in the repository.
-
-The versioned GitHub About description and topics live in `.github/repository-settings.json`. Applying that metadata while private does not authorise a visibility change. No homepage is advertised until a canonical project site exists.
-
-## Brand gate
-
-A restrained research presentation may accompany a claim-bounded release. The owner approved productisation of the enduring brand on 2026-08-19, approved the woven-lift redesign on 2026-08-25, and accepted the Quatopsy identity for public open-source use on 2026-08-30. Canonical assets are `quatopsy.brand/2`. Public opening, hosted CI, crates.io, signed binaries, website deployment, and production support remain distinct gates. Maturity status remains an overlay and never changes the canonical identity.
+Public visibility, hosted CI, and Cargo publication do not broaden the product safety boundary. Quatopsy remains local advisory software. Standalone binary signing, a website, production support, physical hardware, hard real-time qualification, certification, and orbit determination remain separate or refused capabilities.

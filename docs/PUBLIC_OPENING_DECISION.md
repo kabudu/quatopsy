@@ -2,9 +2,9 @@
 
 ## Decision
 
-**Conditional go recommendation, execution not authorised.**
+**Go decision accepted; M12 execution authorised on 2026-08-30.**
 
-As of 2026-08-27, the private engineering evidence supports opening Quatopsy as a claim-bounded research repository. The repository must remain private until the owner separately authorises the visibility change and hosted CI activation. This decision does not authorise crates.io, signed binaries, a website, production support, or a GitHub Release.
+The private engineering evidence supports opening Quatopsy as a claim-bounded research repository. On 2026-08-30, the owner authorised public visibility, hosted CI, vulnerability reporting, protected release operations, crates.io publication, and changelog-derived GitHub Releases. Signed standalone binaries, a website, production support, certification, and hardware authority remain outside this authorisation.
 
 ## Evidence rubric
 
@@ -19,17 +19,17 @@ As of 2026-08-27, the private engineering evidence supports opening Quatopsy as 
 | Technical release gate | `./scripts/ci-local.sh` including the million-sample budget and all M10 lifecycle tests | Pass on the M10 reviewed head |
 | Claims and provenance | Apache-2.0 repository, dependency licence inventory, source-attributed workflow rationale, and explicit non-claims | Pass for research visibility |
 | External validation and demand | No independent expert reproduction, practitioner pilot, or measured adoption outcome | Not established; blocks those claims, not research visibility |
-| Hosted CI | Intentionally absent while private | Enable only in the separately authorised public-opening change |
+| Hosted CI | Authoritative local gate and SHA-pinned workflow | Enable and verify during M12 |
 
 ## Why the recommendation is conditional
 
 M10 demonstrates a usable and bounded private investigation path, including one adapter over a public spacecraft telemetry excerpt. It does not demonstrate mission adoption, operational correctness on a complete flight incident, flight safety, certification, or market demand. Public copy must describe Quatopsy as research software and invite scrutiny rather than imply deployment heritage.
 
-## Authorised next action if the owner accepts
+## Authorised execution
 
-Create a separate public-opening increment that changes repository visibility, enables minimal hosted CI using the same local gate, checks public issue/security/contact metadata, previews the canonical release page, and verifies the public URL after publication. Do not combine package publication, binary signing, website deployment, or production-support promises with that change.
+M12 changes repository visibility, enables hosted CI using the same local gate, enables private vulnerability reporting and repository protections, checks public issue and security metadata, previews the canonical release page, publishes the reviewed Cargo workspace, and verifies the public URLs after publication.
 
-Until that explicit approval, `REL-2`, the M9 public-opening boxes, and post-publication verification remain open.
+The M12 checklist remains open until the live repository, hosted run, crates.io packages, GitHub Release, and anonymous entry points are verified.
 
 ## M11 readiness addendum
 

@@ -2,9 +2,9 @@
 
 ## Productisation state
 
-Owner productisation was approved on 2026-08-19. `Quatopsy` is the approved product name, and the owner accepted it for public open-source use on 2026-08-30. Public opening remains a separate execution gate.
+Owner productisation was approved on 2026-08-19. `Quatopsy` is the approved product name, and the owner accepted it for public open-source use on 2026-08-30. M12 executes public opening separately from brand approval.
 
-The canonical visual system is `quatopsy.brand/2`. Public opening, hosted CI, crates.io, signed binaries, and production support remain later distinct gates. `quatopsy.brand/1` is superseded but remains recoverable from repository history and its release commit.
+The canonical visual system is `quatopsy.brand/2`. M12 governs public opening, hosted CI, and crates.io. Signed binaries and production support remain separate gates. `quatopsy.brand/1` is superseded but remains recoverable from repository history and its release commit.
 
 ## Name and positioning
 

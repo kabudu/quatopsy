@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Render curated notes to a local HTML preview for desktop and narrow widths.
+# Render changelog-derived release notes at desktop and narrow widths.
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-python3 "$root/scripts/check-release-notes.py"
 version="$(python3 - "$root/Cargo.toml" <<'PY'
 import re
 import sys
@@ -11,18 +10,21 @@ text = Path(sys.argv[1]).read_text(encoding="utf-8")
 print(re.search(r'^version = "([^"]+)"', text, re.M).group(1))
 PY
 )"
-notes="$root/.github/release-notes/v${version}.md"
+python3 "$root/scripts/release.py" check --expect-version "$version"
+notes="$(mktemp)"
+trap 'rm -f "$notes"' EXIT
+python3 "$root/scripts/release.py" notes "$version" > "$notes"
 out="${1:-"$root/dist/release-notes-preview.html"}"
 mkdir -p "$(dirname "$out")"
-python3 - "$notes" "$out" <<'PY'
+python3 - "$notes" "$out" "$version" <<'PY'
 import html
 import re
 import sys
 from pathlib import Path
 
-src = Path(sys.argv[1]).read_text(encoding="utf-8").splitlines()
-title = html.escape(src[0])
-body_src = "\n".join(src[2:])
+src = Path(sys.argv[1]).read_text(encoding="utf-8")
+title = html.escape(f"Quatopsy v{sys.argv[3]}")
+body_src = src
 
 
 def inline(text: str) -> str:

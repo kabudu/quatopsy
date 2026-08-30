@@ -296,20 +296,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "quatopsy-adapt"
-version = "0.1.0"
-dependencies = [
- "csv",
- "quatopsy-schema",
- "serde",
- "serde_json",
- "sha2",
- "thiserror",
-]
-
-[[package]]
-name = "quatopsy-cli"
-version = "0.1.0"
+name = "quatopsy"
+version = "0.2.0"
 dependencies = [
  "clap",
  "ctrlc",
@@ -323,8 +311,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "quatopsy-adapt"
+version = "0.2.0"
+dependencies = [
+ "csv",
+ "quatopsy-schema",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+]
+
+[[package]]
 name = "quatopsy-control"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "libm",
  "quatopsy-guidance",
@@ -339,7 +339,7 @@ dependencies = [
 
 [[package]]
 name = "quatopsy-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "csv",
  "libc",
@@ -354,7 +354,7 @@ dependencies = [
 
 [[package]]
 name = "quatopsy-guidance"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "libm",
  "quatopsy-oracle",
@@ -363,7 +363,7 @@ dependencies = [
 
 [[package]]
 name = "quatopsy-nav"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "libm",
  "thiserror",
@@ -371,11 +371,11 @@ dependencies = [
 
 [[package]]
 name = "quatopsy-oracle"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "quatopsy-plan"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "libm",
  "quatopsy-oracle",
@@ -388,7 +388,7 @@ dependencies = [
 
 [[package]]
 name = "quatopsy-schema"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "serde",
  "serde_json",

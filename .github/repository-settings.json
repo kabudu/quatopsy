@@ -1,5 +1,5 @@
 {
-  "schema": "quatopsy.repository-settings/1",
+  "schema": "quatopsy.repository-settings/2",
   "description": "Find, explain, and visualize quaternion attitude failures, then evaluate controller and trajectory candidates locally.",
   "homepage": "",
   "topics": [
@@ -13,6 +13,7 @@
     "trajectory-optimization",
     "visualization"
   ],
-  "visibility_until_public_opening": "private",
-  "hosted_ci_until_public_opening": "disabled"
+  "visibility": "public",
+  "hosted_ci": "enabled",
+  "release_registry": "crates.io"
 }

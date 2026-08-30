@@ -11,9 +11,11 @@ fn license_and_claims_freeze_exist() {
     for relative in [
         "LICENSE",
         "NOTICE",
+        "CHANGELOG.md",
         "docs/CLAIMS.md",
         "docs/RELEASE_GATE.md",
-        ".github/release-notes/v0.1.0.md",
+        ".github/workflows/ci.yml",
+        ".github/workflows/release.yml",
     ] {
         let path = root.join(relative);
         assert!(path.is_file(), "missing {relative}");
@@ -23,10 +25,11 @@ fn license_and_claims_freeze_exist() {
 }
 
 #[test]
-fn github_publish_refuses_without_authorization() {
-    let script = workspace_root().join("scripts/publish-github-release.sh");
+fn cargo_publish_refuses_without_authorization() {
+    let script = workspace_root().join("scripts/publish-crates.sh");
     let output = Command::new("bash")
         .arg(&script)
+        .arg("--publish")
         .env_remove("QUATOPSY_RELEASE_AUTHORIZE")
         .output()
         .unwrap();

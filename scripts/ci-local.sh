@@ -148,13 +148,16 @@ python3 "$root/scripts/brandkit.py" check
 log "README and community health"
 python3 "$root/scripts/check-community.py"
 
-log "curated release notes"
-python3 "$root/scripts/check-release-notes.py"
+log "Keep a Changelog release contract"
+python3 "$root/scripts/release.py" check
 bash "$root/scripts/preview-release-notes.sh" "$tmp/release-notes-preview.html"
 
-log "publish script remains fail-closed"
-if QUATOPSY_RELEASE_AUTHORIZE= bash "$root/scripts/publish-github-release.sh"; then
-  fail "publish-github-release.sh must refuse without authorization"
+log "Cargo publication payloads"
+bash "$root/scripts/publish-crates.sh" --inspect
+
+log "Cargo publish script remains fail-closed"
+if QUATOPSY_RELEASE_AUTHORIZE='' bash "$root/scripts/publish-crates.sh" --publish; then
+  fail "publish-crates.sh must refuse without authorization"
 fi
 
 log "passed"

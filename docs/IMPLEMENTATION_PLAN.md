@@ -129,7 +129,7 @@ Exit: local CI plus the rest-to-rest fixtures and a profile-tracking fixture. Op
 
 ## M9: Product brand system
 
-Owner productisation and the canonical Quatopsy identity were approved. Public opening remains a later gate.
+Owner productisation and the canonical Quatopsy identity were approved. M12 later authorises public opening and release operations.
 
 - [x] Record owner productisation and canonical product-name approval.
 - [x] Construct and score the initial three mark directions; preserve the superseded antipodal paired-point decision as historical evidence.
@@ -170,6 +170,22 @@ This private milestone prepares the repository entry points and community contra
 - [x] Apply the approved About description and topics while retaining private visibility and disabled hosted CI.
 
 Exit: the community/readme check, browser visual QA, `./scripts/ci-local.sh`, private GitHub metadata verification, and an unchanged publication boundary.
+
+## M12: Public opening and Cargo release operations
+
+This milestone executes the authorised public opening and establishes review-gated hosted CI and lockstep Cargo releases without broadening Quatopsy's advisory safety boundary.
+
+- [x] Record explicit owner approval for public repository visibility, hosted CI, and Cargo publication.
+- [x] Convert `CHANGELOG.md` to Keep a Changelog 1.1.0 with Semantic Versioning, release links, and an automated preparation and validation tool.
+- [x] Define the `0.2.0` lockstep Cargo workspace, publishable package metadata, exact versioned internal dependencies, and the installable `quatopsy` package.
+- [x] Add SHA-pinned, least-privilege hosted CI, release preparation, tag publication, checksum-idempotence, and Dependabot configuration.
+- [ ] Change repository visibility to public and verify anonymous clone and public README presentation.
+- [ ] Enable public vulnerability reporting, repository security features, and protected `master` controls.
+- [ ] Run the hosted `quality` job successfully on the public `master` commit.
+- [ ] Publish and checksum-verify all nine `0.2.0` Cargo packages and the changelog-derived GitHub Release.
+- [ ] Record post-publication evidence, update repository state documentation, and close superseded private-only gates.
+
+Exit: local CI, Cargo package dry runs, workflow security review, public repository and security-control verification, passing hosted CI, crates.io checksum verification, GitHub Release inspection, and anonymous clone/readme checks.
 
 ## Optional post-release evidence track
 

@@ -2,7 +2,7 @@
 
 ## Personas
 
-The primary evaluator is a spacecraft guidance, navigation, and control engineer with an attitude CSV export. Maintainers integrate Quatopsy into local analysis scripts or private CI. Later adapter authors translate ROS 2 bags, MCAP, SPICE attitude kernels, simulator logs, or animation data into the canonical profile.
+The primary evaluator is a spacecraft guidance, navigation, and control engineer with an attitude CSV export. Maintainers integrate Quatopsy into local analysis scripts or CI. Later adapter authors translate ROS 2 bags, MCAP, SPICE attitude kernels, simulator logs, or animation data into the canonical profile.
 
 ## Staged adoption
 
@@ -32,7 +32,7 @@ Adapters produce the canonical CSV and manifest plus provenance. They cannot ass
 | IDS Jason-1 ASCII | Published qbody layout | Offline `ids-jason1` converter | Shipped |
 | Offline plan JSON | Torque-limited rest-to-rest candidate | `quatopsy plan` then kernel analyze | Shipped |
 | Offline control JSON | Geometric PD closed-loop candidate, including host-CPU PIL and loopback HIL | `quatopsy control` then kernel analyze | Shipped |
-| Incident case directory | Recorded source, context, analysis, candidates, and viewer handover | `quatopsy investigate` plus `verify-evidence` | Shipped privately |
+| Incident case directory | Recorded source, context, analysis, candidates, and viewer handover | `quatopsy investigate` plus `verify-evidence` | Shipped |
 | Foxglove | 3D pose and plots | Report/marker export, no verdict reinterpretation | Candidate |
 | Basilisk | Simulation and Vizard | Fixture/report adapter | Candidate |
 | SciPy / NumPy | Rotation analysis | Reference-oracle and import helpers | Candidate |
@@ -41,7 +41,7 @@ Adapters produce the canonical CSV and manifest plus provenance. They cannot ass
 
 The CLI accepts explicit file lists and emits one report per analysis unit. Monorepos define units in versioned configuration with bounded parallelism. Forks and offline environments work after dependency bootstrap. Local and CI runs use identical engine, rule, limit, and numeric profiles.
 
-Hosted CI is disabled while the repository is private. Repository-owned local CI is authoritative. Public opening remains a distinct gate and is not authorised by the private `0.1.0` GitHub Release.
+Hosted CI runs the same authoritative gate as `./scripts/ci-local.sh`. Public opening and Cargo releases are governed by the reviewed M12 workflow and do not broaden diagnostic or hardware authority.
 
 `INT-3` adoption modes are `advisory`, `selective`, and `required`. Selective mode requires at least one exact closed-registry `--fail-on` rule. `--override-file` accepts `quatopsy.override/1` records with authority, reason, canonical UTC creation and expiry timestamps, and optional input digest. Duplicate rules, malformed timestamps, future creation times, and expired records are refused before report creation. Overrides and policy change process exit only; they never convert findings into a report `pass`.
 

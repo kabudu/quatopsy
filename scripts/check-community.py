@@ -16,6 +16,7 @@ ARCHITECTURE_NARROW = ROOT / "assets" / "brand" / "templates" / "diagram-workflo
 
 REQUIRED = [
     README,
+    ROOT / "CRATE_README.md",
     ROOT / "CONTRIBUTING.md",
     ROOT / "CODE_OF_CONDUCT.md",
     ROOT / "SECURITY.md",
@@ -27,6 +28,13 @@ REQUIRED = [
     ROOT / ".github" / "ISSUE_TEMPLATE" / "bug_report.yml",
     ROOT / ".github" / "ISSUE_TEMPLATE" / "feature_request.yml",
     ROOT / ".github" / "ISSUE_TEMPLATE" / "adapter_request.yml",
+    ROOT / ".github" / "dependabot.yml",
+    ROOT / ".github" / "workflows" / "ci.yml",
+    ROOT / ".github" / "workflows" / "prepare-release.yml",
+    ROOT / ".github" / "workflows" / "release.yml",
+    ROOT / "CHANGELOG.md",
+    ROOT / "scripts" / "release.py",
+    ROOT / "scripts" / "publish-crates.sh",
     SETTINGS,
     ARCHITECTURE,
     ARCHITECTURE_NARROW,
@@ -74,7 +82,7 @@ for raw in sorted(local_targets):
         fail(f"README local link does not exist: {raw}")
 
 settings = json.loads(SETTINGS.read_text(encoding="utf-8"))
-if settings.get("schema") != "quatopsy.repository-settings/1":
+if settings.get("schema") != "quatopsy.repository-settings/2":
     fail("repository settings schema is unsupported")
 description = settings.get("description")
 if not isinstance(description, str) or not 40 <= len(description) <= 160:
@@ -87,10 +95,12 @@ if topics != sorted(set(topics)):
 for topic in topics:
     if not isinstance(topic, str) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,49}", topic):
         fail(f"invalid repository topic {topic!r}")
-if settings.get("visibility_until_public_opening") != "private":
-    fail("repository settings must preserve private visibility")
-if settings.get("hosted_ci_until_public_opening") != "disabled":
-    fail("repository settings must preserve disabled hosted CI")
+if settings.get("visibility") != "public":
+    fail("repository settings must require public visibility")
+if settings.get("hosted_ci") != "enabled":
+    fail("repository settings must require hosted CI")
+if settings.get("release_registry") != "crates.io":
+    fail("repository settings must bind Cargo releases to crates.io")
 
 for architecture in [ARCHITECTURE, ARCHITECTURE_NARROW]:
     svg = architecture.read_text(encoding="utf-8")

@@ -1,0 +1,58 @@
+name: Prepare release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable SemVer release to prepare
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: prepare release PR
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@35a842e360814583e976785eeda0bd0655cb8e83 # 1.97.0 action
+        with:
+          toolchain: 1.97.1
+          components: rustfmt, clippy
+      - name: Prepare version and changelog
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          test "$GITHUB_REF_NAME" = "master"
+          python3 scripts/release.py prepare "$VERSION" --date "$(date -u +%F)"
+          cargo update --workspace
+          python3 scripts/release.py check --expect-version "$VERSION" --release
+      - name: Validate prepared release
+        run: ./scripts/ci-local.sh
+      - name: Create release pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          branch="codex/release-v${VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add Cargo.toml Cargo.lock CHANGELOG.md
+          git commit -m "Prepare Quatopsy v${VERSION}"
+          git push --set-upstream origin "$branch"
+          gh pr create \
+            --base master \
+            --head "$branch" \
+            --title "Prepare Quatopsy v${VERSION}" \
+            --body "Prepares the lockstep Cargo workspace and Keep a Changelog release section for v${VERSION}. The authoritative local-equivalent gate passed in this workflow. Package publication occurs only after review, merge, and an explicit v${VERSION} tag."
