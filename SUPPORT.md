@@ -6,7 +6,7 @@ Quatopsy is research software maintained without a commercial support SLA.
 
 - Use a GitHub issue for reproducible defects, documentation gaps, adapter requests, and bounded feature proposals.
 - Use the structured issue forms so reports include version, platform, command, declared input format, and redacted reproduction details.
-- After public opening, use [GitHub private vulnerability reporting](https://github.com/kabudu/quatopsy/security/advisories/new) for security concerns. While private, existing collaborators should ask the owner to open a draft advisory through an established private channel.
+- Use [GitHub private vulnerability reporting](https://github.com/kabudu/quatopsy/security/advisories/new) for security concerns.
 
 Before filing, run the latest `master` when practical, review the [documentation](README.md#documentation), and check existing issues.
 

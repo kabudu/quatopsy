@@ -1,6 +1,6 @@
 # Agent workflow
 
-Quatopsy is a private local-first research repository. Implementation follows this loop for every completed roadmap increment. Hosted CI is disabled until the owner explicitly approves it at the public-opening or product-release gate documented in `docs/RELEASE.md`.
+Quatopsy is a local-first open-source research repository. Implementation follows this loop for every completed roadmap increment. Hosted CI mirrors the authoritative local gate after the owner-approved M12 public opening.
 
 ## Delivery loop
 
@@ -15,16 +15,16 @@ Quatopsy is a private local-first research repository. Implementation follows th
 ```
 
 6. Commit only intended files, push the branch, and open a pull request against `master`.
-7. Record the exact local CI command and result in the pull request. Absent hosted checks are policy-compliant; they are not passing hosted CI.
+7. Record the exact local CI command and result in the pull request. Require the hosted `quality` check after M12 is live.
 8. Inspect the remote diff, reviews, and mergeability. Fix every material finding on the branch and rerun `./scripts/ci-local.sh`.
 9. Squash-merge only when the reviewed head is mergeable and local CI passed at that commit.
 10. Fast-forward local `master` to the merged commit, verify the merged state, delete the merged local feature branch, and continue with the next unchecked roadmap item.
 
-Do not create GitHub Actions workflows, publish packages, open the repository, or claim safety, novelty, or independent validation without the documented authorization and evidence.
+Do not publish outside the reviewed tag pipeline or claim safety, novelty, certification, or independent validation without documented evidence.
 
 ## Local CI
 
-`./scripts/ci-local.sh` is the single authoritative quality gate while the repository is private. The script is non-interactive, fail-fast, deterministic, and offline-capable after dependency bootstrap. It runs formatting, Clippy, tests, documentation and metadata checks, a Unicode U+2014 scan, and diff hygiene.
+`./scripts/ci-local.sh` is the authoritative quality gate locally and in hosted CI. The script is non-interactive, fail-fast, deterministic, and offline-capable after dependency bootstrap. It runs formatting, Clippy, tests, documentation and metadata checks, a Unicode U+2014 scan, and diff hygiene.
 
 ## Claim and text rules
 
@@ -35,4 +35,4 @@ Do not create GitHub Actions workflows, publish packages, open the repository, o
 
 ## Milestone notes
 
-M1 owns the conformance kernel, canonical report protocol, and closed V1 rule registry. M2 owns repair candidates, digest-bound apply, and privacy-preserving repro slices. M3 owns the non-authoritative local static viewer. M4 owns the frozen spacecraft CSV profile, commanded-path comparison, the million-sample budget, and local checksum packaging. M5 owns the private `0.1.0` release policy, frozen claims, and fail-closed GitHub Release path. M6 owns the offline torque-limited candidate generator. M7 owns the SIL attitude controller plus host-CPU PIL, loopback HIL, and a fail-closed hardware-use gate. M8 owns the software GN&C plane (MEKF/UKF, guidance profiles, reference tracking, wheel allocation, declared two-body geometry). M9 owns the product brand system (`quatopsy.brand/2`). M10 owns the private recorded-incident workflow and digest-bound `quatopsy.evidence/1` handover. M11 owns the product-led repository entry point, branded architecture visual, open-source community contract, and GitHub About metadata while visibility remains private. Physical hardware, hard real-time, certification, and orbit determination remain refused. Public opening, hosted CI, and crates.io remain later distinct gates.
+M1 owns the conformance kernel, canonical report protocol, and closed V1 rule registry. M2 owns repair candidates, digest-bound apply, and privacy-preserving repro slices. M3 owns the non-authoritative local static viewer. M4 owns the frozen spacecraft CSV profile, commanded-path comparison, the million-sample budget, and local checksum packaging. M5 owns the private `0.1.0` release policy, frozen claims, and fail-closed GitHub Release path. M6 owns the offline torque-limited candidate generator. M7 owns the SIL attitude controller plus host-CPU PIL, loopback HIL, and a fail-closed hardware-use gate. M8 owns the software GN&C plane (MEKF/UKF, guidance profiles, reference tracking, wheel allocation, declared two-body geometry). M9 owns the product brand system (`quatopsy.brand/2`). M10 owns the recorded-incident workflow and digest-bound `quatopsy.evidence/1` handover. M11 owns the product-led repository entry point, branded architecture visual, and open-source community contract. M12 owns public visibility, hosted CI, protected release operations, Keep a Changelog, and lockstep crates.io publication. Physical hardware, hard real-time, certification, and orbit determination remain refused.

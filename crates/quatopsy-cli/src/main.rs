@@ -150,7 +150,7 @@ enum Commands {
         #[arg(long, default_value_t = false)]
         overwrite: bool,
     },
-    /// Build a private, digest-bound incident investigation evidence bundle.
+    /// Build a local, digest-bound incident investigation evidence bundle.
     Investigate {
         /// Stable local case identifier: letters, digits, dot, underscore, or hyphen.
         #[arg(long)]

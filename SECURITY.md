@@ -2,11 +2,11 @@
 
 ## Supported versions
 
-Security fixes target the current `0.1.x` line on `master`. Older snapshots and unmerged branches are not supported.
+Security fixes target the current `0.2.x` line on `master`. Older snapshots and unmerged branches are not supported.
 
 ## Report a vulnerability privately
 
-Do not open a public issue for a suspected vulnerability. Once the repository is public and private vulnerability reporting has been enabled, use [GitHub private vulnerability reporting](https://github.com/kabudu/quatopsy/security/advisories/new) and include:
+Do not open a public issue for a suspected vulnerability. Use [GitHub private vulnerability reporting](https://github.com/kabudu/quatopsy/security/advisories/new) and include:
 
 - the affected command, protocol, or file path;
 - the smallest safe reproducer you can provide;
@@ -17,8 +17,6 @@ Do not open a public issue for a suspected vulnerability. Once the repository is
 Do not attach operational telemetry, credentials, export-controlled material, or sensitive incident bundles unless the repository owner has explicitly agreed on a suitable transfer route. A synthetic reproducer is strongly preferred.
 
 The maintainer will acknowledge a complete report when practicable, investigate it privately, and coordinate disclosure after a fix is available. No response-time or remediation-time SLA is promised.
-
-While the repository remains private, external reporting is not available. Existing private collaborators should ask the repository owner to open a draft security advisory through an established private channel. Enabling public vulnerability reporting is a required step in the separately authorised public-opening change.
 
 ## Security boundary
 

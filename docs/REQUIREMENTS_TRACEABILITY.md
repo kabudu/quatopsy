@@ -28,7 +28,7 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 | OPS-3 | Reserve incident output without clobber and remove newly created incomplete bundles after handled failure | CLI investigation lifecycle | Existing-output and invalid-candidate rollback tests | Filesystem lifecycle report | verified |
 | PERF-1 | Analyse one million samples under registered time and memory targets | Kernel/CLI | Frozen benchmark | Benchmark report | verified |
 | REL-1 | Run repository-owned local CI as the authoritative private-repo gate | Maintainers | `./scripts/ci-local.sh` | Recorded PR result | verified |
-| REL-2 | Require explicit user approval before hosted CI activation | Owner | Repository audit | Release checklist | planned |
+| REL-2 | Require explicit user approval before hosted CI activation | Owner | M12 authorisation recorded 2026-08-30 | Release checklist | verified |
 | REL-3 | Use curated release notes and rendered desktop/narrow preview | Release owner | Preview and live inspection | Release URL/screenshots | implemented |
 | REL-4 | Reject Unicode U+2014 across tracked text and release metadata | Local CI | Repository scan | CI log | verified |
 | REL-5 | Make a public-opening recommendation from private technical evidence without changing visibility or broadening publication authority | Owner/release policy | M10 gate audit | `PUBLIC_OPENING_DECISION.md` | verified |
@@ -45,4 +45,4 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 
 Every release-critical row must be implemented and verified with its named evidence, or explicitly removed from the supported release scope with owner approval and compatibility review. A document, scaffold, unchecked test, or unavailable hosted check is not evidence of implementation.
 
-M5 owner disposition: `INT-2` and `INT-3` are verified for the shipped adapter crate and adoption-policy CLI. `REL-2` remains planned because hosted CI is a distinct unauthorised gate. `NOV-1` and `NOV-2` remain planned research hypotheses and do not block this private release.
+M5 owner disposition: `INT-2` and `INT-3` are verified for the shipped adapter crate and adoption-policy CLI. M12 verifies `REL-2` through explicit owner authorisation for hosted CI. `NOV-1` and `NOV-2` remain planned research hypotheses and do not block release.

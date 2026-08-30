@@ -47,13 +47,23 @@ Supported rule IDs and their exact claim boundaries are frozen in [docs/CLAIMS.m
 
 ## Quick start
 
-Requirements: Rust 1.97 or newer and Python 3 for the repository checks.
+Install the released command-line tool with Rust 1.97 or newer:
+
+```bash
+cargo install quatopsy --locked
+```
+
+To build the repository instead, clone it and use the locked workspace:
 
 ```bash
 git clone https://github.com/kabudu/quatopsy.git
 cd quatopsy
 cargo build --release --locked
+```
 
+Then run the included sign-discontinuity example:
+
+```bash
 ./target/release/quatopsy analyze \
   --input fixtures/conformance/sign_alternating/input.csv \
   --manifest fixtures/conformance/sign_alternating/manifest.json \
@@ -128,11 +138,11 @@ The central invariant is simple: adapters, planners, controllers, and viewers ne
 ./scripts/package-local.sh dist
 ```
 
-`ci-local.sh` is the authoritative gate while the repository remains private. It runs formatting, Clippy, all tests, adversarial checks, the million-sample performance budget, checksum packaging, licence inspection, brand validation, README/community checks, and release-presentation checks. Hosted CI remains disabled until the separately authorised public-opening change.
+`ci-local.sh` is the authoritative implementation gate. It runs formatting, Clippy, all tests, adversarial checks, the million-sample performance budget, checksum packaging, licence inspection, brand validation, README/community checks, Cargo package validation, and release-presentation checks. GitHub-hosted CI runs the same gate for pull requests and protected `master` updates.
 
 ## Project status
 
-Version `0.1.0` is early-stage, production-quality research software for local advisory evaluation. "Production-quality" describes the engineering discipline within Quatopsy's documented scope; it does not mean flight-qualified, safety-certified, independently validated, or supported by a production SLA. The implementation through M11 is complete within its documented scope, but packages are not published to crates.io and binaries are not signed. The evidence-based opening recommendation is recorded in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
+Version `0.2.0` is early-stage, production-quality research software for local advisory evaluation. "Production-quality" describes the engineering discipline within Quatopsy's documented scope; it does not mean flight-qualified, safety-certified, independently validated, or supported by a production SLA. Cargo releases are published from reviewed tags, while standalone binaries remain unsigned. The evidence-based opening record is maintained in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
 
 ## Documentation
 

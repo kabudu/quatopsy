@@ -41,4 +41,4 @@ Novelty remains unestablished; the patent search is preliminary; user comprehens
 
 ## Completion statement
 
-M5 records a private `0.1.0` research release: Apache-2.0 licence, frozen claims, curated notes, supply-chain allowlist, and a fail-closed GitHub Release path. M9 records `quatopsy.brand/2` after owner productisation and redesign approval. Public opening, hosted CI, and crates.io remain distinct unauthorised gates.
+M5 records a private `0.1.0` research release: Apache-2.0 licence, frozen claims, curated notes, supply-chain allowlist, and a fail-closed GitHub Release path. M9 records `quatopsy.brand/2` after owner productisation and redesign approval. M12 later authorises public opening, hosted CI, and crates.io as reviewed release operations.
