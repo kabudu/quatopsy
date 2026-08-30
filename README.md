@@ -132,7 +132,7 @@ The central invariant is simple: adapters, planners, controllers, and viewers ne
 
 ## Project status
 
-Version `0.1.0` is early-stage research software. The implementation through M11 is complete within its documented scope, but packages are not published to crates.io, binaries are not signed, and no production-support commitment is made. The evidence-based opening recommendation is recorded in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
+Version `0.1.0` is early-stage, production-quality research software for local advisory evaluation. "Production-quality" describes the engineering discipline within Quatopsy's documented scope; it does not mean flight-qualified, safety-certified, independently validated, or supported by a production SLA. The implementation through M11 is complete within its documented scope, but packages are not published to crates.io and binaries are not signed. The evidence-based opening recommendation is recorded in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
 
 ## Documentation
 

@@ -26,7 +26,7 @@ Primary: spacecraft guidance, navigation, and control engineers. Secondary: robo
 
 ## Claim vocabulary
 
-Permitted: `candidate`, `detects supported rule violations`, `proposes a repair`, `local-first`, and `deterministic under the documented profile`. Evidence-dependent: `reduces debugging time`, `prevents unwinding`, `portable`, and `differentiated`. Prohibited: `novel`, `safe`, `flight-proven`, `certified`, `production-ready`, `complete`, `optimal`, or `guarantees correct motion`.
+Permitted: `candidate`, `detects supported rule violations`, `proposes a repair`, `local-first`, `deterministic under the documented profile`, and `early-stage, production-quality research software for local advisory evaluation`. `Production-quality` describes engineering discipline within the declared scope and is distinct from production readiness. Evidence-dependent: `reduces debugging time`, `prevents unwinding`, `portable`, and `differentiated`. Prohibited: `novel`, `safe`, `flight-proven`, `certified`, `production-ready`, `complete`, `optimal`, or `guarantees correct motion`.
 
 ## Two-layer model
 
