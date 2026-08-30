@@ -11,6 +11,17 @@ if [[ "$mode" != "--inspect" && "$mode" != "--dry-run" && "$mode" != "--verify" 
   exit 64
 fi
 
+if [[ "$mode" == "--publish" ]]; then
+  [[ "${QUATOPSY_RELEASE_AUTHORIZE:-}" == "1" ]] || {
+    printf 'publish-crates: refusing without QUATOPSY_RELEASE_AUTHORIZE=1\n' >&2
+    exit 1
+  }
+  [[ -n "${CARGO_REGISTRY_TOKEN:-}" ]] || {
+    printf 'publish-crates: CARGO_REGISTRY_TOKEN is required\n' >&2
+    exit 1
+  }
+fi
+
 version="$(python3 - <<'PY'
 import re
 from pathlib import Path
@@ -39,17 +50,6 @@ packages=(
   quatopsy
 )
 registry_independent=(quatopsy-schema quatopsy-oracle quatopsy-nav)
-
-if [[ "$mode" == "--publish" ]]; then
-  [[ "${QUATOPSY_RELEASE_AUTHORIZE:-}" == "1" ]] || {
-    printf 'publish-crates: refusing without QUATOPSY_RELEASE_AUTHORIZE=1\n' >&2
-    exit 1
-  }
-  [[ -n "${CARGO_REGISTRY_TOKEN:-}" ]] || {
-    printf 'publish-crates: CARGO_REGISTRY_TOKEN is required\n' >&2
-    exit 1
-  }
-fi
 
 if [[ "$mode" == "--verify" || "$mode" == "--publish" ]]; then
   [[ -z "$(git status --porcelain)" ]] || {
@@ -95,6 +95,36 @@ import sys
 from pathlib import Path
 print(hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest())
 PY
+}
+
+retry_after_seconds() {
+  python3 - "$1" <<'PY'
+import datetime as dt
+import email.utils
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace")
+match = re.search(r"Please try again after (.+? GMT)", text)
+if not match:
+    raise SystemExit(1)
+deadline = email.utils.parsedate_to_datetime(match.group(1))
+now = dt.datetime.now(dt.timezone.utc)
+seconds = max(1, int((deadline - now).total_seconds()) + 5)
+print(seconds)
+PY
+}
+
+bounded_sleep() {
+  local remaining="$1"
+  while (( remaining > 0 )); do
+    local chunk=60
+    (( remaining < chunk )) && chunk="$remaining"
+    printf 'publish-crates: rate-limit backoff, %s seconds remaining\n' "$remaining"
+    sleep "$chunk"
+    remaining=$((remaining - chunk))
+  done
 }
 
 for package in "${packages[@]}"; do
@@ -168,10 +198,15 @@ for package in "${packages[@]}"; do
   rm -f "$response"
 
   verified=false
-  for attempt in 1 2 3 4 5; do
+  rate_limit_waited=0
+  for attempt in 1 2 3 4 5 6 7 8 9 10; do
     printf 'publish-crates: publishing %s %s (attempt %s)\n' \
       "$package" "$version" "$attempt"
-    cargo publish --locked -p "$package" || true
+    publish_log="$(mktemp)"
+    set +e
+    cargo publish --locked -p "$package" 2>&1 | tee "$publish_log"
+    publish_status="${PIPESTATUS[0]}"
+    set -e
     for _ in 1 2 3 4 5 6; do
       response="$(mktemp)"
       if existing="$(remote_checksum "$package" "$response")"; then
@@ -187,7 +222,26 @@ for package in "${packages[@]}"; do
       rm -f "$response"
       sleep 10
     done
-    [[ "$verified" == "true" ]] && break
+    if [[ "$verified" == "true" ]]; then
+      rm -f "$publish_log"
+      break
+    fi
+    if (( publish_status != 0 )); then
+      if backoff="$(retry_after_seconds "$publish_log")"; then
+        rm -f "$publish_log"
+        if (( rate_limit_waited + backoff > 1800 )); then
+          printf 'publish-crates: refusing cumulative crates.io backoff longer than 1800 seconds\n' >&2
+          exit 1
+        fi
+        bounded_sleep "$backoff"
+        rate_limit_waited=$((rate_limit_waited + backoff))
+        continue
+      fi
+      printf 'publish-crates: cargo publish failed without a recognised retry deadline\n' >&2
+      rm -f "$publish_log"
+      exit "$publish_status"
+    fi
+    rm -f "$publish_log"
   done
   [[ "$verified" == "true" ]] || {
     printf 'publish-crates: could not verify %s %s on crates.io\n' \

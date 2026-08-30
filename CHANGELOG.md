@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Honoured crates.io server-directed new-crate cooldown deadlines with bounded automatic backoff instead of exhausting fixed-interval retries.
+
 ## [0.2.0] - 2026-08-30
 
 ### Added
