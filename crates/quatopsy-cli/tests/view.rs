@@ -140,9 +140,9 @@ fn unknown_report_schema_is_refused_by_the_viewer_bundle() {
 #[test]
 fn viewer_assets_meet_keyboard_contrast_and_text_state_requirements() {
     let root = workspace_root();
-    let html = fs::read_to_string(root.join("viewer/index.html")).unwrap();
-    let css = fs::read_to_string(root.join("viewer/viewer.css")).unwrap();
-    let js = fs::read_to_string(root.join("viewer/viewer.js")).unwrap();
+    let html = fs::read_to_string(root.join("crates/quatopsy-cli/viewer/index.html")).unwrap();
+    let css = fs::read_to_string(root.join("crates/quatopsy-cli/viewer/viewer.css")).unwrap();
+    let js = fs::read_to_string(root.join("crates/quatopsy-cli/viewer/viewer.js")).unwrap();
     assert!(html.contains("aria-label=\"Quatopsy\""));
     assert!(html.contains("data-brand-version=\"quatopsy.brand/2\""));
     assert!(html.contains("See where rotations go wrong."));

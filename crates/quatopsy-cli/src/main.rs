@@ -806,9 +806,9 @@ fn run_repair(
     Ok(())
 }
 
-const VIEWER_HTML: &str = include_str!("../../../viewer/index.html");
-const VIEWER_JS: &str = include_str!("../../../viewer/viewer.js");
-const VIEWER_CSS: &str = include_str!("../../../viewer/viewer.css");
+const VIEWER_HTML: &str = include_str!("../viewer/index.html");
+const VIEWER_JS: &str = include_str!("../viewer/viewer.js");
+const VIEWER_CSS: &str = include_str!("../viewer/viewer.css");
 
 #[allow(clippy::too_many_arguments)]
 fn run_view(

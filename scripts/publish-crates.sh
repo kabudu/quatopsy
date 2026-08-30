@@ -127,13 +127,24 @@ bounded_sleep() {
   done
 }
 
+validate_payload() {
+  local package="$1"
+  local payload="$2"
+  grep -qx 'Cargo.toml' <<<"$payload"
+  grep -Eq '^(CRATE_)?README\.md$' <<<"$payload"
+  grep -q '^src/' <<<"$payload"
+  if [[ "$package" == "quatopsy" ]]; then
+    grep -qx 'viewer/index.html' <<<"$payload"
+    grep -qx 'viewer/viewer.css' <<<"$payload"
+    grep -qx 'viewer/viewer.js' <<<"$payload"
+  fi
+}
+
 for package in "${packages[@]}"; do
   if [[ "$mode" == "--inspect" ]]; then
     printf 'publish-crates: inspecting payload %s %s\n' "$package" "$version"
     payload="$(cargo package --list --allow-dirty -p "$package")"
-    grep -qx 'Cargo.toml' <<<"$payload"
-    grep -Eq '^(CRATE_)?README\.md$' <<<"$payload"
-    grep -q '^src/' <<<"$payload"
+    validate_payload "$package" "$payload"
     continue
   fi
 
@@ -150,9 +161,7 @@ for package in "${packages[@]}"; do
       printf 'publish-crates: inspecting dependent payload %s %s\n' \
         "$package" "$version"
       payload="$(cargo package --list --allow-dirty -p "$package")"
-      grep -qx 'Cargo.toml' <<<"$payload"
-      grep -Eq '^(CRATE_)?README\.md$' <<<"$payload"
-      grep -q '^src/' <<<"$payload"
+      validate_payload "$package" "$payload"
     fi
     continue
   fi
