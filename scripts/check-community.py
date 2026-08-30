@@ -51,7 +51,8 @@ for path in REQUIRED:
 
 readme = README.read_text(encoding="utf-8")
 required_readme = [
-    "assets/brand/templates/release-lockup.svg",
+    "assets/brand/source/quatopsy-lockup-horizontal.svg",
+    "assets/brand/source/quatopsy-lockup-light.svg",
     "See where rotations go wrong.",
     "## Quick start",
     "## What Quatopsy finds",
@@ -70,7 +71,7 @@ for item in required_readme:
 local_targets: set[str] = set()
 for match in re.finditer(r"\[[^\]]+\]\(([^)]+)\)", readme):
     local_targets.add(match.group(1))
-for match in re.finditer(r'''(?:src|href)=["']([^"']+)["']''', readme):
+for match in re.finditer(r'''(?:src|srcset|href)=["']([^"']+)["']''', readme):
     local_targets.add(match.group(1))
 for raw in sorted(local_targets):
     target = raw.split("#", 1)[0]

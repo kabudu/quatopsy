@@ -1,10 +1,22 @@
 <p align="center">
-  <img src="assets/brand/templates/release-lockup.svg" width="468" alt="Quatopsy">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/source/quatopsy-lockup-horizontal.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/brand/source/quatopsy-lockup-light.svg">
+    <img src="assets/brand/source/quatopsy-lockup-light.svg" width="468" alt="Quatopsy">
+  </picture>
 </p>
 
 <p align="center"><strong>See where rotations go wrong.</strong></p>
 
 <p align="center">Find, explain, and visualise quaternion attitude failures, then evaluate controller and trajectory candidates locally.</p>
+
+<p align="center">
+  <a href="https://github.com/kabudu/quatopsy/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/kabudu/quatopsy?display_name=tag&amp;sort=semver"></a>
+  <a href="https://crates.io/crates/quatopsy"><img alt="crates.io version" src="https://img.shields.io/crates/v/quatopsy.svg"></a>
+  <a href="https://github.com/kabudu/quatopsy/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/kabudu/quatopsy/actions/workflows/ci.yml/badge.svg?branch=master"></a>
+  <a href="LICENSE"><img alt="Licence: Apache 2.0" src="https://img.shields.io/github/license/kabudu/quatopsy"></a>
+  <a href="Cargo.toml"><img alt="MSRV: Rust 1.97" src="https://img.shields.io/badge/MSRV-1.97-93450a?logo=rust"></a>
+</p>
 
 <p align="center">
   <a href="#quick-start">Quick start</a> |
