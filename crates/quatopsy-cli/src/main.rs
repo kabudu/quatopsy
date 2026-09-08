@@ -16,7 +16,7 @@ use quatopsy_core::limits::{
 };
 use quatopsy_core::repair::{plan_by_id, render_repaired_csv};
 use quatopsy_core::repro::{self, provenance, slice_csv};
-use quatopsy_core::view::{build_view, empty_view};
+use quatopsy_core::view::{build_view_cancellable, empty_view};
 use quatopsy_core::{AnalyzeRequest, analyze, report_bytes};
 use quatopsy_schema::{
     AdoptionMode, RepairDisposition, Report, VIEW_MAX_POINTS, VIEW_SAFE_MAX_POINTS,
@@ -900,34 +900,27 @@ fn run_view(
             if cancelled.load(Ordering::Relaxed) {
                 return cancelled_exit(&mut temps);
             }
-            let parsed = ingest_bytes(
-                &csv_bytes,
-                &manifest_bytes,
-                limits,
-                Cancel {
-                    deadline: Instant::now() + Duration::from_millis(limits.timeout_ms.max(1)),
-                    flag: Some(cancelled),
-                },
+            let view_cancel = Cancel {
+                deadline: Instant::now() + Duration::from_millis(limits.timeout_ms.max(1)),
+                flag: Some(cancelled),
+            };
+            let parsed =
+                ingest_bytes(&csv_bytes, &manifest_bytes, limits, view_cancel).map_err(|err| {
+                    eprintln!("error: {err}");
+                    ExitCode::from(3)
+                })?;
+            view = build_view_cancellable(
+                &parsed.samples,
+                &report.findings,
+                &report.analysis_id,
+                None,
+                max_points,
+                view_cancel,
             )
             .map_err(|err| {
                 eprintln!("error: {err}");
                 ExitCode::from(3)
             })?;
-            let proposed = report.repairs.iter().find_map(|item| {
-                if item.disposition == RepairDisposition::Proposed {
-                    plan_by_id(&parsed.samples, &report.analysis_id, &item.id)
-                        .map(|plan| plan.quaternions)
-                } else {
-                    None
-                }
-            });
-            view = build_view(
-                &parsed.samples,
-                &report.findings,
-                &report.analysis_id,
-                proposed.as_deref(),
-                max_points,
-            );
         }
         _ => {
             eprintln!("error: --input and --manifest must be supplied together");
@@ -1013,6 +1006,13 @@ fn prepare_repairs(
         eprintln!("error: cannot create {}: {err}", dir.display());
         ExitCode::from(3)
     })?;
+    if !report
+        .repairs
+        .iter()
+        .any(|repair| repair.disposition == RepairDisposition::Proposed)
+    {
+        return Ok(());
+    }
     let parsed = ingest_bytes(
         csv_bytes,
         manifest_bytes,

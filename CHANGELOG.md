@@ -8,9 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added a compact investigation workspace with paginated findings, canonical evidence and source context, named repair comparison, component traces, camera/axis controls and recorded-time playback.
+- Added DOM/canvas interaction regression checks and released-CLI workflow memory, time and payload budgets.
+
 - Added a responsive, accessible, SEO-complete static GitHub Pages website with a reproducible, least-privilege deployment pipeline.
 
 ### Fixed
+
+- Preserve exact decimal timestamps and wide signed intervals without false duplicate-time findings or viewer subtraction overflow.
+- Break plots across missing data and projection poles, distinguish approximate finding links, and retain exact timestamp identities in the viewer.
+- Bound retained viewer geometry memory, borrow prepared source samples and check cancellation within analysis, repairs and view generation.
 
 - Use a dedicated black-wordmark, black-streak lockup on GitHub light mode while retaining the full-colour lockup in dark mode.
 

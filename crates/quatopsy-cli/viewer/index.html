@@ -1,113 +1,363 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
-  <title>Quatopsy investigation console</title>
-  <link rel="stylesheet" href="viewer.css">
-</head>
-<body>
-  <a class="skip" href="#main">Skip to main content</a>
-  <header class="masthead">
-    <div class="brand-lockup">
-      <svg class="brand-mark" viewBox="0 0 32 32" role="img" aria-label="Quatopsy" data-brand-version="quatopsy.brand/2">
-        <defs>
-          <linearGradient id="brand-ribbon-a" gradientUnits="userSpaceOnUse" x1="5" y1="6" x2="20" y2="26"><stop stop-color="#8b5cf6"/><stop offset="0.48" stop-color="#b445eb"/><stop offset="1" stop-color="#d946ef"/></linearGradient>
-          <linearGradient id="brand-ribbon-b" gradientUnits="userSpaceOnUse" x1="12" y1="26" x2="27" y2="8"><stop stop-color="#58104f"/><stop offset="0.52" stop-color="#b21eaa"/><stop offset="1" stop-color="#ec48c6"/></linearGradient>
-          <linearGradient id="brand-ribbon-c" gradientUnits="userSpaceOnUse" x1="6" y1="22" x2="26" y2="15"><stop stop-color="#f5c96a"/><stop offset="0.45" stop-color="#fff1d6"/><stop offset="1" stop-color="#fff8e8"/></linearGradient>
-        </defs>
-        <path d="M4.7 14.0 C3.1 9.0 6.0 5.0 11.0 4.8 C16.0 4.6 20.9 7.8 23.8 12.2 C19.8 9.4 15.3 7.1 11.3 7.3 C7.7 7.5 6.2 10.2 7.0 13.8 C8.0 18.1 12.5 22.8 18.6 25.9 C12.2 24.3 6.4 19.9 4.7 14.0 Z" fill="url(#brand-ribbon-a)"/>
-        <path d="M20.2 5.8 C25.0 7.1 28.0 11.3 27.7 16.2 C27.3 21.4 22.4 24.5 16.3 25.8 C20.5 23.0 24.0 20.2 25.1 16.6 C26.2 13.0 24.3 8.9 20.2 5.8 Z M17.8 25.2 C21.1 26.2 23.8 25.4 26.3 23.1 C23.8 26.8 20.7 28.0 17.7 27.2 C14.7 26.4 12.3 25.7 10.4 24.3 C13.0 24.7 15.5 24.3 17.8 25.2 Z" fill="url(#brand-ribbon-b)"/>
-        <path d="M6.0 23.1 C9.7 18.1 15.7 14.0 21.7 14.1 C23.5 14.1 24.8 14.7 25.6 15.6 C21.1 15.4 16.8 16.6 13.0 18.5 C9.8 20.1 7.3 22.1 6.0 23.1 Z" fill="url(#brand-ribbon-c)"/>
-      </svg>
-      <div>
-        <p class="eyebrow">See where rotations go wrong.</p>
-        <h1>QUATOPSY <span>/ investigation console</span></h1>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    />
+    <title>Quatopsy investigation console</title>
+    <link rel="stylesheet" href="viewer.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to main content</a>
+    <header class="masthead">
+      <div class="brand-lockup">
+        <svg
+          class="brand-mark"
+          viewBox="0 0 32 32"
+          role="img"
+          aria-label="Quatopsy"
+          data-brand-version="quatopsy.brand/2"
+        >
+          <defs>
+            <linearGradient
+              id="brand-ribbon-a"
+              gradientUnits="userSpaceOnUse"
+              x1="5"
+              y1="6"
+              x2="20"
+              y2="26"
+            >
+              <stop stop-color="#8b5cf6" />
+              <stop offset="0.48" stop-color="#b445eb" />
+              <stop offset="1" stop-color="#d946ef" />
+            </linearGradient>
+            <linearGradient
+              id="brand-ribbon-b"
+              gradientUnits="userSpaceOnUse"
+              x1="12"
+              y1="26"
+              x2="27"
+              y2="8"
+            >
+              <stop stop-color="#58104f" />
+              <stop offset="0.52" stop-color="#b21eaa" />
+              <stop offset="1" stop-color="#ec48c6" />
+            </linearGradient>
+            <linearGradient
+              id="brand-ribbon-c"
+              gradientUnits="userSpaceOnUse"
+              x1="6"
+              y1="22"
+              x2="26"
+              y2="15"
+            >
+              <stop stop-color="#f5c96a" />
+              <stop offset="0.45" stop-color="#fff1d6" />
+              <stop offset="1" stop-color="#fff8e8" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M4.7 14.0 C3.1 9.0 6.0 5.0 11.0 4.8 C16.0 4.6 20.9 7.8 23.8 12.2 C19.8 9.4 15.3 7.1 11.3 7.3 C7.7 7.5 6.2 10.2 7.0 13.8 C8.0 18.1 12.5 22.8 18.6 25.9 C12.2 24.3 6.4 19.9 4.7 14.0 Z"
+            fill="url(#brand-ribbon-a)"
+          />
+          <path
+            d="M20.2 5.8 C25.0 7.1 28.0 11.3 27.7 16.2 C27.3 21.4 22.4 24.5 16.3 25.8 C20.5 23.0 24.0 20.2 25.1 16.6 C26.2 13.0 24.3 8.9 20.2 5.8 Z M17.8 25.2 C21.1 26.2 23.8 25.4 26.3 23.1 C23.8 26.8 20.7 28.0 17.7 27.2 C14.7 26.4 12.3 25.7 10.4 24.3 C13.0 24.7 15.5 24.3 17.8 25.2 Z"
+            fill="url(#brand-ribbon-b)"
+          />
+          <path
+            d="M6.0 23.1 C9.7 18.1 15.7 14.0 21.7 14.1 C23.5 14.1 24.8 14.7 25.6 15.6 C21.1 15.4 16.8 16.6 13.0 18.5 C9.8 20.1 7.3 22.1 6.0 23.1 Z"
+            fill="url(#brand-ribbon-c)"
+          />
+        </svg>
+        <div>
+          <p class="eyebrow">See where rotations go wrong.</p>
+          <h1>QUATOPSY <span>/ investigation console</span></h1>
+        </div>
       </div>
-    </div>
-    <p class="claim">Advisory view of a canonical report. No verdicts are recomputed. Not flight approval.</p>
-  </header>
-  <aside id="result-banner" class="status-strip" role="status"></aside>
-  <main id="main">
-    <section class="casebar" aria-labelledby="case-heading">
-      <div><p class="eyebrow" id="case-heading">Case status</p><p class="case-result" id="case-result">Loading report</p></div>
-      <dl class="metrics" aria-label="Report summary">
-        <div><dt>Findings</dt><dd id="metric-findings">0</dd></div>
-        <div><dt>Geometry</dt><dd id="metric-samples">0 / 0</dd></div>
-        <div><dt>Selected row</dt><dd id="metric-row">--</dd></div>
-        <div><dt>Time</dt><dd id="metric-time">--</dd></div>
-      </dl>
-    </section>
-    <section class="workspace" aria-label="Linked trajectory investigation views">
-      <article class="panel panel-physical" aria-labelledby="physical-heading">
-        <header class="panel-head"><div><p class="panel-index">01 / physical attitude</p><h2 id="physical-heading">SO(3) body-frame trace</h2></div><span class="data-chip">Derived</span></header>
-        <p class="layer-note">Derived body axes from unit quaternions. Measured raw samples remain distinct.</p>
-        <div class="viewport-shell">
-          <canvas id="physical" width="720" height="460" role="img" aria-labelledby="physical-caption"></canvas>
-          <span class="viewport-label viewport-label-top">Inertial frame</span><span class="viewport-label viewport-label-bottom">Body +X trail</span>
-        </div>
-        <p id="physical-caption" class="sr-detail">Body +x trail and current body triad for the selected sample.</p>
-      </article>
-      <article class="panel panel-stereo" aria-labelledby="stereo-heading">
-        <header class="panel-head"><div><p class="panel-index">02 / representation lift</p><h2 id="stereo-heading">Projected S<sup>3</sup> topology</h2></div><span class="data-chip artefact-chip">Projection</span></header>
-        <p id="projection-warning" class="warning" role="note"></p>
-        <div class="viewport-shell">
-          <canvas id="stereo" width="720" height="460" role="img" aria-labelledby="stereo-caption"></canvas>
-          <span class="viewport-label viewport-label-top">Stereographic field</span><span class="viewport-label viewport-label-bottom">Non-physical view</span>
-        </div>
-        <p id="stereo-caption" class="sr-detail">Stereographic projection of the derived lift. This projection is not a physical path.</p>
-      </article>
-      <article class="panel panel-timeline" aria-labelledby="timeline-heading">
-        <header class="panel-head"><div><p class="panel-index">03 / temporal evidence</p><h2 id="timeline-heading">Quotient-angle timeline</h2></div><span class="key-hint">Click plot or use arrow keys</span></header>
-        <p class="layer-note">Derived quotient angle by sample identity. Diamond markers identify finding-linked geometry.</p>
-        <canvas id="timeline" width="1440" height="260" role="img" aria-labelledby="timeline-caption" tabindex="0"></canvas>
-        <p id="timeline-caption" class="sr-detail">Angle in radians across bounded geometry. Finding-linked rows use diamond markers.</p>
-        <div class="transport" aria-label="Trajectory playback controls">
-          <button id="step-back" type="button" aria-label="Previous sample">&#8592;</button>
-          <button id="play" type="button" aria-label="Play trajectory" aria-pressed="false"><span aria-hidden="true">&#9654;</span> Play</button>
-          <button id="step-forward" type="button" aria-label="Next sample">&#8594;</button>
-          <label for="sample-slider">Selected sample <output id="sample-position" for="sample-slider">1 / 1</output></label>
-          <input id="sample-slider" type="range" min="0" max="0" value="0">
-        </div>
-      </article>
-    </section>
-    <section class="lower-grid">
-      <article class="panel evidence-panel" aria-labelledby="evidence-heading">
-        <header class="panel-head"><div><p class="panel-index">04 / canonical findings</p><h2 id="evidence-heading">Evidence queue</h2></div><span class="data-chip canonical-chip">Canonical</span></header>
-        <p class="queue-note">Select a finding to synchronize every view to its retained evidence row.</p>
-        <ol id="findings" class="finding-list"></ol>
-      </article>
-      <aside class="detail-stack" aria-label="Selected evidence details">
-        <section class="panel selection-panel" aria-labelledby="selection-heading">
-          <header class="panel-head"><div><p class="panel-index">Selected sample</p><h2 id="selection-heading">Identity and values</h2></div></header>
-          <p id="selection" class="sr-only" aria-live="polite"></p>
-          <dl class="sample-data">
-            <div><dt>Source row</dt><dd id="detail-row">--</dd></div><div><dt>Timestamp</dt><dd id="detail-time">--</dd></div>
-            <div class="wide"><dt>Raw quaternion</dt><dd id="detail-raw">Unavailable</dd></div><div class="wide"><dt>Derived lift</dt><dd id="detail-lift">Unavailable</dd></div>
-            <div class="wide proposed-row"><dt>Proposed repair</dt><dd id="detail-proposed">None</dd></div>
-          </dl>
+      <p class="claim">Local advisory analysis. Not flight approval.</p>
+    </header>
+    <main id="main">
+      <div class="casebar">
+        <div id="result-banner" class="status-strip" role="status"></div>
+        <span id="metric-samples"></span
+        ><span id="case-result" class="sr-only"></span
+        ><span id="metric-findings" class="sr-only"></span>
+      </div>
+      <p id="case-explanation" class="case-explanation"></p>
+      <div class="console">
+        <aside class="panel evidence-panel" aria-labelledby="evidence-heading">
+          <header class="panel-head">
+            <div>
+              <p class="eyebrow">Canonical findings</p>
+              <h2 id="evidence-heading">Evidence queue</h2>
+            </div>
+          </header>
+          <label class="field" for="finding-search"
+            >Filter findings<input
+              id="finding-search"
+              type="search"
+              placeholder="Rule, explanation or row"
+          /></label>
+          <ol id="findings" class="finding-list"></ol>
+          <nav class="pager" aria-label="Finding pages">
+            <button id="findings-prev" type="button">Previous</button
+            ><output id="findings-page"></output
+            ><button id="findings-next" type="button">Next</button>
+          </nav>
+        </aside>
+        <section
+          class="workspace"
+          aria-label="Linked trajectory investigation views"
+        >
+          <article class="panel panel-physical">
+            <header class="panel-head">
+              <div>
+                <p class="eyebrow">Physical orientation</p>
+                <h2>Body-axis trail</h2>
+              </div>
+              <span class="data-chip">Derived</span>
+            </header>
+            <div class="plot-controls">
+              <label for="trail-axis"
+                >Trail<select id="trail-axis">
+                  <option value="x">Body +X</option>
+                  <option value="y">Body +Y</option>
+                  <option value="z">Body +Z</option>
+                </select></label
+              ><button
+                id="rotate-left"
+                type="button"
+                aria-label="Rotate camera left"
+              >
+                ↶</button
+              ><button
+                id="rotate-right"
+                type="button"
+                aria-label="Rotate camera right"
+              >
+                ↷</button
+              ><button id="camera-reset" type="button">Reset camera</button>
+            </div>
+            <div class="viewport-shell">
+              <canvas
+                id="physical"
+                width="720"
+                height="440"
+                role="img"
+                aria-labelledby="physical-caption"
+              ></canvas
+              ><span id="frame-label" class="viewport-label"></span>
+            </div>
+            <p id="physical-caption" class="layer-note">
+              Derived body axes and selected orientation. A single axis trail
+              does not represent all orientation changes.
+            </p>
+          </article>
+          <article class="panel panel-stereo">
+            <header class="panel-head">
+              <div>
+                <p class="eyebrow">Representation</p>
+                <h2>Projected S<sup>3</sup> lift</h2>
+              </div>
+              <span class="data-chip artefact-chip">Projection</span>
+            </header>
+            <div class="plot-controls">
+              <label for="stereo-layer"
+                >Layer<select id="stereo-layer">
+                  <option value="lifted">Derived lift</option>
+                  <option value="raw">Raw unit representation</option>
+                </select></label
+              ><button id="stereo-fit" type="button">Fit</button
+              ><button id="stereo-reset" type="button">Reset</button>
+            </div>
+            <div class="viewport-shell">
+              <canvas
+                id="stereo"
+                width="720"
+                height="440"
+                role="img"
+                aria-labelledby="stereo-caption"
+              ></canvas>
+            </div>
+            <p id="stereo-caption" class="layer-note">
+              Non-physical view. <span id="projection-warning"></span>
+              <span id="pole-info"></span>
+            </p>
+          </article>
+          <article class="panel panel-timeline">
+            <header class="panel-head">
+              <h2>Interval evidence</h2>
+              <label for="timeline-axis"
+                >Horizontal axis<select id="timeline-axis">
+                  <option value="time">Elapsed time</option>
+                  <option value="index">Retained sample index</option>
+                </select></label
+              ><label for="timeline-value"
+                >Measure<select id="timeline-value">
+                  <option value="angle_rad">Quotient angle (rad)</option>
+                  <option value="rate_rad_s">Angular rate (rad/s)</option>
+                </select></label
+              >
+            </header>
+            <canvas
+              id="timeline"
+              width="1440"
+              height="240"
+              role="img"
+              aria-label="Interval evidence timeline; use arrow keys to select samples"
+              tabindex="0"
+            ></canvas>
+            <div class="transport" aria-label="Trajectory playback controls">
+              <button id="step-back" type="button" aria-label="Previous sample">
+                ←</button
+              ><button
+                id="play"
+                type="button"
+                aria-label="Play trajectory"
+                aria-pressed="false"
+              >
+                Play</button
+              ><button id="step-forward" type="button" aria-label="Next sample">
+                →</button
+              ><label for="sample-slider"
+                >Sample <output id="sample-position">0 / 0</output></label
+              ><input
+                id="sample-slider"
+                type="range"
+                min="0"
+                max="0"
+                value="0"
+              /><label for="playback-mode"
+                >Playback<select id="playback-mode">
+                  <option value="step">Sample steps</option>
+                  <option value="time">Recorded time (1×)</option>
+                </select></label
+              ><output id="metric-time"></output>
+            </div>
+          </article>
+          <article class="panel panel-components">
+            <header class="panel-head">
+              <h2>Quaternion components</h2>
+              <span class="layer-note"
+                >Raw solid · Lift dashed · Candidate dotted</span
+              >
+            </header>
+            <canvas
+              id="components"
+              width="1440"
+              height="240"
+              role="img"
+              aria-label="Raw, lifted and candidate quaternion component traces"
+            ></canvas>
+            <p class="layer-note">
+              Measured raw samples remain separate from the derived lift and
+              unapplied candidate. Components: w (cream), x (coral), y (green),
+              z (blue).
+            </p>
+          </article>
         </section>
-        <section class="panel repair-panel" aria-labelledby="repair-heading">
-          <header class="panel-head"><div><p class="panel-index">Candidate output</p><h2 id="repair-heading">Repair candidates</h2></div></header>
-          <p class="layer-note">Proposed data is a candidate overlay. It is only applied when <code>quatopsy repair</code> writes a new file.</p>
-          <ul id="repairs" class="repair-list"></ul>
-        </section>
-      </aside>
-    </section>
-    <section class="legend" aria-labelledby="legend-heading">
-      <div><p class="eyebrow">Display contract</p><h2 id="legend-heading">Layers and provenance</h2></div>
-      <ul>
-        <li><span class="swatch raw" aria-hidden="true"></span><strong>Raw</strong><span>Measured components</span></li><li><span class="swatch derived" aria-hidden="true"></span><strong>Derived</strong><span>Axes, lift and rates</span></li>
-        <li><span class="swatch proposed" aria-hidden="true"></span><strong>Proposed</strong><span>Unapplied candidate</span></li><li><span class="swatch artefact" aria-hidden="true"></span><strong>Projection</strong><span>Non-physical artefact</span></li>
-      </ul>
-      <p id="downsample-note"></p>
-    </section>
-  </main>
-  <footer><span>LOCAL / STATIC / OFFLINE</span><span id="analysis-id">Analysis identity unavailable</span></footer>
-  <script type="application/json" id="quatopsy-report">%%QUATOPSY_REPORT%%</script>
-  <script type="application/json" id="quatopsy-view">%%QUATOPSY_VIEW%%</script>
-  <script src="viewer.js"></script>
-</body>
+        <aside class="detail-stack" aria-label="Selected evidence details">
+          <section class="panel">
+            <p class="eyebrow">Selected finding</p>
+            <h2 id="finding-title">Select a finding</h2>
+            <p id="finding-summary"></p>
+            <p id="finding-meta" class="layer-note"></p>
+            <p id="finding-link" class="notice"></p>
+            <dl id="finding-evidence" class="evidence-values"></dl>
+            <details>
+              <summary>Exact source context</summary>
+              <div id="source-context" class="table-scroll"></div>
+            </details>
+          </section>
+          <section class="panel">
+            <header class="panel-head">
+              <h2>Selected sample</h2>
+              <span id="metric-row" class="data-chip"></span>
+            </header>
+            <p id="selection" class="sr-only" aria-live="polite"></p>
+            <dl class="sample-data">
+              <div>
+                <dt>Source row</dt>
+                <dd id="detail-row">--</dd>
+              </div>
+              <div>
+                <dt>Timestamp (ns)</dt>
+                <dd id="detail-time">--</dd>
+              </div>
+            </dl>
+            <div class="table-scroll">
+              <table class="quaternion-table">
+                <caption>
+                  Representation comparison
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Layer</th>
+                    <th scope="col">w</th>
+                    <th scope="col">x</th>
+                    <th scope="col">y</th>
+                    <th scope="col">z</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr id="detail-raw">
+                    <th scope="row">Raw</th>
+                  </tr>
+                  <tr id="detail-lift">
+                    <th scope="row">Lift</th>
+                  </tr>
+                  <tr id="detail-proposed">
+                    <th scope="row">Candidate</th>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel">
+            <p class="eyebrow">Candidate output</p>
+            <h2>Repair candidates</h2>
+            <label class="field" for="repair-select"
+              >Compare candidate<select id="repair-select">
+                <option value="">No overlay</option>
+              </select></label
+            >
+            <div id="repairs"></div>
+            <p class="layer-note">
+              Proposed data is a candidate overlay. Apply explicitly with
+              <code>quatopsy repair</code> to a new file.
+            </p>
+          </section>
+        </aside>
+      </div>
+      <details class="provenance">
+        <summary>Layers and provenance</summary>
+        <p>
+          Raw: measured components. Derived: orientation, lift and interval
+          values. Proposed: unapplied candidate. Projection: non-physical
+          geometry. Missing values break paths; downsampled connections are
+          approximations.
+        </p>
+        <p id="downsample-note"></p>
+        <p id="analysis-id"></p>
+      </details>
+    </main>
+    <footer>
+      LOCAL · STATIC · OFFLINE
+      <span
+        >Canonical report owns the verdict; the viewer did not recompute
+        rules.</span
+      >
+    </footer>
+    <script type="application/json" id="quatopsy-report">
+      %%QUATOPSY_REPORT%%
+    </script>
+    <script type="application/json" id="quatopsy-view">
+      %%QUATOPSY_VIEW%%
+    </script>
+    <script src="viewer.js"></script>
+  </body>
 </html>

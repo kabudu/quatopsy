@@ -9,6 +9,8 @@ use serde::Serialize;
 
 use quatopsy_schema::{Finding, FiniteF64, VIEW_MAX_POINTS, VIEW_SAFE_MAX_POINTS, VIEW_SCHEMA};
 
+use crate::cancel::Cancel;
+use crate::ingest::IngestError;
 use crate::ingest::Sample;
 use crate::math::{Quaternion, lift_next, quotient_angle};
 
@@ -26,6 +28,15 @@ pub struct ViewPayload {
     pub downsample: DownsampleInfo,
     pub finding_links: Vec<ViewFindingLink>,
     pub samples: Vec<ViewSample>,
+    pub context: Vec<ViewContext>,
+    pub time_axis_valid: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ViewContext {
+    pub source_row: u64,
+    pub timestamp_ns: String,
+    pub raw: Option<[FiniteF64; 4]>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -34,6 +45,8 @@ pub struct ViewFindingLink {
     pub source_row_start: u64,
     pub source_row_end: u64,
     pub geometry_source_row: Option<u64>,
+    pub exact_geometry: bool,
+    pub context_source_rows: Vec<u64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -43,12 +56,21 @@ pub struct DownsampleInfo {
     pub max_points: u64,
     pub retained_findings: bool,
     pub retained_extrema: bool,
+    pub exact_finding_endpoints: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ViewSample {
     pub source_row: u64,
     pub timestamp_ns: i64,
+    pub timestamp_ns_exact: String,
+    pub elapsed_s: Option<FiniteF64>,
+    pub time_valid: bool,
+    pub geometry_segment: u64,
+    pub stereo_segment: u64,
+    pub raw_stereo_segment: u64,
+    pub sign_lift: Option<[FiniteF64; 4]>,
+    pub normalised: Option<[FiniteF64; 4]>,
     pub raw: Option<[FiniteF64; 4]>,
     pub lifted: Option<[FiniteF64; 4]>,
     pub proposed: Option<[FiniteF64; 4]>,
@@ -71,12 +93,46 @@ pub fn build_view(
     proposed: Option<&[Quaternion]>,
     max_points: u64,
 ) -> ViewPayload {
+    build_view_inner(samples, findings, analysis_id, proposed, max_points, None)
+        .expect("uncancelled view")
+}
+
+pub fn build_view_cancellable(
+    samples: &[Sample],
+    findings: &[Finding],
+    analysis_id: &str,
+    proposed: Option<&[Quaternion]>,
+    max_points: u64,
+    cancel: Cancel<'_>,
+) -> Result<ViewPayload, IngestError> {
+    build_view_inner(
+        samples,
+        findings,
+        analysis_id,
+        proposed,
+        max_points,
+        Some(cancel),
+    )
+}
+
+fn build_view_inner(
+    samples: &[Sample],
+    findings: &[Finding],
+    analysis_id: &str,
+    proposed: Option<&[Quaternion]>,
+    max_points: u64,
+    cancel: Option<Cancel<'_>>,
+) -> Result<ViewPayload, IngestError> {
+    if let Some(cancel) = cancel {
+        cancel.check()?;
+    }
     let max_points = max_points.clamp(8, VIEW_SAFE_MAX_POINTS);
-    let series = geometry_series(samples, proposed);
-    let extrema = extrema_indices(&series);
+    let extrema = extrema_indices(
+        geometry_series(samples, proposed).take_while(|_| cancel.is_none_or(|c| c.check().is_ok())),
+    );
     let finding_pins = finding_indices(samples, findings);
     let selected: BTreeSet<usize> =
-        select_indices(series.len(), max_points as usize, &extrema, &finding_pins)
+        select_indices(samples.len(), max_points as usize, &extrema, &finding_pins)
             .into_iter()
             .collect();
     let selected_rows = selected
@@ -86,6 +142,14 @@ pub fn build_view(
     let finding_links = findings
         .iter()
         .map(|finding| ViewFindingLink {
+            context_source_rows: context_indices(samples, finding)
+                .into_iter()
+                .map(|i| samples[i].source_row)
+                .collect(),
+            exact_geometry: selected_rows
+                .binary_search(&finding.source_row_start)
+                .is_ok()
+                && selected_rows.binary_search(&finding.source_row_end).is_ok(),
             finding_id: finding.id.clone(),
             source_row_start: finding.source_row_start,
             source_row_end: finding.source_row_end,
@@ -98,13 +162,41 @@ pub fn build_view(
             .all(|link| link.geometry_source_row.is_some());
     let retained_extrema = extrema.iter().all(|idx| selected.contains(idx));
     let mut emitted = Vec::with_capacity(selected.len());
-    for idx in &selected {
-        let mut sample = series[*idx].clone();
-        sample.pinned_finding = finding_pins.contains(idx);
-        sample.pinned_extremum = extrema.contains(idx);
+    for (idx, mut sample) in geometry_series(samples, proposed)
+        .take_while(|_| cancel.is_none_or(|c| c.check().is_ok()))
+        .enumerate()
+    {
+        if !selected.contains(&idx) {
+            continue;
+        }
+        sample.pinned_finding = finding_pins.binary_search(&idx).is_ok();
+        sample.pinned_extremum = extrema.contains(&idx);
         emitted.push(sample);
     }
-    ViewPayload {
+    let mut retained_context = BTreeSet::new();
+    for finding in findings {
+        if let Some(cancel) = cancel {
+            cancel.check()?;
+        }
+        retained_context.extend(context_indices(samples, finding));
+    }
+    let context = retained_context
+        .into_iter()
+        .map(|idx| ViewContext {
+            source_row: samples[idx].source_row,
+            timestamp_ns: if samples[idx].timestamp_finite && !samples[idx].timestamp_overflow {
+                samples[idx].timestamp_ns.to_string()
+            } else {
+                "Unavailable".to_string()
+            },
+            raw: finite_quat(samples[idx].raw).map(quat_arr),
+        })
+        .collect();
+    let exact_finding_endpoints = finding_links.iter().all(|link| link.exact_geometry);
+    if let Some(cancel) = cancel {
+        cancel.check()?;
+    }
+    Ok(ViewPayload {
         schema: VIEW_SCHEMA.to_string(),
         analysis_id: analysis_id.to_string(),
         kind: VIEW_KIND_DERIVED.to_string(),
@@ -119,10 +211,29 @@ pub fn build_view(
             max_points,
             retained_findings,
             retained_extrema,
+            exact_finding_endpoints,
         },
         finding_links,
         samples: emitted,
+        context,
+        time_axis_valid: !samples.is_empty()
+            && samples
+                .iter()
+                .all(|s| s.timestamp_finite && !s.timestamp_overflow)
+            && samples
+                .windows(2)
+                .all(|w| w[1].timestamp_ns > w[0].timestamp_ns),
+    })
+}
+
+fn context_indices(samples: &[Sample], finding: &Finding) -> BTreeSet<usize> {
+    let mut indices = BTreeSet::new();
+    for row in [finding.source_row_start, finding.source_row_end] {
+        if let Some(idx) = nearest_index(samples, row) {
+            indices.extend(idx.saturating_sub(1)..=(idx + 1).min(samples.len() - 1));
+        }
     }
+    indices
 }
 
 fn nearest_selected_row(rows: &[u64], target: u64) -> Option<u64> {
@@ -158,9 +269,12 @@ pub fn empty_view(analysis_id: &str) -> ViewPayload {
             max_points: VIEW_MAX_POINTS,
             retained_findings: true,
             retained_extrema: true,
+            exact_finding_endpoints: true,
         },
         finding_links: Vec::new(),
         samples: Vec::new(),
+        context: Vec::new(),
+        time_axis_valid: false,
     }
 }
 
@@ -236,12 +350,17 @@ fn stride_set(set: &BTreeSet<usize>, max_points: usize) -> Vec<usize> {
     out.into_iter().take(max_points).collect()
 }
 
-fn geometry_series(samples: &[Sample], proposed: Option<&[Quaternion]>) -> Vec<ViewSample> {
+fn geometry_series<'a>(
+    samples: &'a [Sample],
+    proposed: Option<&'a [Quaternion]>,
+) -> impl Iterator<Item = ViewSample> + 'a {
     let mut lifted_state: Option<Quaternion> = None;
     let mut prev_unit: Option<Quaternion> = None;
     let mut prev_time: Option<i64> = None;
-    let mut out = Vec::with_capacity(samples.len());
-    for (idx, sample) in samples.iter().enumerate() {
+    let mut geometry_segment = 0_u64;
+    let mut stereo_segment = 0_u64;
+    let mut raw_stereo_segment = 0_u64;
+    samples.iter().enumerate().map(move |(idx, sample)| {
         let raw = finite_quat(sample.raw);
         let unit = sample.raw.normalized();
         let lifted = match (lifted_state, unit) {
@@ -254,7 +373,10 @@ fn geometry_series(samples: &[Sample], proposed: Option<&[Quaternion]>) -> Vec<V
                 lifted_state = Some(decision.lifted);
                 Some(decision.lifted)
             }
-            _ => None,
+            _ => {
+                lifted_state = None;
+                None
+            }
         };
         let proposed_q = proposed.and_then(|series| series.get(idx).copied());
         let proposed_unit = proposed_q.and_then(Quaternion::normalized);
@@ -266,10 +388,11 @@ fn geometry_series(samples: &[Sample], proposed: Option<&[Quaternion]>) -> Vec<V
             Some(q) => stereographic(q),
             None => (None, false),
         };
+        let time_valid = sample.timestamp_finite && !sample.timestamp_overflow;
         let (angle, rate) = match (prev_unit, unit, prev_time) {
-            (Some(prev), Some(curr), Some(prev_t)) => {
+            (Some(prev), Some(curr), Some(prev_t)) if time_valid => {
                 let angle = quotient_angle(prev, curr);
-                let dt = (sample.timestamp_ns - prev_t) as f64 / 1.0e9;
+                let dt = (i128::from(sample.timestamp_ns) - i128::from(prev_t)) as f64 / 1.0e9;
                 let rate = if dt > 0.0 && dt.is_finite() {
                     FiniteF64::new(angle / dt).ok()
                 } else {
@@ -280,10 +403,57 @@ fn geometry_series(samples: &[Sample], proposed: Option<&[Quaternion]>) -> Vec<V
             _ => (None, None),
         };
         prev_unit = unit;
-        prev_time = Some(sample.timestamp_ns);
-        out.push(ViewSample {
+        prev_time = time_valid.then_some(sample.timestamp_ns);
+        if unit.is_none()
+            || !time_valid
+            || (idx > 0 && samples[idx - 1].timestamp_ns >= sample.timestamp_ns)
+        {
+            geometry_segment += 1;
+        }
+        if unit.is_none_or(|q| stereographic(q).0.is_none()) || !time_valid {
+            raw_stereo_segment += 1;
+        }
+        if stereo.is_none() || !time_valid {
+            stereo_segment += 1;
+        }
+        ViewSample {
             source_row: sample.source_row,
             timestamp_ns: sample.timestamp_ns,
+            timestamp_ns_exact: sample.timestamp_ns.to_string(),
+            elapsed_s: time_valid
+                .then(|| {
+                    FiniteF64::new(
+                        (i128::from(sample.timestamp_ns) - i128::from(samples[0].timestamp_ns))
+                            as f64
+                            / 1.0e9,
+                    )
+                    .ok()
+                })
+                .flatten(),
+            time_valid,
+            geometry_segment,
+            stereo_segment,
+            raw_stereo_segment,
+            sign_lift: lifted
+                .zip(unit)
+                .map(|(lift, unit)| {
+                    if lift.dot(unit) < 0.0 {
+                        sample.raw.negate()
+                    } else {
+                        sample.raw
+                    }
+                })
+                .and_then(finite_quat)
+                .map(quat_arr),
+            normalised: (if sample.raw.norm() >= quatopsy_schema::NEAR_ZERO_NORM
+                && libm::fabs(sample.raw.norm() - 1.0) > quatopsy_schema::NORM_ABS_TOLERANCE
+            {
+                unit
+            } else {
+                raw
+            })
+            .and_then(finite_quat)
+            .map(quat_arr),
             raw: raw.map(quat_arr),
             lifted: lifted.and_then(finite_quat).map(quat_arr),
             proposed: proposed_q.and_then(finite_quat).map(quat_arr),
@@ -297,9 +467,8 @@ fn geometry_series(samples: &[Sample], proposed: Option<&[Quaternion]>) -> Vec<V
             rate_rad_s: rate,
             pinned_finding: false,
             pinned_extremum: false,
-        });
-    }
-    out
+        }
+    })
 }
 
 fn stereographic(q: Quaternion) -> (Option<[f64; 3]>, bool) {
@@ -310,12 +479,12 @@ fn stereographic(q: Quaternion) -> (Option<[f64; 3]>, bool) {
     (Some([q.x / denom, q.y / denom, q.z / denom]), false)
 }
 
-fn extrema_indices(series: &[ViewSample]) -> Vec<usize> {
+fn extrema_indices(series: impl Iterator<Item = ViewSample>) -> Vec<usize> {
     let mut min_angle = (f64::INFINITY, None);
     let mut max_angle = (f64::NEG_INFINITY, None);
     let mut min_rate = (f64::INFINITY, None);
     let mut max_rate = (f64::NEG_INFINITY, None);
-    for (idx, sample) in series.iter().enumerate() {
+    for (idx, sample) in series.enumerate() {
         if let Some(angle) = sample.angle_rad {
             let value = angle.get();
             if value < min_angle.0 {
@@ -342,30 +511,36 @@ fn extrema_indices(series: &[ViewSample]) -> Vec<usize> {
 }
 
 fn finding_indices(samples: &[Sample], findings: &[Finding]) -> Vec<usize> {
-    let mut by_row = std::collections::HashMap::new();
-    for (idx, sample) in samples.iter().enumerate() {
-        by_row.insert(sample.source_row, idx);
-    }
     let mut pins = BTreeSet::new();
     for finding in findings {
-        if let Some(idx) = nearest_index(&by_row, finding.source_row_start) {
+        if let Some(idx) = nearest_index(samples, finding.source_row_start) {
             pins.insert(idx);
         }
-        if let Some(idx) = nearest_index(&by_row, finding.source_row_end) {
+        if let Some(idx) = nearest_index(samples, finding.source_row_end) {
             pins.insert(idx);
         }
     }
     pins.into_iter().collect()
 }
 
-fn nearest_index(by_row: &std::collections::HashMap<u64, usize>, row: u64) -> Option<usize> {
-    if let Some(idx) = by_row.get(&row) {
-        return Some(*idx);
+fn nearest_index(samples: &[Sample], row: u64) -> Option<usize> {
+    if samples.is_empty() {
+        return None;
     }
-    by_row
-        .iter()
-        .min_by_key(|(sample_row, _)| sample_row.abs_diff(row))
-        .map(|(_, idx)| *idx)
+    match samples.binary_search_by_key(&row, |sample| sample.source_row) {
+        Ok(index) => Some(index),
+        Err(0) => Some(0),
+        Err(index) if index == samples.len() => Some(index - 1),
+        Err(index) => Some(
+            if samples[index - 1].source_row.abs_diff(row)
+                <= samples[index].source_row.abs_diff(row)
+            {
+                index - 1
+            } else {
+                index
+            },
+        ),
+    }
 }
 
 fn finite_quat(q: Quaternion) -> Option<Quaternion> {

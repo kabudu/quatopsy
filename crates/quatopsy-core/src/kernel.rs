@@ -24,8 +24,8 @@ enum NormKind {
 }
 
 #[derive(Debug, Clone)]
-struct PreparedSample {
-    sample: Sample,
+struct PreparedSample<'a> {
+    sample: &'a Sample,
     norm: f64,
     kind: NormKind,
     unit: Option<Quaternion>,
@@ -63,10 +63,22 @@ pub fn evaluate(
         return incomplete(reason, "analysis did not complete");
     }
 
-    let prepared: Vec<PreparedSample> = samples.iter().cloned().map(prepare_sample).collect();
+    let prepared: Vec<PreparedSample> = samples
+        .iter()
+        .enumerate()
+        .take_while(|(i, _)| i % 256 != 0 || cancel.check().is_ok())
+        .map(|(_, sample)| prepare_sample(sample))
+        .collect();
 
-    let time = evaluate_time(&prepared, limits, &mut findings, &mut truncated_error);
+    let time = evaluate_time(
+        cancel,
+        &prepared,
+        limits,
+        &mut findings,
+        &mut truncated_error,
+    );
     let norm = evaluate_norm(
+        cancel,
         &prepared,
         limits,
         &mut findings,
@@ -80,7 +92,13 @@ pub fn evaluate(
             .all(|item| item.sample.timestamp_finite && !item.sample.timestamp_overflow);
 
     let (lift, sign, pi) = if rotation_ready && !prepared.is_empty() {
-        evaluate_lift_family(&prepared, limits, &mut findings, &mut truncated_error)
+        evaluate_lift_family(
+            cancel,
+            &prepared,
+            limits,
+            &mut findings,
+            &mut truncated_error,
+        )
     } else {
         let refused = |rule: &str, reason: &str| RuleResult {
             rule: rule.to_string(),
@@ -97,9 +115,16 @@ pub fn evaluate(
         )
     };
 
-    let (rate, rate_summary) = evaluate_rate(&prepared, rotation_ready);
-    let unwind = evaluate_unwind(&prepared, limits, &mut findings, &mut truncated_error);
+    let (rate, rate_summary) = evaluate_rate(cancel, &prepared, rotation_ready);
+    let unwind = evaluate_unwind(
+        cancel,
+        &prepared,
+        limits,
+        &mut findings,
+        &mut truncated_error,
+    );
     let conv = evaluate_conv(
+        cancel,
         &prepared,
         limits,
         &mut findings,
@@ -107,8 +132,24 @@ pub fn evaluate(
         component_order,
         rotation_sense,
     );
-    let omega = evaluate_omega(&prepared, limits, &mut findings, &mut truncated_error);
+    let omega = evaluate_omega(
+        cancel,
+        &prepared,
+        limits,
+        &mut findings,
+        &mut truncated_error,
+    );
 
+    if cancel.check().is_err() {
+        return incomplete(
+            if cancel.is_cancelled() {
+                "cancelled"
+            } else {
+                "timeout"
+            },
+            "analysis did not complete",
+        );
+    }
     let mut rule_results = vec![norm, time, lift, sign, rate, pi, unwind, conv, omega];
     if truncated_error {
         for result in &mut rule_results {
@@ -168,7 +209,7 @@ fn incomplete(reason_code: &'static str, message: &str) -> Analysis {
     }
 }
 
-fn prepare_sample(sample: Sample) -> PreparedSample {
+fn prepare_sample(sample: &Sample) -> PreparedSample<'_> {
     if !sample.raw.is_finite() {
         return PreparedSample {
             sample,
@@ -200,6 +241,7 @@ fn prepare_sample(sample: Sample) -> PreparedSample {
 }
 
 fn evaluate_time(
+    cancel: Cancel<'_>,
     samples: &[PreparedSample],
     limits: Limits,
     findings: &mut Vec<Finding>,
@@ -207,7 +249,11 @@ fn evaluate_time(
 ) -> RuleResult {
     let mut state = RuleState::Pass;
     let mut count = 0_u64;
-    for (idx, item) in samples.iter().enumerate() {
+    for (idx, item) in samples
+        .iter()
+        .enumerate()
+        .take_while(|(i, _)| i % 256 != 0 || cancel.check().is_ok())
+    {
         if !item.sample.timestamp_finite || item.sample.timestamp_overflow {
             let reason = if item.sample.timestamp_overflow {
                 "timestamp-overflow"
@@ -285,6 +331,7 @@ fn evaluate_time(
 }
 
 fn evaluate_norm(
+    cancel: Cancel<'_>,
     samples: &[PreparedSample],
     limits: Limits,
     findings: &mut Vec<Finding>,
@@ -293,7 +340,7 @@ fn evaluate_norm(
 ) -> RuleResult {
     let mut state = RuleState::Pass;
     let mut count = 0_u64;
-    for item in samples {
+    for item in samples.iter().take_while(|_| cancel.check().is_ok()) {
         match item.kind {
             NormKind::Ok => {}
             NormKind::OffUnit => {
@@ -375,6 +422,7 @@ fn evaluate_norm(
 }
 
 fn evaluate_lift_family(
+    cancel: Cancel<'_>,
     samples: &[PreparedSample],
     limits: Limits,
     findings: &mut Vec<Finding>,
@@ -392,7 +440,7 @@ fn evaluate_lift_family(
         );
     };
     let mut lifted = first_unit;
-    for idx in 1..samples.len() {
+    for idx in (1..samples.len()).take_while(|i| i % 256 != 0 || cancel.check().is_ok()) {
         let prev = &samples[idx - 1];
         let next = &samples[idx];
         let Some(prev_unit) = prev.unit else {
@@ -470,6 +518,7 @@ fn evaluate_lift_family(
 }
 
 fn evaluate_rate(
+    cancel: Cancel<'_>,
     samples: &[PreparedSample],
     rotation_ready: bool,
 ) -> (RuleResult, Option<RateSummary>) {
@@ -481,13 +530,10 @@ fn evaluate_rate(
     let mut min_rate = f64::INFINITY;
     let mut max_rate = 0.0_f64;
     let mut count = 0_u64;
-    for idx in 1..samples.len() {
+    for idx in (1..samples.len()).take_while(|i| i % 256 != 0 || cancel.check().is_ok()) {
         let prev = &samples[idx - 1];
         let next = &samples[idx];
-        let dt_ns = next
-            .sample
-            .timestamp_ns
-            .saturating_sub(prev.sample.timestamp_ns);
+        let dt_ns = i128::from(next.sample.timestamp_ns) - i128::from(prev.sample.timestamp_ns);
         if dt_ns <= 0 {
             return (rule_result(RULE_RATE, RuleState::Refused, 0, false), None);
         }
@@ -534,6 +580,7 @@ fn evaluate_rate(
 }
 
 fn evaluate_unwind(
+    cancel: Cancel<'_>,
     prepared: &[PreparedSample],
     limits: Limits,
     findings: &mut Vec<Finding>,
@@ -555,7 +602,7 @@ fn evaluate_unwind(
     }
     let mut count = 0_u64;
     let mut local_trunc = false;
-    for window in prepared.windows(2) {
+    for window in prepared.windows(2).take_while(|_| cancel.check().is_ok()) {
         let Some(prev) = window[0].sample.commanded.and_then(Quaternion::normalized) else {
             return rule_result(RULE_UNWIND, RuleState::Refused, 0, false);
         };
@@ -643,6 +690,7 @@ fn alternate_quaternion(q: Quaternion, declared: ComponentOrder) -> Quaternion {
 }
 
 fn evaluate_conv(
+    cancel: Cancel<'_>,
     prepared: &[PreparedSample],
     limits: Limits,
     findings: &mut Vec<Finding>,
@@ -672,7 +720,7 @@ fn evaluate_conv(
     let mut count = 0_u64;
     let mut local_trunc = false;
     let mut state = RuleState::Pass;
-    for item in prepared {
+    for item in prepared.iter().take_while(|_| cancel.check().is_ok()) {
         let Some(unit) = item.unit else {
             return rule_result(RULE_CONV, RuleState::Refused, 0, false);
         };
@@ -757,6 +805,7 @@ fn evaluate_conv(
 }
 
 fn evaluate_omega(
+    cancel: Cancel<'_>,
     prepared: &[PreparedSample],
     limits: Limits,
     findings: &mut Vec<Finding>,
@@ -779,7 +828,7 @@ fn evaluate_omega(
     let mut count = 0_u64;
     let mut local_trunc = false;
     let mut state = RuleState::Pass;
-    for window in prepared.windows(2) {
+    for window in prepared.windows(2).take_while(|_| cancel.check().is_ok()) {
         let prev = &window[0];
         let next = &window[1];
         let Some(p) = prev.unit else {
@@ -788,10 +837,7 @@ fn evaluate_omega(
         let Some(q) = next.unit else {
             return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
         };
-        let dt_ns = next
-            .sample
-            .timestamp_ns
-            .saturating_sub(prev.sample.timestamp_ns);
+        let dt_ns = i128::from(next.sample.timestamp_ns) - i128::from(prev.sample.timestamp_ns);
         if dt_ns <= 0 {
             return rule_result(RULE_OMEGA, RuleState::Refused, 0, false);
         }

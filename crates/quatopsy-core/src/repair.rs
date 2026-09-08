@@ -7,6 +7,8 @@ use quatopsy_schema::{
     RepairDisposition, RuleResult, RuleState,
 };
 
+use crate::cancel::Cancel;
+use crate::ingest::IngestError;
 use crate::ingest::Sample;
 use crate::math::{Quaternion, lift_next};
 
@@ -21,8 +23,29 @@ pub fn attach_repairs(
     findings: &mut [Finding],
     analysis_id: &str,
 ) -> (Vec<Repair>, RuleResult) {
+    attach_repairs_inner(samples, findings, analysis_id, None)
+}
+
+pub fn attach_repairs_cancellable(
+    samples: &[Sample],
+    findings: &mut [Finding],
+    analysis_id: &str,
+    cancel: Cancel<'_>,
+) -> Result<(Vec<Repair>, RuleResult), IngestError> {
+    cancel.check()?;
+    let result = attach_repairs_inner(samples, findings, analysis_id, Some(cancel));
+    cancel.check()?;
+    Ok(result)
+}
+
+fn attach_repairs_inner(
+    samples: &[Sample],
+    findings: &mut [Finding],
+    analysis_id: &str,
+    cancel: Option<Cancel<'_>>,
+) -> (Vec<Repair>, RuleResult) {
     let mut repairs = Vec::new();
-    if let Some(plan) = sign_lift_plan(samples, analysis_id) {
+    if let Some(plan) = sign_lift_plan_inner(samples, analysis_id, cancel) {
         link_findings(
             findings,
             RULE_SIGN,
@@ -31,7 +54,7 @@ pub fn attach_repairs(
         );
         repairs.push(plan.repair);
     }
-    if let Some(plan) = normalise_plan(samples, analysis_id) {
+    if let Some(plan) = normalise_plan_inner(samples, analysis_id, cancel) {
         link_findings(
             findings,
             RULE_NORM,
@@ -69,14 +92,32 @@ pub fn attach_repairs(
 }
 
 pub fn sign_lift_plan(samples: &[Sample], analysis_id: &str) -> Option<RepairPlan> {
+    sign_lift_plan_inner(samples, analysis_id, None)
+}
+
+fn sign_lift_plan_inner(
+    samples: &[Sample],
+    analysis_id: &str,
+    cancel: Option<Cancel<'_>>,
+) -> Option<RepairPlan> {
     if samples.is_empty() {
         return None;
     }
-    let mut quaternions: Vec<Quaternion> = samples.iter().map(|sample| sample.raw).collect();
+    let mut quaternions: Vec<Quaternion> = samples
+        .iter()
+        .take_while(|_| cancel.is_none_or(|c| c.check().is_ok()))
+        .map(|sample| sample.raw)
+        .collect();
+    if quaternions.len() != samples.len() {
+        return None;
+    }
     let mut affected = Vec::new();
     let first_unit = samples[0].raw.normalized()?;
     let mut lifted = first_unit;
     for idx in 1..samples.len() {
+        if idx % 256 == 0 && cancel.is_some_and(|c| c.check().is_err()) {
+            return None;
+        }
         let next_unit = samples[idx].raw.normalized()?;
         let decision = lift_next(lifted, next_unit);
         if decision.flipped {
@@ -110,10 +151,28 @@ pub fn sign_lift_plan(samples: &[Sample], analysis_id: &str) -> Option<RepairPla
 }
 
 pub fn normalise_plan(samples: &[Sample], analysis_id: &str) -> Option<RepairPlan> {
-    let mut quaternions: Vec<Quaternion> = samples.iter().map(|sample| sample.raw).collect();
+    normalise_plan_inner(samples, analysis_id, None)
+}
+
+fn normalise_plan_inner(
+    samples: &[Sample],
+    analysis_id: &str,
+    cancel: Option<Cancel<'_>>,
+) -> Option<RepairPlan> {
+    let mut quaternions: Vec<Quaternion> = samples
+        .iter()
+        .take_while(|_| cancel.is_none_or(|c| c.check().is_ok()))
+        .map(|sample| sample.raw)
+        .collect();
+    if quaternions.len() != samples.len() {
+        return None;
+    }
     let mut affected = Vec::new();
     let mut max_delta = 0.0_f64;
     for (idx, sample) in samples.iter().enumerate() {
+        if idx % 256 == 0 && cancel.is_some_and(|c| c.check().is_err()) {
+            return None;
+        }
         if !sample.raw.is_finite() {
             continue;
         }

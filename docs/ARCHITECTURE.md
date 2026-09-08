@@ -2,7 +2,7 @@
 
 ## Minimal shape
 
-Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core`), a CLI (`quatopsy`), a schema package (`quatopsy-schema`), and a static browser visualiser compiled to WebAssembly only where shared computations require it. An independent `quatopsy-oracle` crate exists for conformance tests and for candidate-plan residual checks. It is not a production rule engine and cannot assign `quatopsy.report/1` `result`. The browser consumes the same immutable JSON report produced by the CLI. No server, account, database, telemetry collector, plug-in runtime, or network dependency belongs in the first release.
+Quatopsy starts as a Rust workspace with a pure analysis library (`quatopsy-core`), a CLI (`quatopsy`), a schema package (`quatopsy-schema`), and a dependency-free static browser visualiser. Geometry is prepared in Rust; browser code only presents the bound evidence. An independent `quatopsy-oracle` crate exists for conformance tests and for candidate-plan residual checks. It is not a production rule engine and cannot assign `quatopsy.report/1` `result`. The browser consumes the same immutable JSON report produced by the CLI. No server, account, database, telemetry collector, plug-in runtime, or network dependency belongs in the first release.
 
 ## Components
 
@@ -46,7 +46,7 @@ The semantic core uses IEEE 754 binary64 with documented operation ordering (w, 
 
 ## Resource governance
 
-The CLI defaults to 1 GiB input bytes, 10 million samples, 512 MiB working memory target, one analysis job, a bounded finding count per rule, and explicit wall-clock cancellation. Limits are configurable only within compiled safe maxima for the browser. Parsing is streaming; the validated quaternion series is contiguous; viewer geometry is downsampled with extrema and finding intervals retained.
+The CLI defaults to 1 GiB input bytes, 10 million samples, 512 MiB working memory target, one analysis job, a bounded finding count per rule, and explicit wall-clock cancellation. Limits are configurable only within compiled safe maxima for the browser. Parsing is streaming; the validated quaternion series is contiguous; viewer geometry is downsampled with global angle/rate extrema and bounded finding pins. Every finding keeps a navigation link; exact retained endpoints are separately identified. Geometry is generated in streaming passes. The 512 MiB target is benchmarked for named workloads, not an enforced process-wide allocation ceiling.
 
 The investigation boundary is narrower: 256 MiB observed input, one million samples, 64 MiB per opaque context file, 16 MiB per candidate problem, 1,024 findings per rule, and a 120-second analysis deadline. Candidate stages run sequentially.
 

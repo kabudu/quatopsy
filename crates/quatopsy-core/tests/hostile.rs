@@ -131,3 +131,27 @@ fn unknown_manifest_field_is_refused() {
     let report = analyze(req(csv, manifest, Limits::defaults()));
     assert_eq!(report.result, ResultState::Refused);
 }
+
+#[test]
+fn adjacent_large_nanoseconds_do_not_become_duplicate_time_findings() {
+    let m = String::from_utf8(manifest().to_vec())
+        .unwrap()
+        .replace("\"s\"", "\"ns\"");
+    let csv = b"t,qw,qx,qy,qz\n9007199254740992,1,0,0,0\n9007199254740993,1,0,0,0\n";
+    assert_eq!(
+        analyze(req(csv, m.as_bytes(), Limits::defaults())).result,
+        ResultState::Pass
+    );
+}
+
+#[test]
+fn wide_signed_time_span_uses_actual_elapsed_time() {
+    let m = String::from_utf8(manifest().to_vec())
+        .unwrap()
+        .replace("\"s\"", "\"ns\"");
+    let csv = b"t,qw,qx,qy,qz\n-9000000000000000000,1,0,0,0\n9000000000000000000,0.7071067811865476,0.7071067811865476,0,0\n";
+    let r = analyze(req(csv, m.as_bytes(), Limits::defaults()));
+    assert_eq!(r.result, ResultState::Pass);
+    let rate = r.diagnostics.rate_summary.unwrap().max_rate_rad_s.get();
+    assert!((rate - std::f64::consts::FRAC_PI_2 / 18_000_000_000.0).abs() < 1e-24);
+}

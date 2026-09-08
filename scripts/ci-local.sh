@@ -103,6 +103,9 @@ cargo clippy --workspace --all-targets --locked -- -D warnings
 log "tests"
 cargo test --workspace --locked
 
+log "viewer DOM/canvas simulation"
+node scripts/test-viewer.mjs
+
 log "CLI smoke"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
@@ -138,6 +141,9 @@ prov = Path(sys.argv[2]).read_text(encoding="utf-8")
 if "Cargo.lock:" not in prov or "rustc:" not in prov:
     raise SystemExit(f"invalid provenance file: {prov!r}")
 PY
+
+log "released CLI workflow budgets"
+python3 scripts/check-workflow-budget.py "$tmp/dist/quatopsy"
 
 log "supply-chain licenses"
 python3 "$root/scripts/check-supply-chain.py"

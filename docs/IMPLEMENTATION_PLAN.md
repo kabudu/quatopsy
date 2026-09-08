@@ -139,7 +139,10 @@ Owner productisation and the canonical Quatopsy identity were approved. M12 late
 - [x] Apply the symbol and tagline on the local viewer and CLI without weakening CSP or report ownership.
 - [x] Public repository visibility.
 - [x] Hosted CI.
-- [ ] crates.io, signed binaries, website, and production support.
+- [x] crates.io publication (M12).
+- [x] Static project website (M13).
+- [ ] Signed binaries.
+- [ ] Production support.
 
 Exit: local CI including `python3 scripts/brandkit.py check`. Open boxes are not shipped.
 
@@ -201,6 +204,19 @@ This milestone adds a presentation-only GitHub Pages entry point. It does not ad
 - [x] Deploy from reviewed `master`, verify the live site and social metadata, then set and read back the repository homepage URL.
 
 Exit: local and hosted CI, desktop and narrow visual QA, live GitHub Pages verification, and repository homepage read-back.
+
+## M14: Investigation fidelity and viewer refinement
+
+Owner-requested scope and acceptance evidence are recorded in [INVESTIGATION_FIDELITY.md](INVESTIGATION_FIDELITY.md).
+
+- [ ] Preserve exact decimal timestamps and wide elapsed-time arithmetic across analysis and view generation.
+- [ ] Present missing data, projection poles, downsampling and finding navigation truthfully.
+- [ ] Deliver the compact responsive investigation workspace, complete finding queue, canonical inspector and named candidate comparison.
+- [ ] Bound geometry memory and cancellation, cache rendering, and measure the complete released-CLI workflow.
+- [ ] Pass regression, local/hosted CI and actual desktop/narrow browser QA before merge.
+- [ ] Conduct practitioner evaluation and record outcome evidence when participants are available.
+
+No unchecked item is claimed complete. Browser QA and practitioner observations are distinct evidence requirements.
 
 ## Optional post-release evidence track
 

@@ -1,231 +1,894 @@
 (function () {
   "use strict";
-
-  function byId(id) { return document.getElementById(id); }
-  function text(el, value) { if (el) { el.textContent = value; } }
-  function readJson(id) {
-    var node = byId(id);
-    if (!node) { return null; }
-    try { return JSON.parse(node.textContent); } catch (err) { return null; }
-  }
-  function schemaMajor(schema) {
-    if (typeof schema !== "string") { return null; }
-    var parts = schema.split("/");
-    return parts.length === 2 ? parts[0] + "/" + parts[1] : schema;
-  }
-  function valueOr(value, fallback) { return value === null || value === undefined ? fallback : value; }
-  function tuple(values, fallback) {
-    return Array.isArray(values) ? values.map(function (v) { return Number(v).toPrecision(7); }).join("  ") : fallback;
-  }
-
-  var report = readJson("quatopsy-report");
-  var view = readJson("quatopsy-view") || { samples: [], projection_warning: "No derived geometry is available.", downsample: {} };
-  var banner = byId("result-banner");
-  var findingsEl = byId("findings");
-  var repairsEl = byId("repairs");
-  var selectionEl = byId("selection");
-  var slider = byId("sample-slider");
-  var physical = byId("physical");
-  var stereo = byId("stereo");
-  var timeline = byId("timeline");
-  var playButton = byId("play");
-  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var selected = 0;
-  var playing = false;
-  var playTimer = null;
-  var findingLinks = Array.isArray(view.finding_links) ? view.finding_links : [];
-  var maxRenderedFindings = 2000;
-  var samples = Array.isArray(view.samples) ? view.samples : [];
-  var reportFindings = report && Array.isArray(report.findings) ? report.findings : [];
-
-  if (!report || schemaMajor(report.schema) !== "quatopsy.report/1") {
-    var unknown = report && report.schema ? String(report.schema) : "missing schema";
-    text(banner, "Viewer refused unknown report schema " + unknown + ". The file was not interpreted as a pass.");
-    banner.className = "status-strip error";
-    text(byId("case-result"), "Protocol refused");
-    text(byId("projection-warning"), "No geometry is shown for an unsupported protocol.");
-    document.querySelectorAll("button, input").forEach(function (control) { control.disabled = true; });
+  const $ = (id) => document.getElementById(id);
+  const text = (id, value) => {
+    $(id).textContent = value;
+  };
+  const read = (id) => {
+    try {
+      return JSON.parse($(id).textContent);
+    } catch (_) {
+      return null;
+    }
+  };
+  const report = read("quatopsy-report");
+  const view = read("quatopsy-view");
+  if (
+    !report ||
+    report.schema !== "quatopsy.report/1" ||
+    !["pass", "findings", "refused", "error"].includes(report.result)
+  ) {
+    text(
+      "result-banner",
+      "Viewer refused unknown report schema or invalid result. No pass was inferred.",
+    );
+    document.querySelectorAll("button,input,select").forEach((el) => {
+      el.disabled = true;
+    });
     return;
   }
-
-  var result = report.result || "error";
-  banner.className = "status-strip " + result;
-  text(banner, "Canonical report: " + result.toUpperCase() + " / the viewer did not recompute rules");
-  text(byId("case-result"), result);
-  text(byId("metric-findings"), String(reportFindings.length));
-  text(byId("analysis-id"), "ANALYSIS / " + valueOr(report.analysis_id, "unavailable"));
-  text(byId("projection-warning"), view.projection_warning || "The S^3 panel is a stereographic projection artefact, not a physical trajectory.");
-  var down = view.downsample || {};
-  text(byId("metric-samples"), String(valueOr(down.emitted_sample_count, 0)) + " / " + String(valueOr(down.source_sample_count, 0)));
-  text(byId("downsample-note"), "Bounded display geometry: " + String(valueOr(down.emitted_sample_count, 0)) + " of " + String(valueOr(down.source_sample_count, 0)) + " source samples. Finding links retained: " + String(valueOr(down.retained_findings, false)) + ". Extrema retained: " + String(valueOr(down.retained_extrema, false)) + ".");
-
-  slider.max = String(Math.max(0, samples.length - 1));
-  slider.value = "0";
-  if (samples.length < 2) { playButton.disabled = true; }
-
-  function sampleLabel(sample) {
-    if (!sample) { return "No sample selected."; }
-    return "Sample identity source_row " + sample.source_row + ", t_ns " + sample.timestamp_ns + ". Raw (measured): " + tuple(sample.raw, "unavailable") + ". Derived lift: " + tuple(sample.lifted, "unavailable") + ". Proposed repair: " + tuple(sample.proposed, "none") + ".";
+  const bound =
+    view &&
+    view.schema === "quatopsy.view/1" &&
+    view.analysis_id === report.analysis_id;
+  const samples = bound && Array.isArray(view.samples) ? view.samples : [];
+  const findings = report.findings || [];
+  const repairs = report.repairs || [];
+  const links = new Map(
+    (bound ? view.finding_links || [] : []).map((link) => [
+      link.finding_id,
+      link,
+    ]),
+  );
+  const context = bound ? view.context || [] : [];
+  const names = {
+    "QAT-SIGN-001": "Quaternion sign discontinuity",
+    "QAT-NORM-001": "Quaternion norm defect",
+    "QAT-TIME-001": "Timestamp inconsistency",
+    "QAT-PI-001": "Near-half-turn ambiguity",
+    "QAT-CONV-001": "Convention mismatch",
+    "QAT-OMEGA-001": "Body-rate inconsistency",
+    "QAT-UNWIND-001": "Commanded-path discrepancy",
+  };
+  const colours = {
+    raw: "#fff1d6",
+    derived: "#c778ff",
+    proposed: "#c8a4ff",
+    projection: "#ffc65c",
+    finding: "#ff8d86",
+    muted: "#c0b7c9",
+  };
+  const componentColours = [colours.raw, colours.finding, "#74e6a1", "#78aaff"];
+  const finite = (value) => typeof value === "number" && Number.isFinite(value);
+  const number = (value) =>
+    finite(value)
+      ? Math.abs(value) < 0.0001 && value !== 0
+        ? value.toExponential(3)
+        : Number(value.toPrecision(6)).toString()
+      : "Unavailable";
+  const exactTime = (sample) =>
+    sample
+      ? sample.time_valid === false
+        ? "Unavailable"
+        : sample.timestamp_ns_exact || String(sample.timestamp_ns)
+      : "--";
+  let selected = 0,
+    selectedFinding = null,
+    page = 0,
+    filtered = findings;
+  const pageSize = 20;
+  let yaw = 0.55,
+    stereoScale = null,
+    frame = null,
+    playing = false,
+    started = 0,
+    playbackOrigin = 0;
+  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const canvases = ["physical", "stereo", "timeline", "components"];
+  const layers = new Map();
+  const timeReady =
+    bound &&
+    view.time_axis_valid !== false &&
+    samples.length > 0 &&
+    samples.every(
+      (s, i) =>
+        finite(s.elapsed_s) &&
+        s.time_valid !== false &&
+        (!i || BigInt(exactTime(s)) > BigInt(exactTime(samples[i - 1]))),
+    );
+  if (!timeReady) {
+    $("timeline-axis").value = "index";
+    $("timeline-axis").options[0].disabled = true;
+    $("playback-mode").options[1].disabled = true;
   }
-
-  function project3(point) {
-    return [point[0] * 0.82 - point[2] * 0.48, -point[1] * 0.9 - point[0] * 0.12 - point[2] * 0.22];
+  text("case-result", report.result);
+  text("metric-findings", findings.length);
+  $("result-banner").className = "status-strip " + report.result;
+  text(
+    "result-banner",
+    report.result[0].toUpperCase() +
+      report.result.slice(1) +
+      " · " +
+      findings.length +
+      " findings",
+  );
+  text(
+    "metric-samples",
+    samples.length +
+      " / " +
+      (bound ? view.downsample.source_sample_count : 0) +
+      " samples displayed",
+  );
+  const onlySigns =
+    findings.length > 0 && findings.every((f) => f.rule === "QAT-SIGN-001");
+  text(
+    "case-explanation",
+    !samples.length
+      ? "No bound geometry is available. Canonical findings remain accessible."
+      : onlySigns
+        ? "Quaternion signs change. Sign changes alone do not change the represented orientation; compare raw and lifted components below."
+        : "Select a finding to inspect its canonical evidence, exact source context and separately labelled candidate.",
+  );
+  text(
+    "projection-warning",
+    "Stereographic projection artefact, not a physical trajectory.",
+  );
+  const declarations = report.declarations || {};
+  text(
+    "frame-label",
+    (declarations.frame_from || "Declared source") +
+      " → " +
+      (declarations.frame_to || "Declared target"),
+  );
+  const down = bound ? view.downsample : {};
+  text(
+    "downsample-note",
+    "Geometry: " +
+      samples.length +
+      " of " +
+      (down.source_sample_count || 0) +
+      ". Finding links retained: " +
+      Boolean(down.retained_findings) +
+      ". Exact finding endpoints retained: " +
+      Boolean(down.exact_finding_endpoints) +
+      ". Global angle/rate extrema retained: " +
+      Boolean(down.retained_extrema) +
+      ".",
+  );
+  text("analysis-id", "Analysis: " + report.analysis_id);
+  $("sample-slider").max = Math.max(0, samples.length - 1);
+  function candidate(sample) {
+    if (!sample) return null;
+    const repair = repairs.find((r) => r.id === $("repair-select").value);
+    if (!repair) return null;
+    if (repair.algorithm === "sign-lift")
+      return sample.sign_lift || sample.proposed;
+    if (
+      repair.algorithm === "normalise" ||
+      repair.algorithm === "normalization" ||
+      repair.algorithm === "normalisation"
+    )
+      return sample.normalised;
+    return null;
   }
-  function pointFor(canvas, point, scale) {
-    var p = project3(point);
-    return [canvas.width / 2 + p[0] * scale, canvas.height / 2 + p[1] * scale];
-  }
-  function drawGrid(ctx, canvas, spacing) {
-    ctx.save();
-    ctx.strokeStyle = "rgba(98,230,223,0.08)";
-    ctx.lineWidth = 1;
-    for (var x = 0; x < canvas.width; x += spacing) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
-    for (var y = 0; y < canvas.height; y += spacing) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
-    ctx.restore();
-  }
-  function glowStroke(ctx, colour, width) {
-    ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.shadowColor = colour; ctx.shadowBlur = reduced ? 0 : 10;
-  }
-  function drawPath(ctx, canvas, key, colour, scale, dashed) {
-    ctx.save(); glowStroke(ctx, colour, 2); ctx.setLineDash(dashed ? [7, 7] : []); ctx.beginPath();
-    var started = false;
-    samples.forEach(function (sample) {
-      if (!sample[key]) { return; }
-      var p = pointFor(canvas, sample[key], scale);
-      if (started) { ctx.lineTo(p[0], p[1]); } else { ctx.moveTo(p[0], p[1]); started = true; }
+  repairs
+    .filter((r) => r.disposition === "proposed")
+    .forEach((r) => {
+      const option = document.createElement("option");
+      option.value = r.id;
+      option.textContent =
+        r.algorithm + " · " + r.affected_rows.length + " changed rows";
+      $("repair-select").appendChild(option);
     });
-    ctx.stroke(); ctx.restore();
+  function renderRepair() {
+    const root = $("repairs");
+    root.replaceChildren();
+    const r = repairs.find((r) => r.id === $("repair-select").value);
+    if (!r) {
+      root.textContent = repairs.length
+        ? "Select a named candidate to compare its representation with the source."
+        : "No repair candidates in this report.";
+      return;
+    }
+    const title = document.createElement("p");
+    title.className = "repair-title";
+    title.textContent = r.algorithm + " · " + r.disposition;
+    const effect = document.createElement("p");
+    effect.className = "repair-data";
+    effect.textContent = r.physical_orientation_equivalent
+      ? "Physical orientation preserved within the canonical tolerance. Representation values may change."
+      : "Physical equivalence is not asserted by this candidate.";
+    const details = document.createElement("p");
+    details.className = "repair-data";
+    details.textContent =
+      "Tolerance: " +
+      number(r.numeric_tolerance) +
+      ". Changed rows: " +
+      r.affected_rows.slice(0, 24).join(", ") +
+      (r.affected_rows.length > 24
+        ? " … (" +
+          r.affected_rows.length +
+          " total; complete list in canonical report)"
+        : "") +
+      ". Preconditions: " +
+      r.preconditions.join(", ");
+    root.append(title, effect, details);
   }
-  function drawReticle(ctx, x, y, colour) {
-    ctx.save(); ctx.strokeStyle = colour; ctx.lineWidth = 1.5; ctx.shadowColor = colour; ctx.shadowBlur = reduced ? 0 : 12;
-    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.moveTo(x - 16, y); ctx.lineTo(x - 6, y); ctx.moveTo(x + 6, y); ctx.lineTo(x + 16, y); ctx.moveTo(x, y - 16); ctx.lineTo(x, y - 6); ctx.moveTo(x, y + 6); ctx.lineTo(x, y + 16); ctx.stroke(); ctx.restore();
+  function renderFindings() {
+    const root = $("findings");
+    root.replaceChildren();
+    page = Math.min(
+      page,
+      Math.max(0, Math.ceil(filtered.length / pageSize) - 1),
+    );
+    filtered.slice(page * pageSize, (page + 1) * pageSize).forEach((f) => {
+      const li = document.createElement("li");
+      li.className = "finding-item";
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.id = f.id;
+      button.setAttribute("aria-current", String(selectedFinding === f));
+      const title = document.createElement("strong");
+      title.textContent = names[f.rule] || f.summary || f.rule;
+      const meta = document.createElement("span");
+      meta.className = "meta";
+      meta.textContent =
+        f.rule + " · rows " + f.source_row_start + "–" + f.source_row_end;
+      const severity = document.createElement("span");
+      severity.className = "severity";
+      severity.textContent = f.severity + " · " + f.repair_disposition;
+      button.append(title, meta, severity);
+      button.addEventListener("click", () => selectFinding(f));
+      li.append(button);
+      root.append(li);
+    });
+    if (!filtered.length)
+      root.textContent = findings.length
+        ? "No matching findings."
+        : "No findings in the canonical report.";
+    text(
+      "findings-page",
+      filtered.length
+        ? page + 1 + " / " + Math.ceil(filtered.length / pageSize)
+        : "0 / 0",
+    );
+    $("findings-prev").disabled = page === 0;
+    $("findings-next").disabled = (page + 1) * pageSize >= filtered.length;
   }
-
-  function drawPhysical() {
-    var ctx = physical.getContext("2d");
-    ctx.clearRect(0, 0, physical.width, physical.height); drawGrid(ctx, physical, 46);
-    ctx.save(); ctx.strokeStyle = "rgba(155,171,180,0.28)"; ctx.setLineDash([3, 8]);
-    [60, 120, 180].forEach(function (radius) { ctx.beginPath(); ctx.ellipse(physical.width / 2, physical.height / 2, radius, radius * 0.55, -0.18, 0, Math.PI * 2); ctx.stroke(); }); ctx.restore();
-    drawPath(ctx, physical, "body_x", "#62e6df", 175, false);
-    drawPath(ctx, physical, "proposed_body_x", "#c8a4ff", 175, true);
-    var cur = samples[selected];
-    if (cur && cur.body_x && cur.body_y && cur.body_z) {
-      var origin = [physical.width / 2, physical.height / 2];
-      [[cur.body_x, "#ff7770", "+X"], [cur.body_y, "#74e6a1", "+Y"], [cur.body_z, "#78aaff", "+Z"]].forEach(function (axis) {
-        var p = project3(axis[0]); var end = [origin[0] + p[0] * 145, origin[1] + p[1] * 145];
-        ctx.save(); glowStroke(ctx, axis[1], 3); ctx.beginPath(); ctx.moveTo(origin[0], origin[1]); ctx.lineTo(end[0], end[1]); ctx.stroke(); ctx.shadowBlur = 0; ctx.fillStyle = axis[1]; ctx.font = "bold 14px ui-monospace, monospace"; ctx.fillText(axis[2], end[0] + 8, end[1] + 4); ctx.restore();
+  function nearestRow(row) {
+    let lo = 0,
+      hi = samples.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (samples[mid].source_row < row) lo = mid + 1;
+      else hi = mid;
+    }
+    if (lo === samples.length) return Math.max(0, lo - 1);
+    if (lo && row - samples[lo - 1].source_row <= samples[lo].source_row - row)
+      return lo - 1;
+    return lo;
+  }
+  function selectFinding(f) {
+    stop();
+    selectedFinding = f;
+    text("finding-title", names[f.rule] || f.rule);
+    text("finding-summary", f.summary);
+    text(
+      "finding-meta",
+      f.rule +
+        " · " +
+        f.severity +
+        " · confidence: " +
+        f.confidence +
+        " · rows " +
+        f.source_row_start +
+        "–" +
+        f.source_row_end,
+    );
+    const link = links.get(f.id);
+    text(
+      "finding-link",
+      !samples.length
+        ? "Geometry unavailable; the canonical evidence below is unchanged."
+        : link && link.exact_geometry
+          ? "Both interval endpoints are retained in the plots."
+          : "Approximate geometry link. The selected plotted row may be outside this finding; exact source context is below.",
+    );
+    const evidence = $("finding-evidence");
+    evidence.replaceChildren();
+    (f.evidence || []).forEach((e) => {
+      const row = document.createElement("div"),
+        dt = document.createElement("dt"),
+        dd = document.createElement("dd");
+      dt.textContent = e.name;
+      dd.textContent = String(e.number) + " " + e.unit;
+      row.append(dt, dd);
+      evidence.append(row);
+    });
+    const table = document.createElement("table"),
+      caption = document.createElement("caption");
+    caption.textContent =
+      "Source rows around the finding endpoints (unaltered input values)";
+    table.append(caption);
+    const head = document.createElement("tr");
+    ["Row", "Time (ns)", "w, x, y, z"].forEach((label) => {
+      const th = document.createElement("th");
+      th.scope = "col";
+      th.textContent = label;
+      head.append(th);
+    });
+    table.append(head);
+    const contextRows = new Set(link ? link.context_source_rows || [] : []);
+    const nearby = context.filter((s) => contextRows.has(s.source_row));
+    nearby.forEach((s) => {
+      const tr = document.createElement("tr");
+      [
+        s.source_row,
+        s.timestamp_ns,
+        s.raw ? s.raw.map(String).join(", ") : "Unavailable",
+      ].forEach((value) => {
+        const td = document.createElement("td");
+        td.textContent = value;
+        tr.append(td);
       });
-      var currentPoint = pointFor(physical, cur.body_x, 175); drawReticle(ctx, currentPoint[0], currentPoint[1], "#eef4f6");
+      table.append(tr);
+    });
+    $("source-context").replaceChildren(
+      nearby.length
+        ? table
+        : document.createTextNode(
+            "Source context unavailable for this report-only bundle.",
+          ),
+    );
+    renderFindings();
+    setSelected(
+      nearestRow(
+        link && link.geometry_source_row !== null
+          ? link.geometry_source_row
+          : f.source_row_start,
+      ),
+    );
+  }
+  function rowValues(id, values, raw) {
+    const row = $(id);
+    while (row.children.length > 1) row.lastChild.remove();
+    for (let i = 0; i < 4; i++) {
+      const td = document.createElement("td");
+      td.textContent = values ? number(values[i]) : "--";
+      td.title = values ? String(values[i]) : "Unavailable";
+      if (values && raw && values[i] !== raw[i]) {
+        td.className = "changed";
+        td.setAttribute(
+          "aria-label",
+          ["w", "x", "y", "z"][i] + " changed to " + values[i],
+        );
+      }
+      row.append(td);
     }
   }
-
-  function drawStereo() {
-    var ctx = stereo.getContext("2d");
-    ctx.clearRect(0, 0, stereo.width, stereo.height); drawGrid(ctx, stereo, 46);
-    var centre = [stereo.width / 2, stereo.height / 2];
-    ctx.save(); ctx.strokeStyle = "rgba(255,198,92,0.2)"; ctx.lineWidth = 1;
-    [58, 116, 174].forEach(function (radius) { ctx.beginPath(); ctx.arc(centre[0], centre[1], radius, 0, Math.PI * 2); ctx.stroke(); });
-    ctx.beginPath(); ctx.moveTo(centre[0], 30); ctx.lineTo(centre[0], stereo.height - 30); ctx.moveTo(30, centre[1]); ctx.lineTo(stereo.width - 30, centre[1]); ctx.stroke(); ctx.restore();
-    drawPath(ctx, stereo, "stereo", "#ffc65c", 86, false);
-    samples.forEach(function (sample, idx) {
-      if (!sample.stereo || (!sample.pinned_finding && idx !== selected)) { return; }
-      var p = pointFor(stereo, sample.stereo, 86);
-      if (sample.pinned_finding) { ctx.save(); ctx.fillStyle = "#ff7770"; ctx.translate(p[0], p[1]); ctx.rotate(Math.PI / 4); ctx.fillRect(-4, -4, 8, 8); ctx.restore(); }
-      if (idx === selected) { drawReticle(ctx, p[0], p[1], "#eef4f6"); }
+  function details() {
+    const s = samples[selected];
+    text("detail-row", s ? s.source_row : "--");
+    text("metric-row", s ? "Row " + s.source_row : "No sample");
+    text("detail-time", exactTime(s));
+    text("metric-time", s ? exactTime(s) + " ns" : "--");
+    text(
+      "sample-position",
+      samples.length ? selected + 1 + " / " + samples.length : "0 / 0",
+    );
+    rowValues("detail-raw", s && s.raw);
+    rowValues("detail-lift", s && s.lifted, s && s.raw);
+    rowValues("detail-proposed", candidate(s), s && s.raw);
+    if (!playing)
+      text(
+        "selection",
+        s
+          ? "Selected source row " +
+              s.source_row +
+              ", timestamp " +
+              exactTime(s) +
+              " nanoseconds."
+          : "No geometry available.",
+      );
+  }
+  function project(v) {
+    const c = Math.cos(yaw),
+      s = Math.sin(yaw);
+    return [v[0] * c - v[2] * s, -v[1] * 0.9 - (v[0] * s + v[2] * c) * 0.25];
+  }
+  function point(canvas, v, scale) {
+    const p = project(v);
+    return [canvas.width / 2 + p[0] * scale, canvas.height / 2 + p[1] * scale];
+  }
+  function axisFrom(q, axis) {
+    if (!q) return null;
+    const n = Math.hypot(...q);
+    if (!n) return null;
+    const [w, x, y, z] = q.map((v) => v / n);
+    return axis === "x"
+      ? [1 - 2 * (y * y + z * z), 2 * (x * y + w * z), 2 * (x * z - w * y)]
+      : axis === "y"
+        ? [2 * (x * y - w * z), 1 - 2 * (x * x + z * z), 2 * (y * z + w * x)]
+        : [2 * (x * z + w * y), 2 * (y * z - w * x), 1 - 2 * (x * x + y * y)];
+  }
+  function stereoValue(sample) {
+    if ($("stereo-layer").value === "lifted") return sample.stereo;
+    const q = sample.raw;
+    if (!q) return null;
+    const norm = Math.hypot(...q);
+    if (!norm) return null;
+    const denominator = 1 + q[0] / norm;
+    return Math.abs(denominator) <= 1e-12
+      ? null
+      : q.slice(1).map((v) => v / norm / denominator);
+  }
+  function grid(ctx, canvas) {
+    ctx.fillStyle = "#100e16";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#241e2e";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 40; x < canvas.width; x += 80) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+    }
+    for (let y = 40; y < canvas.height; y += 80) {
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+    }
+    ctx.stroke();
+  }
+  function reticle(ctx, p) {
+    ctx.strokeStyle = colours.raw;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(p[0], p[1], 7, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+  function path(ctx, points, colour, dash) {
+    ctx.strokeStyle = colour;
+    ctx.lineWidth = 2;
+    ctx.setLineDash(dash || []);
+    ctx.beginPath();
+    let previous = null;
+    points.forEach((p) => {
+      if (!p) {
+        previous = null;
+        return;
+      }
+      if (previous && previous[2] === p[2]) ctx.lineTo(p[0], p[1]);
+      else ctx.moveTo(p[0], p[1]);
+      previous = p;
     });
+    ctx.stroke();
+    ctx.setLineDash([]);
   }
-
-  function timelinePoint(index, maxAngle) {
-    var padX = 50, padY = 34;
-    return [padX + (index / Math.max(samples.length - 1, 1)) * (timeline.width - padX * 2), timeline.height - padY - (valueOr(samples[index].angle_rad, 0) / maxAngle) * (timeline.height - padY * 2)];
+  function marker(ctx, p) {
+    ctx.fillStyle = colours.finding;
+    ctx.beginPath();
+    ctx.moveTo(p[0], p[1] - 5);
+    ctx.lineTo(p[0] + 5, p[1]);
+    ctx.lineTo(p[0], p[1] + 5);
+    ctx.lineTo(p[0] - 5, p[1]);
+    ctx.closePath();
+    ctx.fill();
   }
-  function drawTimeline() {
-    var ctx = timeline.getContext("2d"); ctx.clearRect(0, 0, timeline.width, timeline.height); drawGrid(ctx, timeline, 52);
-    if (samples.length === 0) { ctx.fillStyle = "#9babb4"; ctx.fillText("NO GEOMETRY AVAILABLE", 48, timeline.height / 2); return; }
-    var maxAngle = samples.reduce(function (max, sample) { return Math.max(max, valueOr(sample.angle_rad, 0)); }, 0.001);
-    ctx.save(); ctx.fillStyle = "#6c7d86"; ctx.font = "18px ui-monospace, monospace"; ctx.fillText(maxAngle.toFixed(4) + " rad", 18, 24); ctx.fillText("0", 18, timeline.height - 14); ctx.restore();
-    ctx.save(); glowStroke(ctx, "#62e6df", 3); ctx.beginPath();
-    samples.forEach(function (_sample, idx) { var p = timelinePoint(idx, maxAngle); if (idx) { ctx.lineTo(p[0], p[1]); } else { ctx.moveTo(p[0], p[1]); } }); ctx.stroke(); ctx.restore();
-    samples.forEach(function (sample, idx) {
-      var p = timelinePoint(idx, maxAngle);
-      if (sample.pinned_finding) { ctx.save(); ctx.translate(p[0], p[1]); ctx.rotate(Math.PI / 4); ctx.fillStyle = "#ff7770"; ctx.fillRect(-6, -6, 12, 12); ctx.restore(); }
+  function xAt(index, canvas) {
+    const pad = 56;
+    if ($("timeline-axis").value === "time" && timeReady) {
+      const total =
+        samples[samples.length - 1].elapsed_s - samples[0].elapsed_s;
+      return (
+        pad +
+        (total
+          ? (samples[index].elapsed_s - samples[0].elapsed_s) / total
+          : 0) *
+          (canvas.width - 2 * pad)
+      );
+    }
+    return (
+      pad + (index / Math.max(1, samples.length - 1)) * (canvas.width - 2 * pad)
+    );
+  }
+  let maxValue = 1,
+    fittedScale = 86;
+  function rebuild() {
+    layers.clear();
+    canvases.forEach((id) => {
+      const canvas = $(id),
+        layer = document.createElement("canvas");
+      layer.width = canvas.width;
+      layer.height = canvas.height;
+      const ctx = layer.getContext("2d");
+      grid(ctx, layer);
+      layers.set(id, layer);
     });
-    var selectedPoint = timelinePoint(selected, maxAngle);
-    ctx.save(); ctx.strokeStyle = "rgba(238,244,246,0.7)"; ctx.setLineDash([4, 5]); ctx.beginPath(); ctx.moveTo(selectedPoint[0], 0); ctx.lineTo(selectedPoint[0], timeline.height); ctx.stroke(); ctx.restore();
-    drawReticle(ctx, selectedPoint[0], selectedPoint[1], "#eef4f6");
-  }
-
-  function updateFindingCurrent() {
-    findingsEl.querySelectorAll("button[data-start]").forEach(function (button) {
-      var start = Number(button.dataset.start), end = Number(button.dataset.end), row = samples[selected] ? samples[selected].source_row : -1;
-      button.dataset.active = row >= start && row <= end ? "true" : "false";
+    const physical = $("physical"),
+      pc = layers.get("physical").getContext("2d"),
+      axis = $("trail-axis").value;
+    path(
+      pc,
+      samples.map((s) =>
+        s["body_" + axis]
+          ? [...point(physical, s["body_" + axis], 155), s.geometry_segment]
+          : null,
+      ),
+      colours.derived,
+    );
+    path(
+      pc,
+      samples.map((s) => {
+        const v = axisFrom(candidate(s), axis);
+        return v ? [...point(physical, v, 155), s.geometry_segment] : null;
+      }),
+      colours.proposed,
+      [5, 5],
+    );
+    const stereo = $("stereo"),
+      sc = layers.get("stereo").getContext("2d");
+    const stereoPoints = samples.map(stereoValue);
+    const extent = stereoPoints.reduce(
+      (max, v) => (v ? Math.max(max, ...project(v).map(Math.abs)) : max),
+      0,
+    );
+    fittedScale =
+      stereoScale === null
+        ? Math.min(
+            150,
+            (Math.min(stereo.width, stereo.height) / 2 - 35) /
+              Math.max(extent, 0.01),
+          )
+        : stereoScale;
+    path(
+      sc,
+      stereoPoints.map((v, i) =>
+        v
+          ? [
+              ...point(stereo, v, fittedScale),
+              $("stereo-layer").value === "raw"
+                ? samples[i].raw_stereo_segment
+                : samples[i].stereo_segment,
+            ]
+          : null,
+      ),
+      colours.projection,
+    );
+    stereoPoints.forEach((v, i) => {
+      if (v && samples[i].pinned_finding)
+        marker(sc, point(stereo, v, fittedScale));
     });
-  }
-  function renderLists() {
-    findingsEl.textContent = "";
-    reportFindings.slice(0, maxRenderedFindings).forEach(function (finding, idx) {
-      var item = document.createElement("li"); item.className = "finding-item";
-      var button = document.createElement("button"); button.type = "button"; button.dataset.start = String(finding.source_row_start); button.dataset.end = String(finding.source_row_end);
-      var sequence = document.createElement("span"); sequence.className = "finding-sequence"; text(sequence, String(idx + 1).padStart(2, "0"));
-      var copy = document.createElement("span"); copy.className = "finding-copy";
-      var title = document.createElement("strong"); text(title, finding.rule); var reason = document.createElement("span"); text(reason, finding.reason_code + " / " + finding.repair_disposition); copy.appendChild(title); copy.appendChild(reason);
-      var range = document.createElement("span"); range.className = "finding-range"; text(range, "ROWS " + finding.source_row_start + "-" + finding.source_row_end);
-      button.appendChild(sequence); button.appendChild(copy); button.appendChild(range); button.addEventListener("click", function () { selectFinding(finding); }); item.appendChild(button); findingsEl.appendChild(item);
+    const timeline = $("timeline"),
+      tc = layers.get("timeline").getContext("2d"),
+      key = $("timeline-value").value;
+    maxValue = samples.reduce(
+      (max, s) => (finite(s[key]) ? Math.max(max, s[key]) : max),
+      0,
+    );
+    if (maxValue === 0) maxValue = 1;
+    path(
+      tc,
+      samples.map((s, i) =>
+        finite(s[key])
+          ? [
+              xAt(i, timeline),
+              timeline.height -
+                42 -
+                (s[key] / maxValue) * (timeline.height - 75),
+              s.geometry_segment,
+            ]
+          : null,
+      ),
+      colours.derived,
+    );
+    tc.fillStyle = colours.muted;
+    tc.font = "18px system-ui";
+    tc.fillText(
+      number(maxValue) + (key === "angle_rad" ? " rad" : " rad/s"),
+      8,
+      22,
+    );
+    tc.fillText("0", 12, timeline.height - 35);
+    if (samples.length) {
+      tc.fillText(
+        $("timeline-axis").value === "time" ? "0 s" : "1",
+        56,
+        timeline.height - 10,
+      );
+      tc.textAlign = "right";
+      tc.fillText(
+        $("timeline-axis").value === "time"
+          ? number(samples[samples.length - 1].elapsed_s) + " s"
+          : String(samples.length),
+        timeline.width - 56,
+        timeline.height - 10,
+      );
+      tc.textAlign = "left";
+    }
+    samples.forEach((s, i) => {
+      if (s.pinned_finding)
+        marker(tc, [
+          xAt(i, timeline),
+          finite(s[key])
+            ? timeline.height -
+              42 -
+              (s[key] / maxValue) * (timeline.height - 75)
+            : timeline.height - 28,
+        ]);
     });
-    if (reportFindings.length === 0) { var noFindings = document.createElement("li"); noFindings.className = "repair-item"; text(noFindings, "No findings in the canonical report."); findingsEl.appendChild(noFindings); }
-    if (reportFindings.length > maxRenderedFindings) { var truncated = document.createElement("li"); truncated.className = "repair-item"; text(truncated, String(reportFindings.length - maxRenderedFindings) + " additional findings remain in the canonical report and were omitted from the bounded DOM rendering."); findingsEl.appendChild(truncated); }
-    repairsEl.textContent = "";
-    (report.repairs || []).forEach(function (repair) { var item = document.createElement("li"); item.className = "repair-item"; text(item, repair.id + " / " + repair.algorithm + " / " + repair.disposition + " / affected rows " + (repair.affected_rows || []).join(", ")); repairsEl.appendChild(item); });
-    if ((report.repairs || []).length === 0) { var empty = document.createElement("li"); empty.className = "repair-item"; text(empty, "No proposed repairs."); repairsEl.appendChild(empty); }
+    const comp = $("components"),
+      cc = layers.get("components").getContext("2d");
+    const extentQ = samples.reduce(
+      (max, s) =>
+        Math.max(
+          max,
+          ...[s.raw, s.lifted, candidate(s)].flatMap((q) =>
+            q ? q.map(Math.abs) : [],
+          ),
+        ),
+      1,
+    );
+    for (let j = 0; j < 4; j++)
+      for (const [kind, dash] of [
+        ["raw", []],
+        ["lifted", [7, 5]],
+        ["candidate", [2, 5]],
+      ])
+        path(
+          cc,
+          samples.map((s, i) => {
+            const q = kind === "candidate" ? candidate(s) : s[kind];
+            return q
+              ? [
+                  xAt(i, comp),
+                  comp.height / 2 - (q[j] / extentQ) * (comp.height / 2 - 28),
+                  s.geometry_segment,
+                ]
+              : null;
+          }),
+          componentColours[j],
+          dash,
+        );
+    cc.fillStyle = colours.muted;
+    cc.font = "18px system-ui";
+    cc.fillText("+" + number(extentQ), 6, 22);
+    cc.fillText("−" + number(extentQ), 6, comp.height - 10);
+    paint();
   }
-
-  function selectByRow(row) {
-    var best = 0, distance = Infinity;
-    samples.forEach(function (sample, idx) { var next = Math.abs(sample.source_row - row); if (next < distance) { distance = next; best = idx; } });
-    setSelected(best);
-  }
-  function selectFinding(finding) {
-    var link = findingLinks.find(function (candidate) { return candidate.finding_id === finding.id; });
-    selectByRow(link && typeof link.geometry_source_row === "number" ? link.geometry_source_row : finding.source_row_start);
-  }
-  function updateDetails(sample) {
-    text(selectionEl, sampleLabel(sample));
-    text(byId("detail-row"), sample ? String(sample.source_row) : "--"); text(byId("metric-row"), sample ? String(sample.source_row) : "--");
-    text(byId("detail-time"), sample ? String(sample.timestamp_ns) + " ns" : "--"); text(byId("metric-time"), sample ? String(sample.timestamp_ns) + " ns" : "--");
-    text(byId("detail-raw"), sample ? tuple(sample.raw, "Unavailable") : "Unavailable"); text(byId("detail-lift"), sample ? tuple(sample.lifted, "Unavailable") : "Unavailable"); text(byId("detail-proposed"), sample ? tuple(sample.proposed, "None") : "None");
+  function paint() {
+    canvases.forEach((id) => {
+      const c = $(id),
+        ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.drawImage(layers.get(id), 0, 0);
+      if (!samples.length) {
+        ctx.fillStyle = colours.muted;
+        ctx.font = "20px system-ui";
+        ctx.fillText("No bound geometry", 40, c.height / 2);
+      }
+    });
+    const s = samples[selected];
+    if (!s) {
+      text("pole-info", "No geometry available.");
+      return;
+    }
+    const canvas = $("physical"),
+      ctx = canvas.getContext("2d");
+    ["x", "y", "z"].forEach((axis, i) => {
+      const v = s["body_" + axis];
+      if (!v) return;
+      const p = point(canvas, v, 135);
+      ctx.strokeStyle = componentColours[i + 1];
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, canvas.height / 2);
+      ctx.lineTo(...p);
+      ctx.stroke();
+      ctx.fillStyle = componentColours[i + 1];
+      ctx.font = "18px system-ui";
+      ctx.fillText("+" + axis.toUpperCase(), p[0] + 7, p[1] - 7);
+    });
+    const v = stereoValue(s);
+    if (v)
+      reticle($("stereo").getContext("2d"), point($("stereo"), v, fittedScale));
+    const q = $("stereo-layer").value === "raw" ? s.raw : s.lifted;
+    const pole = q ? 1 + q[0] / Math.hypot(...q) : null;
+    text(
+      "pole-info",
+      v
+        ? "Pole denominator: " +
+            number(pole) +
+            ". Scale: " +
+            number(fittedScale) +
+            " px/unit."
+        : "Selected sample is unavailable or at the projection pole; no point is drawn.",
+    );
+    ["timeline", "components"].forEach((id) => {
+      const c = $(id),
+        cx = c.getContext("2d"),
+        x = xAt(selected, c);
+      cx.strokeStyle = colours.raw;
+      cx.lineWidth = 1;
+      cx.setLineDash([4, 4]);
+      cx.beginPath();
+      cx.moveTo(x, 26);
+      cx.lineTo(x, c.height - 30);
+      cx.stroke();
+      cx.setLineDash([]);
+    });
   }
   function setSelected(index) {
-    if (samples.length === 0) { updateDetails(null); drawPhysical(); drawStereo(); drawTimeline(); return; }
-    selected = Math.max(0, Math.min(samples.length - 1, index)); slider.value = String(selected); text(byId("sample-position"), String(selected + 1) + " / " + String(samples.length));
-    updateDetails(samples[selected]); updateFindingCurrent(); drawPhysical(); drawStereo(); drawTimeline();
+    selected = Math.max(0, Math.min(Math.max(0, samples.length - 1), index));
+    $("sample-slider").value = selected;
+    details();
+    paint();
   }
-  function stopPlayback() {
-    playing = false; if (playTimer !== null) { window.clearInterval(playTimer); playTimer = null; }
-    playButton.setAttribute("aria-pressed", "false"); playButton.setAttribute("aria-label", "Play trajectory"); playButton.innerHTML = '<span aria-hidden="true">&#9654;</span> Play';
+  function stop() {
+    playing = false;
+    if (frame !== null) cancelAnimationFrame(frame);
+    frame = null;
+    $("play").setAttribute("aria-pressed", "false");
+    $("play").setAttribute("aria-label", "Play trajectory");
+    text("play", "Play");
   }
-  function togglePlayback() {
-    if (playing) { stopPlayback(); return; }
-    if (reduced || samples.length < 2) { setSelected(selected + 1 >= samples.length ? 0 : selected + 1); return; }
-    playing = true; playButton.setAttribute("aria-pressed", "true"); playButton.setAttribute("aria-label", "Pause trajectory"); playButton.innerHTML = '<span aria-hidden="true">&#10074;&#10074;</span> Pause';
-    playTimer = window.setInterval(function () { if (selected >= samples.length - 1) { stopPlayback(); } else { setSelected(selected + 1); } }, 240);
+  function tick(now) {
+    if (!playing) return;
+    let next = selected;
+    if ($("playback-mode").value === "time") {
+      const target = samples[playbackOrigin].elapsed_s + (now - started) / 1000;
+      let lo = playbackOrigin,
+        hi = samples.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (samples[mid].elapsed_s <= target) lo = mid + 1;
+        else hi = mid;
+      }
+      next = Math.max(playbackOrigin, lo - 1);
+    } else
+      next = Math.min(
+        samples.length - 1,
+        playbackOrigin + Math.floor((now - started) / 240),
+      );
+    if (next !== selected) setSelected(next);
+    if (selected === samples.length - 1) {
+      stop();
+      details();
+    } else frame = requestAnimationFrame(tick);
   }
-
-  slider.addEventListener("input", function () { stopPlayback(); setSelected(Number(slider.value)); });
-  byId("step-back").addEventListener("click", function () { stopPlayback(); setSelected(selected - 1); });
-  byId("step-forward").addEventListener("click", function () { stopPlayback(); setSelected(selected + 1); });
-  playButton.addEventListener("click", togglePlayback);
-  timeline.addEventListener("click", function (event) {
-    if (!samples.length) { return; }
-    var rect = timeline.getBoundingClientRect(); var ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)); stopPlayback(); setSelected(Math.round(ratio * (samples.length - 1)));
+  function toggle() {
+    if (playing) {
+      stop();
+      details();
+      return;
+    }
+    if (samples.length < 2) return;
+    if (motion.matches) {
+      setSelected(Math.min(samples.length - 1, selected + 1));
+      return;
+    }
+    if (selected === samples.length - 1) setSelected(0);
+    playing = true;
+    started = performance.now();
+    playbackOrigin = selected;
+    $("play").setAttribute("aria-pressed", "true");
+    $("play").setAttribute("aria-label", "Pause trajectory");
+    text("play", "Pause");
+    frame = requestAnimationFrame(tick);
+  }
+  $("findings-prev").addEventListener("click", () => {
+    page--;
+    renderFindings();
   });
-  document.addEventListener("keydown", function (event) {
-    if (event.target && (event.target.tagName === "INPUT" || event.target.tagName === "BUTTON")) { return; }
-    if (event.key === "ArrowRight") { stopPlayback(); setSelected(selected + 1); }
-    else if (event.key === "ArrowLeft") { stopPlayback(); setSelected(selected - 1); }
-    else if (event.key === "Home") { stopPlayback(); setSelected(0); }
-    else if (event.key === "End") { stopPlayback(); setSelected(samples.length - 1); }
+  $("findings-next").addEventListener("click", () => {
+    page++;
+    renderFindings();
   });
-  window.addEventListener("pagehide", stopPlayback);
-
-  renderLists(); setSelected(0);
-}());
+  $("finding-search").addEventListener("input", () => {
+    const term = $("finding-search").value.toLowerCase();
+    filtered = findings.filter((f) =>
+      [
+        f.rule,
+        f.summary,
+        names[f.rule] || "",
+        String(f.source_row_start),
+        String(f.source_row_end),
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(term),
+    );
+    page = 0;
+    renderFindings();
+  });
+  $("sample-slider").addEventListener("input", () => {
+    stop();
+    setSelected(Number($("sample-slider").value));
+  });
+  $("step-back").addEventListener("click", () => {
+    stop();
+    setSelected(selected - 1);
+  });
+  $("step-forward").addEventListener("click", () => {
+    stop();
+    setSelected(selected + 1);
+  });
+  $("play").addEventListener("click", toggle);
+  $("timeline").addEventListener("click", (event) => {
+    if (!samples.length) return;
+    const rect = $("timeline").getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * $("timeline").width;
+    let best = 0;
+    for (let i = 1; i < samples.length; i++)
+      if (
+        Math.abs(xAt(i, $("timeline")) - x) <
+        Math.abs(xAt(best, $("timeline")) - x)
+      )
+        best = i;
+    stop();
+    setSelected(best);
+  });
+  $("timeline").addEventListener("keydown", (event) => {
+    const moves = {
+      ArrowRight: selected + 1,
+      ArrowLeft: selected - 1,
+      Home: 0,
+      End: samples.length - 1,
+    };
+    if (event.key in moves) {
+      event.preventDefault();
+      stop();
+      setSelected(moves[event.key]);
+    }
+  });
+  ["trail-axis", "stereo-layer", "timeline-axis", "timeline-value"].forEach(
+    (id) =>
+      $(id).addEventListener("change", () => {
+        stop();
+        rebuild();
+      }),
+  );
+  $("repair-select").addEventListener("change", () => {
+    stop();
+    renderRepair();
+    details();
+    rebuild();
+  });
+  $("playback-mode").addEventListener("change", stop);
+  $("rotate-left").addEventListener("click", () => {
+    yaw -= Math.PI / 12;
+    rebuild();
+  });
+  $("rotate-right").addEventListener("click", () => {
+    yaw += Math.PI / 12;
+    rebuild();
+  });
+  $("camera-reset").addEventListener("click", () => {
+    yaw = 0.55;
+    rebuild();
+  });
+  $("stereo-fit").addEventListener("click", () => {
+    stereoScale = null;
+    rebuild();
+  });
+  $("stereo-reset").addEventListener("click", () => {
+    stereoScale = 86;
+    rebuild();
+  });
+  window.addEventListener("pagehide", stop);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+  });
+  motion.addEventListener("change", () => {
+    stop();
+    $("play").title = motion.matches
+      ? "Reduced motion: advance one sample"
+      : "";
+  });
+  ["play", "step-back", "step-forward", "sample-slider"].forEach((id) => {
+    $(id).disabled = samples.length < 2;
+  });
+  renderRepair();
+  renderFindings();
+  rebuild();
+  setSelected(0);
+  if (findings.length) selectFinding(findings[0]);
+})();
