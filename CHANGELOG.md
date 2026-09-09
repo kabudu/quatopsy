@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Fit small projected paths to the viewport, omit missing-interval finding markers and keep manual-QA bundles at reproducible local paths.
+
 - Preserve exact decimal timestamps and wide signed intervals without false duplicate-time findings or viewer subtraction overflow.
 - Break plots across missing data and projection poles, distinguish approximate finding links, and retain exact timestamp identities in the viewer.
 - Bound retained viewer geometry memory, borrow prepared source samples and check cancellation within analysis, repairs and view generation.

@@ -106,11 +106,11 @@
   $("result-banner").className = "status-strip " + report.result;
   text(
     "result-banner",
-    report.result[0].toUpperCase() +
-      report.result.slice(1) +
-      " · " +
+    (report.result === "findings"
+      ? ""
+      : report.result[0].toUpperCase() + report.result.slice(1) + " · ") +
       findings.length +
-      " findings",
+      (findings.length === 1 ? " finding" : " findings"),
   );
   text(
     "metric-samples",
@@ -533,11 +533,9 @@
     );
     fittedScale =
       stereoScale === null
-        ? Math.min(
-            150,
-            (Math.min(stereo.width, stereo.height) / 2 - 35) /
-              Math.max(extent, 0.01),
-          )
+        ? extent > 1e-9
+          ? (Math.min(stereo.width, stereo.height) / 2 - 35) / extent
+          : 150
         : stereoScale;
     path(
       sc,
@@ -605,14 +603,10 @@
       tc.textAlign = "left";
     }
     samples.forEach((s, i) => {
-      if (s.pinned_finding)
+      if (s.pinned_finding && finite(s[key]))
         marker(tc, [
           xAt(i, timeline),
-          finite(s[key])
-            ? timeline.height -
-              42 -
-              (s[key] / maxValue) * (timeline.height - 75)
-            : timeline.height - 28,
+          timeline.height - 42 - (s[key] / maxValue) * (timeline.height - 75),
         ]);
     });
     const comp = $("components"),

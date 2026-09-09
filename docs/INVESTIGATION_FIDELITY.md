@@ -30,11 +30,11 @@ The viewport renders only retained samples and may connect distant source sample
 
 `node scripts/test-viewer.mjs` runs the shipped viewer JavaScript against a simulated DOM/canvas. It checks interaction behaviour and drawing operations. It does not execute a real browser, establish CSS layout, measure accessibility-tree output or substitute for screenshot inspection.
 
-In this task, the in-app browser rejected the original generated `file://` viewer under URL security policy and explicitly prohibited alternate routes around the block. No browser workaround was attempted. The original screenshots supplied by the owner guided the redesign; they are not evidence of the new layout. Rendered QA and merge readiness remain open until actual screenshots and interaction checks are obtained through an allowed route.
+In this task, the in-app browser rejected the original generated `file://` viewer under URL security policy and explicitly prohibited alternate routes around the block. No browser workaround was attempted. The original screenshots supplied by the owner guided the redesign. Owner-supplied desktop screenshots dated 2026-09-09 (07.34.11 and 07.34.25) show the new irregular-time layout with readable panels and the expected unequal time spacing. Inspection identified an undersized fitted projection, repeated status wording and a missing-interval marker near zero; these were corrected with drawing regression coverage. Refreshed screenshots, narrow-screen layout and manual interaction checks remain outstanding. Browser/version and CSS viewport dimensions were not supplied; rendered QA and merge readiness remain open.
 
 ## Manual visual QA
 
-Generate fresh bundles with `python3 scripts/prepare-viewer-qa.py`. Open the printed HTML paths manually. Inspect sign discontinuity, norm drift, moving attitude, decreasing time, exact epoch timestamps a dense queue and irregular +X rotation at 1440x900, 1920x1080 and 390x844.
+Generate fresh bundles with `python3 scripts/prepare-viewer-qa.py`. Bundles persist under `target/viewer-qa`; rerunning refreshes them. Open the printed HTML paths manually. Inspect sign discontinuity, norm drift, moving attitude, decreasing time, exact epoch timestamps, a dense queue and irregular +X rotation at 1440x900, 1920x1080 and 390x844.
 
 - Verify that findings, plots and evidence are legible; controls do not overlap; tables scroll inside their panels; no document-wide horizontal overflow occurs.
 - Select findings and inspect exact source context, canonical evidence, approximate-link notice and raw/lift/candidate values.

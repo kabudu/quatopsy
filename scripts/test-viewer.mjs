@@ -87,7 +87,12 @@ class Context {
       ops: this.operations.slice(this.start),
     });
   }
-  fill() {}
+  fill() {
+    this.paths.push({
+      fill: this.fillStyle,
+      ops: this.operations.slice(this.start),
+    });
+  }
   closePath() {}
   arc() {}
   setLineDash() {}
@@ -315,6 +320,31 @@ function launch(data = fixture(), reduced = false) {
   invalid.report.schema = "quatopsy.report/99";
   const refused = launch(invalid);
   assert.match(refused.get("result-banner").textContent, /refused unknown/);
+}
+{
+  const data = fixture();
+  data.view.samples.forEach((sample, i) => {
+    sample.stereo = [i * 0.01, 0, 0];
+  });
+  const app = launch(data);
+  assert.equal(app.get("result-banner").textContent, "2501 findings");
+  const layer = (id) =>
+    app.get(id).ctx.operations.find((op) => op[0] === "image")[1].ctx;
+  const projection = layer("stereo").paths.find((p) => p.colour === "#ffc65c");
+  const points = projection.ops.filter(
+    (op) => op[0] === "move" || op[0] === "line",
+  );
+  const span =
+    Math.max(...points.map((op) => op[1])) -
+    Math.min(...points.map((op) => op[1]));
+  assert(span > 100, "Fit must enlarge a small nonzero projected path");
+  const markers = layer("timeline").paths.filter((p) => p.fill);
+  assert.equal(
+    markers.length,
+    2,
+    "Only the two measured intervals receive finding markers",
+  );
+  assert(markers.every((p) => p.ops.find((op) => op[0] === "move")[1] > 56));
 }
 console.log(
   "viewer DOM/canvas simulation: passed (pagination, selection, precision, irregular time, gaps, repair, reduced motion, schema binding)",
