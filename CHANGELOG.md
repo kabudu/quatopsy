@@ -8,24 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [0.3.0] - 2026-09-13
 
+Quatopsy 0.3.0 makes recorded orientation incidents easier to inspect while preserving exact source identity, bounded local execution, and canonical report ownership.
+
 ### Added
 
 - Added a compact investigation workspace with paginated findings, canonical evidence and source context, named repair comparison, component traces, camera/axis controls and recorded-time playback.
 - Added DOM/canvas interaction regression checks and released-CLI workflow memory, time and payload budgets.
 
-- Added a responsive, accessible, SEO-complete static GitHub Pages website with a reproducible, least-privilege deployment pipeline.
+- Added a responsive, accessible, SEO-complete static GitHub Pages website with a reproducible, least-privilege deployment pipeline and dedicated light-mode brand treatment.
 
 ### Fixed
 
-- Keep the README version statement aligned with the lockstep Cargo workspace during release preparation.
-- Bootstrap locked website dependencies in release preparation and publication jobs before running the authoritative quality gate.
+- Kept README and lockstep Cargo versions aligned, and bootstrapped locked website dependencies in release preparation and publication jobs.
 - Fit small projected paths to the viewport, omit missing-interval finding markers and keep manual-QA bundles at reproducible local paths.
 
-- Preserve exact decimal timestamps and wide signed intervals without false duplicate-time findings or viewer subtraction overflow.
-- Break plots across missing data and projection poles, distinguish approximate finding links, and retain exact timestamp identities in the viewer.
-- Bound retained viewer geometry memory, borrow prepared source samples and check cancellation within analysis, repairs and view generation.
-
-- Use a dedicated black-wordmark, black-streak lockup on GitHub light mode while retaining the full-colour lockup in dark mode.
+- Preserved exact decimal timestamps and wide signed intervals, broke plots across missing data and projection poles, and retained exact viewer identities without false duplicate-time findings or subtraction overflow.
+- Bounded retained viewer geometry memory, borrowed prepared source samples, distinguished approximate finding links, and checked cancellation within analysis, repairs and view generation.
 
 ## [0.2.1] - 2026-08-30
 
