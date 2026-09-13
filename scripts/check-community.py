@@ -55,6 +55,13 @@ for path in REQUIRED:
     if not path.is_file() or path.stat().st_size == 0:
         fail(f"missing or empty {path.relative_to(ROOT)}")
 
+for workflow_name in ["prepare-release.yml", "release.yml"]:
+    workflow = (ROOT / ".github" / "workflows" / workflow_name).read_text(encoding="utf-8")
+    if "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020" not in workflow:
+        fail(f"{workflow_name} must install the pinned Node.js toolchain")
+    if "npm --prefix website ci --ignore-scripts" not in workflow:
+        fail(f"{workflow_name} must bootstrap locked website dependencies")
+
 readme = README.read_text(encoding="utf-8")
 required_readme = [
     "assets/brand/source/quatopsy-lockup-light.svg#gh-light-mode-only",
