@@ -213,7 +213,7 @@ Owner-requested scope and acceptance evidence are recorded in [INVESTIGATION_FID
 - [x] Present missing data, projection poles, downsampling and finding navigation truthfully.
 - [x] Deliver the compact responsive investigation workspace, complete finding queue, canonical inspector and named candidate comparison.
 - [x] Bound geometry memory and cancellation, cache rendering, and measure the complete released-CLI workflow.
-- [ ] Pass regression, local/hosted CI and actual desktop/narrow browser QA before merge.
+- [x] Pass regression, local/hosted CI and actual desktop/narrow browser QA before merge.
 - [ ] Conduct practitioner evaluation and record outcome evidence when participants are available.
 
 No unchecked item is claimed complete. Browser QA and practitioner observations are distinct evidence requirements.
