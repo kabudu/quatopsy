@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CARGO = ROOT / "Cargo.toml"
 CHANGELOG = ROOT / "CHANGELOG.md"
+README = ROOT / "README.md"
 REPOSITORY = "https://github.com/kabudu/quatopsy"
 SEMVER = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
 RELEASE_HEADING = re.compile(r"^## \[([^]]+)] - ([0-9]{4}-[0-9]{2}-[0-9]{2})$", re.M)
@@ -56,6 +57,7 @@ def changelog_section(text: str, version: str) -> str:
 def check(expect_version: str | None, release: bool) -> str:
     cargo = CARGO.read_text(encoding="utf-8")
     changelog = CHANGELOG.read_text(encoding="utf-8")
+    readme = README.read_text(encoding="utf-8")
     version = cargo_version(cargo)
     version_tuple(version)
     if expect_version and version != expect_version:
@@ -92,6 +94,9 @@ def check(expect_version: str | None, release: bool) -> str:
     expected_unreleased = f"[Unreleased]: {REPOSITORY}/compare/v{version}...HEAD"
     if expected_unreleased not in changelog:
         fail(f"missing changelog link {expected_unreleased!r}")
+    readme_version = f"Version `{version}` is early-stage"
+    if readme.count(readme_version) != 1:
+        fail(f"README.md must identify the current version as {version}")
     for release_version, _ in releases:
         if not re.search(rf"^\[{re.escape(release_version)}]: https://", changelog, re.M):
             fail(f"missing changelog link for release {release_version}")
@@ -115,6 +120,7 @@ def prepare(version: str, date: str) -> None:
         fail(f"invalid ISO release date {date}: {error}")
     cargo = CARGO.read_text(encoding="utf-8")
     changelog = CHANGELOG.read_text(encoding="utf-8")
+    readme = README.read_text(encoding="utf-8")
     current = cargo_version(cargo)
     if new_tuple <= version_tuple(current):
         fail(f"new version {version} must be greater than {current}")
@@ -145,8 +151,13 @@ def prepare(version: str, date: str) -> None:
     changelog = changelog.replace(old_link, new_links, 1)
     cargo = cargo.replace(f'version = "{current}"', f'version = "{version}"', 1)
     cargo = cargo.replace(f'version = "={current}"', f'version = "={version}"')
+    readme_version = f"Version `{current}` is early-stage"
+    if readme.count(readme_version) != 1:
+        fail(f"README.md must identify the current version as {current}")
+    readme = readme.replace(readme_version, f"Version `{version}` is early-stage", 1)
     CARGO.write_text(cargo, encoding="utf-8")
     CHANGELOG.write_text(changelog, encoding="utf-8")
+    README.write_text(readme, encoding="utf-8")
     print(f"release: prepared {version} dated {date}; run cargo update --workspace")
 
 

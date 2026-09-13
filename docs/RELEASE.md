@@ -14,7 +14,7 @@ A release stops for any unresolved critical or high correctness flaw in supporte
 
 ## Preparing a release
 
-Normal changes add human-readable entries under `[Unreleased]`. The `Prepare release` workflow accepts a stable `major.minor.patch` version, runs `scripts/release.py prepare`, updates `Cargo.toml`, `Cargo.lock`, and `CHANGELOG.md`, executes the authoritative gate, and opens a `codex/release-vX.Y.Z` pull request. It never tags or publishes from an unreviewed branch.
+Normal changes add human-readable entries under `[Unreleased]`. The `Prepare release` workflow accepts a stable `major.minor.patch` version, runs `scripts/release.py prepare`, updates `Cargo.toml`, `Cargo.lock`, `CHANGELOG.md`, and the README version statement, executes the authoritative gate, and opens a `codex/release-vX.Y.Z` pull request. It never tags or publishes from an unreviewed branch.
 
 The preparation script rejects an empty `[Unreleased]` section, non-increasing versions, malformed dates, inconsistent internal package versions, missing changelog links, and non-SemVer release identifiers.
 
