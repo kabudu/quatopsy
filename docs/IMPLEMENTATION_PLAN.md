@@ -209,10 +209,10 @@ Exit: local and hosted CI, desktop and narrow visual QA, live GitHub Pages verif
 
 Owner-requested scope and acceptance evidence are recorded in [INVESTIGATION_FIDELITY.md](INVESTIGATION_FIDELITY.md).
 
-- [ ] Preserve exact decimal timestamps and wide elapsed-time arithmetic across analysis and view generation.
-- [ ] Present missing data, projection poles, downsampling and finding navigation truthfully.
-- [ ] Deliver the compact responsive investigation workspace, complete finding queue, canonical inspector and named candidate comparison.
-- [ ] Bound geometry memory and cancellation, cache rendering, and measure the complete released-CLI workflow.
+- [x] Preserve exact decimal timestamps and wide elapsed-time arithmetic across analysis and view generation.
+- [x] Present missing data, projection poles, downsampling and finding navigation truthfully.
+- [x] Deliver the compact responsive investigation workspace, complete finding queue, canonical inspector and named candidate comparison.
+- [x] Bound geometry memory and cancellation, cache rendering, and measure the complete released-CLI workflow.
 - [ ] Pass regression, local/hosted CI and actual desktop/narrow browser QA before merge.
 - [ ] Conduct practitioner evaluation and record outcome evidence when participants are available.
 

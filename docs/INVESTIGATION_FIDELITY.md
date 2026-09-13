@@ -15,7 +15,7 @@ This owner-requested increment addresses the first-principles review of exact ti
 | Time and sample playback | Time-proportional timeline; recorded-time and retained-sample modes; reduced-motion stepping; page-hide cancellation | implemented |
 | Bounded generation and interaction | Streaming geometry passes, borrowed kernel samples, ordered source lookup, cooperative cancellation, cached plot layers and paginated DOM | implemented |
 | Workflow performance | Nominal million-sample analyze/view/investigate/verify, dense-finding view, optional rate/matrix columns, 60-second stage deadline, 512 MiB child peak RSS and 32 MiB viewer payload | implemented |
-| Desktop/narrow browser appearance and accessibility | Actual browser execution, screenshot inspection, keyboard/focus, reduced motion and no overflow at 1440, 1920 and 390 pixels | pending |
+| Desktop/narrow browser appearance and accessibility | Actual browser execution, screenshot inspection, keyboard/focus, reduced motion and no overflow at 1440, 1920 and 390 pixels | desktop passed; narrow and interaction pending |
 | Practitioner outcome evidence | Pre-registered evaluation protocol below; recruitment and actual observations require practitioners | pending |
 
 ## Compatibility
@@ -30,7 +30,7 @@ The viewport renders only retained samples and may connect distant source sample
 
 `node scripts/test-viewer.mjs` runs the shipped viewer JavaScript against a simulated DOM/canvas. It checks interaction behaviour and drawing operations. It does not execute a real browser, establish CSS layout, measure accessibility-tree output or substitute for screenshot inspection.
 
-In this task, the in-app browser rejected the original generated `file://` viewer under URL security policy and explicitly prohibited alternate routes around the block. No browser workaround was attempted. The original screenshots supplied by the owner guided the redesign. Owner-supplied desktop screenshots dated 2026-09-09 (07.34.11 and 07.34.25) show the new irregular-time layout with readable panels and the expected unequal time spacing. Inspection identified an undersized fitted projection, repeated status wording and a missing-interval marker near zero; these were corrected with drawing regression coverage. Refreshed screenshots, narrow-screen layout and manual interaction checks remain outstanding. Browser/version and CSS viewport dimensions were not supplied; rendered QA and merge readiness remain open.
+In this task, browser automation rejected the generated `file://` viewer under URL security policy and explicitly prohibited alternate routes around the block. No browser workaround was attempted. The original screenshots supplied by the owner guided the redesign. Owner-supplied desktop screenshots dated 2026-09-09 at 07.34 showed the new irregular-time layout with readable panels and the expected unequal time spacing. Inspection identified an undersized fitted projection, repeated status wording and a missing-interval marker near zero; these were corrected with drawing regression coverage. Refreshed owner-supplied desktop screenshots dated 2026-09-09 at 07.44 confirmed those corrections, readable primary and secondary panels, expanded provenance, and no visible overlap or clipping at the supplied wide viewport. Narrow-screen layout and manual interaction checks remain outstanding. Browser/version and exact CSS viewport dimensions were not supplied; rendered QA and merge readiness remain open.
 
 ## Manual visual QA
 
