@@ -154,7 +154,7 @@ The central invariant is simple: adapters, planners, controllers, and viewers ne
 
 ## Project status
 
-Version `0.2.1` is early-stage, production-quality research software for local advisory evaluation. "Production-quality" describes the engineering discipline within Quatopsy's documented scope; it does not mean flight-qualified, safety-certified, independently validated, or supported by a production SLA. Cargo releases are published from reviewed tags, while standalone binaries remain unsigned. The evidence-based opening record is maintained in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
+Version `0.3.0` is early-stage, production-quality research software for local advisory evaluation. "Production-quality" describes the engineering discipline within Quatopsy's documented scope; it does not mean flight-qualified, safety-certified, independently validated, or supported by a production SLA. Cargo releases are published from reviewed tags, while standalone binaries remain unsigned. The evidence-based opening record is maintained in [docs/PUBLIC_OPENING_DECISION.md](docs/PUBLIC_OPENING_DECISION.md).
 
 ## Documentation
 
