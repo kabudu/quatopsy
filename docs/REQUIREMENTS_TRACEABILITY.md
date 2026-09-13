@@ -46,3 +46,13 @@ States are `planned`, `implemented`, `verified`, `deferred`, or `not-applicable`
 Every release-critical row must be implemented and verified with its named evidence, or explicitly removed from the supported release scope with owner approval and compatibility review. A document, scaffold, unchecked test, or unavailable hosted check is not evidence of implementation.
 
 M5 owner disposition: `INT-2` and `INT-3` are verified for the shipped adapter crate and adoption-policy CLI. M12 verifies `REL-2` through explicit owner authorisation for hosted CI. `NOV-1` and `NOV-2` remain planned research hypotheses and do not block release.
+
+## M14 acceptance
+
+| ID | Requirement | Verification | State |
+| --- | --- | --- | --- |
+| TIME-EXACT | Exact decimal nanoseconds and wide signed elapsed intervals | ingest exact_time_tests, hostile and view_fidelity regressions | implemented |
+| VIEW-EVIDENCE | Complete queue, canonical inspector, exact context and approximate-link disclosure | CLI view tests and scripts/test-viewer.mjs | implemented |
+| VIEW-RENDER | Responsive workspace, focus, readable graphics and actual browser behaviour | Manual matrix in INVESTIGATION_FIDELITY.md | planned |
+| PERF-WORKFLOW | Bounded geometry retention and public-CLI workflow budgets | scripts/check-workflow-budget.py | implemented |
+| PRODUCT-OUTCOME | Practitioner explanation, reproduction and repair-understanding outcomes | Pre-registered protocol in INVESTIGATION_FIDELITY.md | planned |

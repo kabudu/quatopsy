@@ -430,19 +430,60 @@ fn required_column(index: &HashMap<String, usize>, name: &str) -> Result<usize, 
 }
 
 fn parse_timestamp(raw: &str, unit: TimeUnit) -> Result<(i64, bool, bool), IngestError> {
-    let parsed = parse_f64_field(raw)?;
-    if !parsed.is_finite() {
+    // Validate the numeric grammar, but never use binary64 to quantise time.
+    let checked = parse_f64_field(raw)?;
+    let text = raw.trim();
+    if !checked.is_finite() && !text.bytes().any(|b| b.is_ascii_digit()) {
         return Ok((0, false, false));
     }
-    let scaled = parsed * unit.to_nanoseconds_scale();
-    if !scaled.is_finite() {
-        return Ok((0, false, true));
+    let negative = text.starts_with('-');
+    let unsigned = text.trim_start_matches(['+', '-']);
+    let mut parts = unsigned.split(['e', 'E']);
+    let mantissa = parts.next().unwrap_or("");
+    let exponent = parts.next().map_or(0, |value| {
+        value.parse::<i64>().unwrap_or(if value.starts_with('-') {
+            i64::MIN
+        } else {
+            i64::MAX
+        })
+    });
+    let fraction = mantissa.split_once('.').map_or(0, |(_, tail)| tail.len()) as i64;
+    let digits = mantissa.replace('.', "");
+    let digits = digits.trim_start_matches('0');
+    if digits.is_empty() {
+        return Ok((0, true, false));
     }
-    let rounded = scaled.round();
-    if rounded > i64::MAX as f64 || rounded < i64::MIN as f64 {
+    let scale = match unit {
+        TimeUnit::Ns => 0,
+        TimeUnit::Us => 3,
+        TimeUnit::Ms => 6,
+        TimeUnit::S => 9,
+    };
+    let shift = exponent.saturating_add(scale).saturating_sub(fraction);
+    let integer_len = (digits.len() as i64).saturating_add(shift);
+    if integer_len > 19 {
         return Ok((0, true, true));
     }
-    Ok((rounded as i64, true, false))
+    if integer_len < 0 {
+        return Ok((0, true, false));
+    }
+    let mut magnitude = 0_i128;
+    for index in 0..integer_len as usize {
+        magnitude = magnitude * 10
+            + i128::from(digits.as_bytes().get(index).copied().unwrap_or(b'0') - b'0');
+    }
+    if digits
+        .as_bytes()
+        .get(integer_len as usize)
+        .is_some_and(|digit| *digit >= b'5')
+    {
+        magnitude += 1;
+    }
+    let signed = if negative { -magnitude } else { magnitude };
+    match i64::try_from(signed) {
+        Ok(value) => Ok((value, true, false)),
+        Err(_) => Ok((0, true, true)),
+    }
 }
 
 fn parse_component(raw: &str) -> Result<f64, IngestError> {
@@ -478,6 +519,41 @@ fn assemble_quaternion(order: ComponentOrder, components: [f64; 4]) -> Quaternio
         }
         ComponentOrder::Xyzw => {
             Quaternion::new(components[3], components[0], components[1], components[2])
+        }
+    }
+}
+
+#[cfg(test)]
+mod exact_time_tests {
+    use super::*;
+    #[test]
+    fn preserves_decimal_nanoseconds_and_rounds_half_away_from_zero() {
+        for (text, unit, expected) in [
+            ("9007199254740993", TimeUnit::Ns, 9007199254740993),
+            ("1700000000.000000001", TimeUnit::S, 1700000000000000001),
+            ("-9223372036854775808", TimeUnit::Ns, i64::MIN),
+            ("9223372036854775807", TimeUnit::Ns, i64::MAX),
+            ("-.0000000005", TimeUnit::S, -1),
+            ("5e-1", TimeUnit::Ns, 1),
+            ("4.999e-1", TimeUnit::Ns, 0),
+            ("000.001e3", TimeUnit::Us, 1000),
+            ("1e-999999999999999999999", TimeUnit::Ns, 0),
+        ] {
+            assert_eq!(
+                parse_timestamp(text, unit).unwrap(),
+                (expected, true, false),
+                "{text}"
+            );
+        }
+        for text in [
+            "9223372036854775808",
+            "-9223372036854775809",
+            "1e999999999999999999999",
+        ] {
+            assert_eq!(
+                parse_timestamp(text, TimeUnit::Ns).unwrap(),
+                (0, true, true)
+            );
         }
     }
 }

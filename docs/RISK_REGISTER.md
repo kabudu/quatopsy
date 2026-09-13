@@ -29,3 +29,11 @@ Probability and impact use low, medium, or high. The owner is a role until named
 | R25 | Brand revision drifts across SVG, raster, viewer, or wordmark provenance | Low | Medium | Brand/engineering | Digest, geometry, font-outline, contrast, or visual-QA check fails | Single-source generator, canonical path equality, outlined wordmark provenance, versioned manifest, local CI | Withdraw the inconsistent asset and regenerate `quatopsy.brand/2` |
 | R26 | Investigation bundle is tampered with, incomplete, or mistaken for authenticated custody | Medium | High | Operations/security | `verify-evidence` mismatch or missing manifest | Per-file digests, roles, sizes, deterministic bundle identity, report binding, explicit authenticity non-claim | Refuse handover and regenerate from trusted source capture |
 | R27 | Copied telemetry, event history, command history, or notes disclose sensitive operations data | Medium | High | Privacy/operator | Bundle appears outside approved storage or retention | Local-only explicit command, source-path omission, no network, documented sensitivity inheritance | Remove unauthorised copies and follow organisation incident policy |
+
+## M14 review risks
+
+- Exact-time bug fixes can change reports previously produced through binary64 timestamp rounding. Preserve old reports and reproduce them with their recorded engine version.
+- Downsampling can omit finding endpoints and local geometric structure. Show approximate linkage, preserve canonical evidence/context and never imply retained geometry is the whole source.
+- DOM simulation cannot detect CSS overflow, browser-specific drawing or accessibility-tree faults. Actual desktop/narrow rendered QA is a merge prerequisite and is currently pending.
+- Generated bundles include exact source context. They inherit the sensitivity of the source trajectory and retain the local-only CSP.
+- Workflow budgets describe measured workloads, not a hard RSS ceiling for every permitted input. Keep resource-limit refusals and cancellation separate from performance claims.

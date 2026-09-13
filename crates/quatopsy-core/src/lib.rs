@@ -13,7 +13,7 @@ use crate::identity::{analysis_id, sha256_hex};
 use crate::ingest::{IngestError, ingest_bytes};
 use crate::kernel::{Analysis, evaluate};
 use crate::limits::Limits;
-use crate::repair::attach_repairs;
+use crate::repair::attach_repairs_cancellable;
 
 pub mod cancel;
 pub mod identity;
@@ -64,14 +64,31 @@ pub fn analyze(request: AnalyzeRequest<'_>) -> Report {
             );
             let mut repairs = Vec::new();
             if analysis.complete && !cancel.is_cancelled() && !cancel.timed_out() {
-                let attached = attach_repairs(&parsed.samples, &mut analysis.findings, &id);
-                repairs = attached.0;
-                analysis.rule_results.push(attached.1);
-            } else if !analysis
+                match attach_repairs_cancellable(
+                    &parsed.samples,
+                    &mut analysis.findings,
+                    &id,
+                    cancel,
+                ) {
+                    Ok(attached) => {
+                        repairs = attached.0;
+                        analysis.rule_results.push(attached.1);
+                    }
+                    Err(_) => {
+                        analysis.complete = false;
+                        for finding in &mut analysis.findings {
+                            finding.repair_refs.clear();
+                            finding.repair_disposition = quatopsy_schema::RepairDisposition::None;
+                        }
+                    }
+                }
+            }
+            if !analysis
                 .rule_results
                 .iter()
                 .any(|item| item.rule == quatopsy_schema::RULE_REPAIR)
             {
+                analysis.complete = false;
                 analysis.rule_results.push(quatopsy_schema::RuleResult {
                     rule: quatopsy_schema::RULE_REPAIR.to_string(),
                     version: quatopsy_schema::RULE_VERSION.to_string(),
@@ -85,6 +102,36 @@ pub fn analyze(request: AnalyzeRequest<'_>) -> Report {
                 analysis.rule_results.iter().map(|item| item.state),
             );
             analysis.reason_code = analysis.result.as_str().to_string();
+            if cancel.check().is_err() {
+                analysis.result = ResultState::Error;
+                repairs.clear();
+                for finding in &mut analysis.findings {
+                    finding.repair_refs.clear();
+                    finding.repair_disposition = quatopsy_schema::RepairDisposition::None;
+                }
+                if let Some(rule) = analysis
+                    .rule_results
+                    .iter_mut()
+                    .find(|r| r.rule == quatopsy_schema::RULE_REPAIR)
+                {
+                    rule.state = quatopsy_schema::RuleState::Error;
+                    rule.reason_code = if cancel.is_cancelled() {
+                        "cancelled"
+                    } else {
+                        "timeout"
+                    }
+                    .to_string();
+                }
+                analysis.complete = false;
+                analysis.message =
+                    "analysis did not complete before cancellation or deadline".to_string();
+                analysis.reason_code = if cancel.is_cancelled() {
+                    "cancelled"
+                } else {
+                    "timeout"
+                }
+                .to_string();
+            }
             build_report(
                 id,
                 request.engine_version,

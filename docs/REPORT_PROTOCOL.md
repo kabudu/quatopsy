@@ -41,3 +41,7 @@ Each repair has an algorithm identifier, source analysis ID, disposition (`propo
 ## Compatibility
 
 Consumers reject unknown major schema versions. Unknown optional fields in a known major version are retained or ignored without changing verdicts. Rule semantic changes require a new rule version and cannot overwrite historical meaning.
+
+## Investigation viewer extensions
+
+See [INVESTIGATION_FIDELITY.md](INVESTIGATION_FIDELITY.md) for additive `quatopsy.view/1` identity, segment, context and exact-link fields. Report integer timestamp fields remain unchanged. Decimal input time is converted with checked exact decimal arithmetic and half-away-from-zero nanosecond rounding; interval differences use i128 before conversion to seconds. Older engines may have rounded distinct timestamps together; historical reproduction requires the recorded engine version.

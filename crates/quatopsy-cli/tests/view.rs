@@ -163,10 +163,15 @@ fn viewer_assets_meet_keyboard_contrast_and_text_state_requirements() {
     assert!(css.contains("max-width: 480px"));
     assert!(js.contains("ArrowRight"));
     assert!(js.contains("ArrowLeft"));
-    assert!(js.contains("timeline.addEventListener(\"click\""));
-    assert!(js.contains("window.setInterval"));
-    assert!(js.contains("if (reduced || samples.length < 2)"));
-    assert!(js.contains("the viewer did not recompute rules"));
+    assert!(js.contains("$(\"timeline\").addEventListener(\"click\""));
+    assert!(js.contains("requestAnimationFrame"));
+    assert!(js.contains("if (motion.matches)"));
+    assert!(
+        html.split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .contains("the viewer did not recompute rules")
+    );
     assert!(!js.contains("alert("));
     assert!(!js.contains("confirm("));
     assert!(!js.contains("prompt("));
