@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Bootstrap locked website dependencies in release preparation and publication jobs before running the authoritative quality gate.
 - Fit small projected paths to the viewport, omit missing-interval finding markers and keep manual-QA bundles at reproducible local paths.
 
 - Preserve exact decimal timestamps and wide signed intervals without false duplicate-time findings or viewer subtraction overflow.
