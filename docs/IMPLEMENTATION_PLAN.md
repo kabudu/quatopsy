@@ -218,6 +218,12 @@ Owner-requested scope and acceptance evidence are recorded in [INVESTIGATION_FID
 
 No unchecked item is claimed complete. Browser QA and practitioner observations are distinct evidence requirements.
 
+## Website audience clarity follow-up
+
+Owner-requested scope: help visitors recognise whether Quatopsy is relevant before the technical detail. Acceptance evidence: a labelled section immediately after the hero, plain-language purpose, three concrete audience examples, the flight-approval boundary, responsive layout inspection, and `./scripts/ci-local.sh`. No runtime, fixture, diagnostic, or trust-boundary changes are required.
+
+- [x] Add the website audience section and verify desktop and 390px mobile layout, heading structure, and absence of horizontal overflow.
+
 ## Optional post-release evidence track
 
 - [ ] Verify the canonical release page at desktop and narrow widths after an authorised publication.

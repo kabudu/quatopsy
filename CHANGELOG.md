@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added a plain-language website audience section for spacecraft attitude and control engineers, simulation developers, and orientation-data researchers.
+
 ## [0.3.0] - 2026-09-13
 
 Quatopsy 0.3.0 makes recorded orientation incidents easier to inspect while preserving exact source identity, bounded local execution, and canonical report ownership.
